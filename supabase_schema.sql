@@ -131,7 +131,7 @@ CREATE TABLE IF NOT EXISTS public.articles (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- Disable RLS initially for seamless API access (Policy configuration handled in P4.3)
+-- Disable RLS initially for seamless API access
 ALTER TABLE public.members DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.books DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.borrow_requests DISABLE ROW LEVEL SECURITY;
@@ -140,9 +140,31 @@ ALTER TABLE public.book_reviews DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.events DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.articles DISABLE ROW LEVEL SECURITY;
 
+-- Explicit permissive RLS policies (in case RLS is manually enabled in Supabase Dashboard)
+DROP POLICY IF EXISTS "Allow public all members" ON public.members;
+CREATE POLICY "Allow public all members" ON public.members FOR ALL USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Allow public all books" ON public.books;
+CREATE POLICY "Allow public all books" ON public.books FOR ALL USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Allow public all borrow_requests" ON public.borrow_requests;
+CREATE POLICY "Allow public all borrow_requests" ON public.borrow_requests FOR ALL USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Allow public all reservation_queues" ON public.reservation_queues;
+CREATE POLICY "Allow public all reservation_queues" ON public.reservation_queues FOR ALL USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Allow public all book_reviews" ON public.book_reviews;
+CREATE POLICY "Allow public all book_reviews" ON public.book_reviews FOR ALL USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Allow public all events" ON public.events;
+CREATE POLICY "Allow public all events" ON public.events FOR ALL USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Allow public all articles" ON public.articles;
+CREATE POLICY "Allow public all articles" ON public.articles FOR ALL USING (true) WITH CHECK (true);
+
 -- SEED INITIAL SYSTEM ACCOUNTS (Admin & Sample Member)
 INSERT INTO public.members (id, name, email, phone, password_hash, avatar, role, joined_date)
 VALUES 
-  ('usr_admin_01', 'Fian Admin', 'admin@tangselbookparty.org', '+6281234567890', 'admin123', 'https://api.dicebear.com/7.x/avataaars/svg?seed=FianAdmin', 'admin', 'Desember 2024'),
+  ('usr_admin_01', 'Tangsel Admin', 'admin@tangselbookparty.org', '+6281234567890', 'admin123', 'https://api.dicebear.com/7.x/avataaars/svg?seed=TangselAdmin', 'admin', 'Desember 2024'),
   ('usr_member_01', 'Budi Santoso', 'budi@tangselbookparty.org', '+6281234567890', 'user123', 'https://api.dicebear.com/7.x/avataaars/svg?seed=BudiMember', 'member', 'Januari 2025')
 ON CONFLICT (email) DO NOTHING;
