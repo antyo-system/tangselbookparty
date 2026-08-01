@@ -67,6 +67,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const todayStr = new Date().toISOString().split('T')[0];
   const activeQueues = queues.filter((q) => q.status === 'waiting');
 
+  // Auto-close sidebar on mobile tab change helper
+  const handleTabChange = (tab: typeof activeTab) => {
+    setActiveTab(tab);
+    if (typeof window !== 'undefined' && window.innerWidth < 768) {
+      setIsSidebarOpen(false);
+    }
+  };
+
   const filteredInventory = books.filter(
     (b) =>
       b.title.toLowerCase().includes(inventorySearch.toLowerCase()) ||
@@ -77,11 +85,20 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   );
 
   return (
-    <div className="min-h-screen bg-slate-100 font-sans text-slate-900 flex flex-col md:flex-row w-full max-w-full overflow-x-hidden">
+    <div className="min-h-screen bg-slate-100 font-sans text-slate-900 flex flex-col md:flex-row w-full max-w-full overflow-x-hidden relative">
       
-      {/* LEFT SIDEBAR NAVIGATION (KEMBANG SELADANG DESIGN PATTERN) */}
-      <aside className={`bg-[#022416] text-white flex-shrink-0 flex flex-col justify-between border-r border-[#053D27] shadow-xl transition-all duration-300 ${
-        isSidebarOpen ? 'w-full md:w-64' : 'hidden md:flex md:w-[68px]'
+      {/* MOBILE BACKDROP OVERLAY */}
+      {isSidebarOpen && (
+        <div 
+          onClick={() => setIsSidebarOpen(false)}
+          className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-40 md:hidden animate-fade-in"
+          title="Tutup Menu Admin"
+        />
+      )}
+
+      {/* LEFT SIDEBAR NAVIGATION (SLIDE-OVER DRAWER ON MOBILE) */}
+      <aside className={`fixed md:static inset-y-0 left-0 z-50 bg-[#022416] text-white flex-shrink-0 flex flex-col justify-between border-r border-[#053D27] shadow-2xl md:shadow-xl transition-all duration-300 ${
+        isSidebarOpen ? 'w-64 translate-x-0' : '-translate-x-full md:translate-x-0 md:flex md:w-[68px]'
       }`}>
         
         <div className="p-3 space-y-4">
@@ -93,10 +110,20 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               className="w-9 h-9 shrink-0 rounded-xl object-cover border border-[#FFBF00]/40 shadow-md" 
             />
             {isSidebarOpen && (
-              <div className="flex flex-col justify-center min-w-0">
+              <div className="flex flex-col justify-center min-w-0 flex-1">
                 <h2 className="text-sm font-bold text-white leading-tight truncate">Tangsel Book Party</h2>
-                <p className="text-[10px] text-[#D0DF00] font-medium mt-0.5 truncate">Admin Panel</p>
+                <p className="text-[10px] text-[#D0DF00] font-medium mt-0.5 truncate">Caretaker Admin Panel</p>
               </div>
+            )}
+            {/* Mobile Close Button */}
+            {isSidebarOpen && (
+              <button
+                type="button"
+                onClick={() => setIsSidebarOpen(false)}
+                className="p-1 rounded-lg text-emerald-300 hover:text-white md:hidden"
+              >
+                ✕
+              </button>
             )}
           </div>
 
@@ -114,7 +141,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               )}
               
               <button
-                onClick={() => setActiveTab('requests')}
+                onClick={() => handleTabChange('requests')}
                 title="Permintaan Pinjam"
                 className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold transition-all ${
                   activeTab === 'requests'
@@ -136,7 +163,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               </button>
 
               <button
-                onClick={() => setActiveTab('active_loans')}
+                onClick={() => handleTabChange('active_loans')}
                 title="Pinjaman Aktif"
                 className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold transition-all ${
                   activeTab === 'active_loans'
@@ -156,7 +183,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               </button>
 
               <button
-                onClick={() => setActiveTab('queues')}
+                onClick={() => handleTabChange('queues')}
                 title="Antrean Reservasi"
                 className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold transition-all ${
                   activeTab === 'queues'
@@ -187,7 +214,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               )}
 
               <button
-                onClick={() => setActiveTab('inventory')}
+                onClick={() => handleTabChange('inventory')}
                 title="CMS Katalog Buku"
                 className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold transition-all ${
                   activeTab === 'inventory'
@@ -205,7 +232,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               </button>
 
               <button
-                onClick={() => setActiveTab('articles')}
+                onClick={() => handleTabChange('articles')}
                 title="CMS Artikel SEO"
                 className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold transition-all ${
                   activeTab === 'articles'
@@ -223,7 +250,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               </button>
 
               <button
-                onClick={() => setActiveTab('events')}
+                onClick={() => handleTabChange('events')}
                 title="CMS Acara Komunitas"
                 className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold transition-all ${
                   activeTab === 'events'
@@ -241,35 +268,35 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               </button>
             </div>
 
-            {/* UTILITIES */}
-            <div className="space-y-1 pt-2 border-t border-[#053D27]">
+            {/* QUICK ACTIONS */}
+            <div className="pt-2 border-t border-[#053D27]">
               <button
                 onClick={onOpenScanner}
                 title="Launch QR Scanner"
-                className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl font-bold text-emerald-200 hover:bg-[#053D27] hover:text-[#D0DF00] transition-colors ${
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-extrabold bg-[#053D27] text-[#D0DF00] border border-[#FFBF00]/30 hover:bg-[#FFBF00] hover:text-[#03321F] transition-all shadow-sm ${
                   !isSidebarOpen ? 'justify-center px-0' : ''
                 }`}
               >
                 <QrCode className="w-4 h-4 text-[#FFBF00] shrink-0" />
-                {isSidebarOpen && <span>Launch QR Scanner</span>}
+                {isSidebarOpen && <span className="truncate">Launch QR Scanner</span>}
               </button>
             </div>
 
           </nav>
         </div>
 
-        {/* Sidebar Footer Action */}
-        <div className="p-3 border-t border-[#053D27] bg-[#011a10]">
+        {/* Sidebar Footer / Exit Button */}
+        <div className="p-3 border-t border-[#053D27]">
           {onExitAdmin && (
             <button
               onClick={onExitAdmin}
-              title="Keluar dari Akun"
-              className={`w-full py-2.5 px-2 rounded-xl bg-rose-950/80 hover:bg-rose-900 text-rose-200 hover:text-white text-xs font-bold flex items-center justify-center gap-2 border border-rose-800/50 transition-colors cursor-pointer ${
-                !isSidebarOpen ? 'px-0' : ''
+              title="Keluar dari Caretaker Mode"
+              className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold bg-rose-950/80 text-rose-200 border border-rose-800/40 hover:bg-rose-900 hover:text-white transition-all ${
+                !isSidebarOpen ? 'justify-center px-0' : ''
               }`}
             >
               <LogOut className="w-4 h-4 shrink-0" />
-              {isSidebarOpen && <span>Keluar</span>}
+              {isSidebarOpen && <span>Keluar Caretaker</span>}
             </button>
           )}
         </div>
@@ -277,22 +304,22 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       </aside>
 
       {/* MAIN WORKSPACE CONTAINER */}
-      <main className="flex-1 min-w-0 flex flex-col">
+      <main className="flex-1 min-w-0 flex flex-col pb-20 md:pb-0">
         
         {/* KEMBANG SELADANG STYLE TOPBAR HEADER */}
-        <header className="bg-white border-b border-slate-200 px-4 sm:px-6 py-3 flex items-center justify-between gap-3 shadow-xs sticky top-0 z-30">
-          <div className="flex items-center gap-3 min-w-0">
+        <header className="bg-white border-b border-slate-200 px-3 sm:px-6 py-3 flex items-center justify-between gap-3 shadow-xs sticky top-0 z-30">
+          <div className="flex items-center gap-2.5 min-w-0">
             <button
               type="button"
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className="p-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-slate-200 transition-colors flex items-center gap-1.5 text-xs font-bold"
+              className="p-2 rounded-xl text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 transition-colors flex items-center gap-1.5 text-xs font-bold shrink-0"
               title={isSidebarOpen ? 'Sembunyikan Sidebar' : 'Tampilkan Sidebar'}
             >
               {isSidebarOpen ? <PanelLeftClose className="w-4 h-4" /> : <PanelLeftOpen className="w-4 h-4 text-[#053D27]" />}
-              <span className="hidden sm:inline">{isSidebarOpen ? 'Hide Nav' : 'Unhide Nav'}</span>
+              <span className="hidden sm:inline">{isSidebarOpen ? 'Hide Nav' : 'Menu'}</span>
             </button>
 
-            <h2 className="font-anton text-base sm:text-lg tracking-wide text-slate-800 uppercase truncate">
+            <h2 className="font-anton text-sm sm:text-lg tracking-wide text-slate-800 uppercase truncate">
               {activeTab === 'requests' && 'Operasional Permintaan Pinjam'}
               {activeTab === 'active_loans' && 'Manajemen Pinjaman Aktif'}
               {activeTab === 'queues' && 'Antrean Reservasi Buku'}
@@ -301,7 +328,88 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               {activeTab === 'events' && 'CMS Acara & Meetup Komunitas'}
             </h2>
           </div>
+
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={onOpenScanner}
+              className="px-3 py-1.5 bg-[#03321F] text-[#FFBF00] hover:bg-[#053D27] rounded-xl text-xs font-extrabold flex items-center gap-1.5 border border-[#FFBF00]/30 shadow-xs transition-all"
+            >
+              <QrCode className="w-3.5 h-3.5 text-[#FFBF00]" />
+              <span className="hidden sm:inline">Scan QR</span>
+            </button>
+          </div>
         </header>
+
+        {/* MOBILE HORIZONTAL SCROLL SUB-NAVBAR */}
+        <div className="md:hidden bg-[#022416] px-3 py-2 border-b border-[#053D27] flex items-center gap-2 overflow-x-auto whitespace-nowrap scrollbar-none sticky top-[53px] z-20 shadow-sm">
+          <button
+            onClick={() => handleTabChange('requests')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 shrink-0 transition-all ${
+              activeTab === 'requests' ? 'bg-[#FFBF00] text-[#03321F]' : 'bg-[#053D27] text-emerald-200'
+            }`}
+          >
+            <Clock className="w-3.5 h-3.5" />
+            <span>Permintaan</span>
+            {pendingRequests.length > 0 && (
+              <span className="px-1.5 py-0.2 rounded-full text-[9px] font-black bg-rose-500 text-white">
+                {pendingRequests.length}
+              </span>
+            )}
+          </button>
+
+          <button
+            onClick={() => handleTabChange('active_loans')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 shrink-0 transition-all ${
+              activeTab === 'active_loans' ? 'bg-[#FFBF00] text-[#03321F]' : 'bg-[#053D27] text-emerald-200'
+            }`}
+          >
+            <BookOpen className="w-3.5 h-3.5" />
+            <span>Pinjaman Aktif</span>
+            <span className="px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-[#022416] text-[#D0DF00]">
+              {activeLoans.length}
+            </span>
+          </button>
+
+          <button
+            onClick={() => handleTabChange('queues')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 shrink-0 transition-all ${
+              activeTab === 'queues' ? 'bg-[#FFBF00] text-[#03321F]' : 'bg-[#053D27] text-emerald-200'
+            }`}
+          >
+            <Users className="w-3.5 h-3.5" />
+            <span>Antrean</span>
+          </button>
+
+          <button
+            onClick={() => handleTabChange('inventory')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 shrink-0 transition-all ${
+              activeTab === 'inventory' ? 'bg-[#FFBF00] text-[#03321F]' : 'bg-[#053D27] text-emerald-200'
+            }`}
+          >
+            <BookOpen className="w-3.5 h-3.5 text-[#D0DF00]" />
+            <span>Katalog ({books.length})</span>
+          </button>
+
+          <button
+            onClick={() => handleTabChange('articles')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 shrink-0 transition-all ${
+              activeTab === 'articles' ? 'bg-[#FFBF00] text-[#03321F]' : 'bg-[#053D27] text-emerald-200'
+            }`}
+          >
+            <BookMarked className="w-3.5 h-3.5 text-[#D0DF00]" />
+            <span>Artikel ({articles.length})</span>
+          </button>
+
+          <button
+            onClick={() => handleTabChange('events')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 shrink-0 transition-all ${
+              activeTab === 'events' ? 'bg-[#FFBF00] text-[#03321F]' : 'bg-[#053D27] text-emerald-200'
+            }`}
+          >
+            <Calendar className="w-3.5 h-3.5 text-[#D0DF00]" />
+            <span>Acara ({events.length})</span>
+          </button>
+        </div>
 
         {/* WORKSPACE BODY */}
         <div className="p-4 sm:p-6 lg:p-8 space-y-5 flex-1">
@@ -947,6 +1055,19 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           )}
 
         </div>
+
+        {/* MOBILE FLOATING SCANNER BUTTON (FAB) */}
+        <div className="fixed bottom-5 right-5 z-40 md:hidden animate-bounce-subtle">
+          <button
+            onClick={onOpenScanner}
+            className="flex items-center gap-2 px-4 py-3 bg-[#03321F] text-[#FFBF00] rounded-full shadow-2xl border-2 border-[#FFBF00] font-extrabold text-xs active:scale-95 transition-all"
+            title="Buka QR Scanner"
+          >
+            <QrCode className="w-5 h-5 text-[#FFBF00]" />
+            <span>Scan QR</span>
+          </button>
+        </div>
+
       </main>
     </div>
   );
