@@ -235,14 +235,6 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <span>Masuk</span>
               </button>
             )}
-
-            <button
-              onClick={onOpenScanner}
-              title="Scan QR Code Buku"
-              className="p-1.5 rounded-xl bg-[#03321F] text-[#FFBF00] border border-[#FFBF00]/30 cursor-pointer"
-            >
-              <QrCode className="w-4 h-4" />
-            </button>
           </div>
 
         </div>
