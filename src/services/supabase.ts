@@ -92,6 +92,32 @@ export async function authenticateUser(identifier: string, password: string): Pr
 
       if (!error && data) {
         dbAccountFound = data;
+      } else {
+        // Try Supabase Auth signIn if record in members table is missing
+        const { data: authResult, error: signInError } = await supabase.auth.signInWithPassword({
+          email: cleanId,
+          password: cleanPass
+        });
+
+        if (!signInError && authResult.user) {
+          const authUser = authResult.user;
+          const loggedMember: Member = {
+            id: authUser.id,
+            name: authUser.user_metadata?.name || authUser.email?.split('@')[0] || 'Member',
+            email: authUser.email || cleanId,
+            phone: authUser.user_metadata?.phone || '',
+            avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(authUser.email || 'User')}`,
+            joinedDate: 'Agustus 2026',
+            role: 'member',
+            wishlist: []
+          };
+
+          return {
+            success: true,
+            member: loggedMember,
+            targetTab: 'profile'
+          };
+        }
       }
     } catch (e) {
       console.warn('Supabase query error, checking fallback accounts:', e);
@@ -208,11 +234,12 @@ export async function registerUser(params: {
   message?: string;
 }> {
   const { name, email, phone, password } = params;
+  const cleanEmail = email.trim().toLowerCase();
 
   const newMember: Member = {
     id: `usr_${Date.now()}`,
     name,
-    email: email.trim().toLowerCase(),
+    email: cleanEmail,
     phone: phone.startsWith('+62') ? phone : `+62${phone.replace(/^0/, '')}`,
     avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(name)}`,
     joinedDate: 'Agustus 2026',
@@ -220,15 +247,62 @@ export async function registerUser(params: {
     wishlist: []
   };
 
-  // Always save locally first so user account is immediately recognized
+  // 1. Save locally so offline fallback works seamlessly
   saveLocalRegisteredUser({ ...newMember, password_hash: password });
 
-  // Try Supabase DB insert if client is active
+  // 2. Try Supabase Auth and Database persistence if Supabase client is configured
   if (supabase) {
     try {
-      const { error } = await supabase.from('members').insert([
+      // Check if email already exists in members database table
+      const { data: existingDbUser } = await supabase
+        .from('members')
+        .select('id, email')
+        .eq('email', cleanEmail)
+        .maybeSingle();
+
+      if (existingDbUser) {
+        return {
+          success: false,
+          targetTab: 'profile',
+          message: 'Email ini sudah terdaftar. Silakan gunakan email lain atau langsung masuk.'
+        };
+      }
+
+      // Create Auth User in Supabase Authentication -> Users table
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: cleanEmail,
+        password: password,
+        options: {
+          data: {
+            name: newMember.name,
+            phone: newMember.phone
+          }
+        }
+      });
+
+      if (authError) {
+        if (
+          authError.message.toLowerCase().includes('already registered') ||
+          authError.message.toLowerCase().includes('already exists') ||
+          authError.status === 400
+        ) {
+          return {
+            success: false,
+            targetTab: 'profile',
+            message: 'Email ini sudah terdaftar. Silakan gunakan email lain atau langsung masuk.'
+          };
+        }
+        console.warn('Supabase Auth signUp warning:', authError.message);
+      }
+
+      // Assign Supabase Auth UID if available
+      const assignedId = authData?.user?.id || newMember.id;
+      newMember.id = assignedId;
+
+      // Upsert record into public.members database table
+      const { error: dbError } = await supabase.from('members').upsert([
         {
-          id: newMember.id,
+          id: assignedId,
           name: newMember.name,
           email: newMember.email,
           phone: newMember.phone,
@@ -237,24 +311,20 @@ export async function registerUser(params: {
           joined_date: newMember.joinedDate,
           wishlist: []
         }
-      ]);
+      ], { onConflict: 'email' });
 
-      if (error) {
-        // Handle Duplicate Email
-        if (error.code === '23505' || error.message.includes('unique constraint') || error.message.includes('already exists')) {
+      if (dbError) {
+        if (dbError.code === '23505' || dbError.message.includes('unique constraint') || dbError.message.includes('already exists')) {
           return {
             success: false,
             targetTab: 'profile',
             message: 'Email ini sudah terdaftar. Silakan gunakan email lain atau langsung masuk.'
           };
         }
-
-        if (error.message.includes('row-level security') || error.code === '42501') {
-          console.warn('Supabase RLS policy detected on table members. Registered locally.', error);
-        }
+        console.warn('Supabase members database upsert warning:', dbError.message);
       }
     } catch (e: any) {
-      console.warn('Database error during registration, defaulting to local session:', e);
+      console.warn('Database error during registration:', e);
     }
   }
 
