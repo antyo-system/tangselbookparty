@@ -1,4 +1,10 @@
 import type { Book, BorrowRequest, ReservationQueueItem, BookReview, Member, CommunityEvent, Article } from '../types';
+import {
+  upsertBookToSupabase, deleteBookFromSupabase,
+  upsertRequestToSupabase,
+  upsertEventToSupabase, deleteEventFromSupabase,
+  upsertArticleToSupabase, deleteArticleFromSupabase
+} from './supabase';
 
 const INITIAL_BOOKS: Book[] = [
   {
@@ -12,7 +18,9 @@ const INITIAL_BOOKS: Book[] = [
     favoriteQuote: 'Anda tidak naik ke tingkat tujuan Anda. Anda jatuh ke tingkat sistem Anda.',
     quoteSpeaker: 'James Clear',
     status: 'borrowed',
-    ownerName: 'Fian (Bintaro)',
+    ownerId: 'usr_admin_01',
+    ownerName: 'Fian',
+    ownerLocation: 'Bintaro',
     shelfLocation: 'Rak A-01 (Markas Bintaro)',
     pageCount: 320,
     publishYear: 2018,
@@ -21,15 +29,7 @@ const INITIAL_BOOKS: Book[] = [
     reviewsCount: 18,
     currentBorrower: 'Budi Santoso',
     currentDueDate: '2026-08-10',
-    queueCount: 2,
-    readingTimeHours: 5.2,
-    communityRecommendationScore: 98,
-    whyReadOptions: [
-      'Kerangka kerja teruji: Pelajari bagaimana perbaikan 1% setiap hari terakumulasi menjadi hasil besar.',
-      'Strategi praktis: 4 Hukum Perubahan Kebiasaan (Jadikan terlihat, menarik, mudah, & memuaskan).',
-      'Favorit Komunitas: Buku terfavorit pilihan anggota Tangsel Book Party 2 tahun berturut-turut.'
-    ],
-    ratingDistribution: { star5: 85, star4: 12, star3: 3, star2: 0, star1: 0 }
+    queueCount: 2
   },
   {
     id: 'TBP-BOOK-002',
@@ -42,22 +42,16 @@ const INITIAL_BOOKS: Book[] = [
     favoriteQuote: 'Beberapa hal berada di bawah kendali kita, sedangkan hal-hal lain tidak.',
     quoteSpeaker: 'Epictetus / Henry M.',
     status: 'available',
-    ownerName: 'Sarah (BSD)',
+    ownerId: 'usr_member_01',
+    ownerName: 'Budi Santoso',
+    ownerLocation: 'BSD',
     shelfLocation: 'Rak A-04 (Taman Kota 1 BSD)',
     pageCount: 346,
     publishYear: 2019,
     language: 'Bahasa Indonesia',
     rating: 4.8,
     reviewsCount: 24,
-    queueCount: 0,
-    readingTimeHours: 4.8,
-    communityRecommendationScore: 95,
-    whyReadOptions: [
-      'Stoisisme lokal: Menjelaskan filsafat Yunani-Romawi kuno dengan gaya bahasa santai khas generasi muda Tangsel.',
-      'Dikotomi Kendali: Mengajarkan cara membedakan hal yang bisa kita atur vs hal di luar kendali kita.',
-      'Anti Overthinking: Panduan praktis mengatasi kecemasan era sosial media.'
-    ],
-    ratingDistribution: { star5: 78, star4: 18, star3: 4, star2: 0, star1: 0 }
+    queueCount: 0
   },
   {
     id: 'TBP-BOOK-003',
@@ -70,22 +64,16 @@ const INITIAL_BOOKS: Book[] = [
     favoriteQuote: 'Menghabiskan uang untuk menunjukkan kepada orang lain seberapa banyak uang yang Anda miliki adalah cara tercepat untuk memiliki lebih sedikit uang.',
     quoteSpeaker: 'Morgan Housel',
     status: 'available',
-    ownerName: 'Nadia (Pamulang)',
+    ownerId: 'usr_member_02',
+    ownerName: 'Nadia',
+    ownerLocation: 'Pamulang',
     shelfLocation: 'Rak B-02 (Alun-Alun Pamulang)',
     pageCount: 256,
     publishYear: 2020,
     language: 'Bahasa Indonesia',
     rating: 4.9,
     reviewsCount: 15,
-    queueCount: 0,
-    readingTimeHours: 4.0,
-    communityRecommendationScore: 97,
-    whyReadOptions: [
-      'Psikologi keuangan: Membahas bagaimana emosi mengatur kebebasan finansial melebihi rumus matematika.',
-      '19 cerita pendek: Sangat mudah dicerna dalam sesi membaca santai 15 menit per hari.',
-      'Perspektif jangka panjang: Mengajarkan kesabaran, kebebasan, dan manajemen risiko.'
-    ],
-    ratingDistribution: { star5: 82, star4: 15, star3: 3, star2: 0, star1: 0 }
+    queueCount: 0
   },
   {
     id: 'TBP-BOOK-004',
@@ -98,7 +86,9 @@ const INITIAL_BOOKS: Book[] = [
     favoriteQuote: 'Dunia ini adalah petualangan besar bagi mereka yang berani melangkah.',
     quoteSpeaker: 'Tere Liye',
     status: 'borrowed',
-    ownerName: 'Rian (Ciputat)',
+    ownerId: 'usr_member_03',
+    ownerName: 'Rian',
+    ownerLocation: 'Ciputat',
     shelfLocation: 'Rak F-01 (Taman Bintaro Sector 7)',
     pageCount: 440,
     publishYear: 2014,
@@ -107,15 +97,7 @@ const INITIAL_BOOKS: Book[] = [
     reviewsCount: 30,
     currentBorrower: 'Dewi Lestari',
     currentDueDate: '2026-08-04',
-    queueCount: 1,
-    readingTimeHours: 6.5,
-    communityRecommendationScore: 94,
-    whyReadOptions: [
-      'Serial Dunia Paralel pertama: Pembuka kisah imajinatif legendaris karya Tere Liye.',
-      'Karakter relatable: Persahabatan Raib, Seli, dan Ali yang menghibur dan penuh kejutan.',
-      'World-building magis: Dunia Bulan, Matahari, dan Bintang yang kaya akan fantasi.'
-    ],
-    ratingDistribution: { star5: 75, star4: 20, star3: 5, star2: 0, star1: 0 }
+    queueCount: 1
   },
   {
     id: 'TBP-BOOK-005',
@@ -128,22 +110,16 @@ const INITIAL_BOOKS: Book[] = [
     favoriteQuote: 'Bermimpilah, karena Tuhan akan memeluk mimpi-mimpimu.',
     quoteSpeaker: 'Andrea Hirata',
     status: 'available',
+    ownerId: 'usr_admin_01',
     ownerName: 'Komunitas Tangsel',
+    ownerLocation: 'Bintaro Hub',
     shelfLocation: 'Rak F-03 (Bintaro Creative Hub)',
     pageCount: 529,
     publishYear: 2005,
     language: 'Bahasa Indonesia',
     rating: 4.9,
     reviewsCount: 42,
-    queueCount: 0,
-    readingTimeHours: 7.2,
-    communityRecommendationScore: 99,
-    whyReadOptions: [
-      'Inspiratif & Emosional: Perjuangan menguras air mata dan membakar semangat belajar.',
-      'Masterpiece Indonesia: Novel paling berpengaruh yang telah diterjemahkan ke 40+ bahasa dunia.',
-      'Karakter Lintang & Mahar: Pembukti bahwa kemauan mengalahkan segala keterbatasan.'
-    ],
-    ratingDistribution: { star5: 90, star4: 8, star3: 2, star2: 0, star1: 0 }
+    queueCount: 0
   },
   {
     id: 'TBP-BOOK-006',
@@ -156,22 +132,16 @@ const INITIAL_BOOKS: Book[] = [
     favoriteQuote: 'Konsistensi adalah tempat bermain bagi pikiran yang membosankan.',
     quoteSpeaker: 'Yuval Harari',
     status: 'available',
-    ownerName: 'Arif (Serpong)',
+    ownerId: 'usr_member_04',
+    ownerName: 'Arif',
+    ownerLocation: 'Serpong',
     shelfLocation: 'Rak NF-02 (Taman Kota 1 BSD)',
     pageCount: 443,
     publishYear: 2014,
     language: 'Bahasa Indonesia',
     rating: 4.8,
     reviewsCount: 20,
-    queueCount: 0,
-    readingTimeHours: 6.8,
-    communityRecommendationScore: 96,
-    whyReadOptions: [
-      'Perspektif Sejarah Besar: Pandangan menyeluruh tentang Revolusi Kognitif, Pertanian, dan Sains.',
-      'Wawasan Mendalam: Menjelaskan bagaimana mitos bersama (uang, agama, korporasi) menyatukan miliaran manusia.',
-      'Bestseller Global: Buku wajib untuk memahami masyarakat modern.'
-    ],
-    ratingDistribution: { star5: 80, star4: 15, star3: 5, star2: 0, star1: 0 }
+    queueCount: 0
   }
 ];
 
@@ -181,7 +151,8 @@ const INITIAL_REQUESTS: BorrowRequest[] = [
     bookId: 'TBP-BOOK-001',
     bookTitle: 'Atomic Habits',
     bookCover: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80',
-    userId: 'USER-01',
+    ownerId: 'usr_admin_01',
+    userId: 'usr_member_01',
     userName: 'Budi Santoso',
     userPhone: '+6281234567890',
     requestDate: '2026-07-27',
@@ -196,6 +167,7 @@ const INITIAL_REQUESTS: BorrowRequest[] = [
     bookId: 'TBP-BOOK-004',
     bookTitle: 'Bumi',
     bookCover: 'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?auto=format&fit=crop&w=600&q=80',
+    ownerId: 'usr_member_03',
     userId: 'USER-02',
     userName: 'Dewi Lestari',
     userPhone: '+6281987654321',
@@ -346,13 +318,13 @@ export const GUEST_MEMBER: Member = {
 };
 
 const KEYS = {
-  BOOKS: 'tbp_books_v5',
-  REQUESTS: 'tbp_requests_v5',
-  QUEUES: 'tbp_queues_v5',
-  REVIEWS: 'tbp_reviews_v5',
+  BOOKS: 'tbp_books_v6',
+  REQUESTS: 'tbp_requests_v6',
+  QUEUES: 'tbp_queues_v6',
+  REVIEWS: 'tbp_reviews_v6',
   MEMBER: 'tbp_member_v7',
-  EVENTS: 'tbp_events_v5',
-  ARTICLES: 'tbp_articles_v5'
+  EVENTS: 'tbp_events_v6',
+  ARTICLES: 'tbp_articles_v6'
 };
 
 export const StorageService = {
@@ -367,6 +339,11 @@ export const StorageService = {
 
   saveBooks(books: Book[]): void {
     localStorage.setItem(KEYS.BOOKS, JSON.stringify(books));
+    books.forEach((b) => upsertBookToSupabase(b));
+  },
+
+  deleteBook(bookId: string): void {
+    deleteBookFromSupabase(bookId);
   },
 
   getRequests(): BorrowRequest[] {
@@ -380,6 +357,7 @@ export const StorageService = {
 
   saveRequests(requests: BorrowRequest[]): void {
     localStorage.setItem(KEYS.REQUESTS, JSON.stringify(requests));
+    requests.forEach((r) => upsertRequestToSupabase(r));
   },
 
   getQueues(): ReservationQueueItem[] {
@@ -436,6 +414,11 @@ export const StorageService = {
 
   saveEvents(events: CommunityEvent[]): void {
     localStorage.setItem(KEYS.EVENTS, JSON.stringify(events));
+    events.forEach((evt) => upsertEventToSupabase(evt));
+  },
+
+  deleteEvent(eventId: string): void {
+    deleteEventFromSupabase(eventId);
   },
 
   getArticles(): Article[] {
@@ -449,6 +432,11 @@ export const StorageService = {
 
   saveArticles(articles: Article[]): void {
     localStorage.setItem(KEYS.ARTICLES, JSON.stringify(articles));
+    articles.forEach((art) => upsertArticleToSupabase(art));
+  },
+
+  deleteArticle(articleId: string): void {
+    deleteArticleFromSupabase(articleId);
   },
 
   resetToDefault(): void {

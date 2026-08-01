@@ -2,7 +2,6 @@ export type BookStatus = 'available' | 'borrowed' | 'reserved';
 export type HandoverMethod = 'meetup' | 'courier';
 export type RequestStatus = 'pending' | 'approved' | 'rejected' | 'borrowed' | 'returned' | 'overdue';
 export type QueueStatus = 'waiting' | 'ready_for_pickup' | 'fulfilled' | 'cancelled';
-export type BookConditionGrade = 'new' | 'like_new' | 'good' | 'worn';
 
 export interface BookReview {
   id: string;
@@ -25,41 +24,20 @@ export interface Book {
   favoriteQuote?: string;
   quoteSpeaker?: string;
   status: BookStatus;
+  ownerId?: string; // ID of member who owns this book ('usr_admin_01' for community books or member ID)
   ownerName: string;
-  shelfLocation: string; // e.g. "Rack A-04 (Markas BSD)"
+  ownerLocation?: string; // e.g. "Bintaro", "BSD", "Pamulang"
+  shelfLocation: string; // e.g. "Rak A-04 (Markas BSD)"
   pageCount: number;
   publishYear: number;
   language: string;
   rating: number;
   reviewsCount: number;
   currentBorrower?: string;
+  currentBorrowerId?: string;
   currentDueDate?: string; // ISO date string
   queueCount: number; // how many people are in reservation queue
-
-  // ERP Physical Asset Management
-  sku?: string; // e.g. TBP-BK-2026-001
-  conditionGrade?: BookConditionGrade;
-  replacementCost?: number; // In IDR
   allowedHandoverMethods?: HandoverMethod[];
-  catalogHealthScore?: number; // 0 - 100
-  updatedAt?: string;
-  updatedBy?: string;
-
-  // Google Play Books, Kindle & Goodreads Inspired Enhancements
-  whyReadOptions?: string[]; // "Why Read This Book" reasons
-  readingTimeHours?: number; // Estimated Kindle reading time in hours
-  communityRecommendationScore?: number; // e.g. 96 (% recommend)
-  ratingDistribution?: {
-    star5: number;
-    star4: number;
-    star3: number;
-    star2: number;
-    star1: number;
-  };
-  sampleChapter?: {
-    chapterTitle: string;
-    excerpt: string;
-  };
 }
 
 export interface ReservationQueueItem {
@@ -81,6 +59,7 @@ export interface BorrowRequest {
   bookId: string;
   bookTitle: string;
   bookCover: string;
+  ownerId?: string; // ID of book owner
   userId: string;
   userName: string;
   userPhone: string;
@@ -91,6 +70,7 @@ export interface BorrowRequest {
   handoverMethod: HandoverMethod;
   status: RequestStatus;
   notes?: string;
+  approvedBy?: 'owner' | 'admin';
 }
 
 export interface Member {
@@ -104,10 +84,6 @@ export interface Member {
   wishlist: string[]; // book IDs
 }
 
-export interface EventStatus {
-  status: 'draft' | 'registration_open' | 'fully_booked' | 'ongoing' | 'completed' | 'cancelled';
-}
-
 export interface CommunityEvent {
   id: string;
   title: string;
@@ -116,39 +92,6 @@ export interface CommunityEvent {
   description: string;
   image: string;
   attendeesCount: number;
-
-  // ERP Event Operations
-  eventCode?: string; // e.g. EVT-2026-0801
-  eventType?: 'Read & Chill' | 'Book Swap' | 'Author Talk' | 'Workshop' | 'Gathering';
-  startTime?: string; // e.g. "14:00"
-  endTime?: string; // e.g. "17:00"
-  venueAddress?: string;
-  googleMapsUrl?: string;
-  maxCapacity?: number;
-  ticketPrice?: number; // 0 for Free
-  registrationDeadline?: string;
-  hostCaretakerName?: string;
-  requiredBookTheme?: string;
-  status?: 'draft' | 'registration_open' | 'fully_booked' | 'ongoing' | 'completed' | 'cancelled';
-  readinessScore?: number; // 0 - 100
-  updatedAt?: string;
-}
-
-export interface SEOMetadata {
-  metaTitle: string;
-  metaDescription: string;
-  focusKeyword: string;
-  secondaryKeywords?: string[];
-  canonicalUrl?: string;
-  ogImageAlt?: string;
-  noIndex?: boolean;
-}
-
-export interface SEOCheckItem {
-  rule: string;
-  passed: boolean;
-  points: number;
-  suggestion: string;
 }
 
 export interface Article {
@@ -165,13 +108,4 @@ export interface Article {
   publishedDate: string;
   coverImage: string;
   views: number;
-
-  // ERP SEO Engine Enhancements
-  seo?: SEOMetadata;
-  seoScore?: number; // Live SEO score 0-100
-  seoChecklist?: SEOCheckItem[];
-  relatedBookIds?: string[]; // Linked books from Catalog
-  status?: 'draft' | 'seo_review' | 'scheduled' | 'published' | 'archived';
-  updatedAt?: string;
 }
-

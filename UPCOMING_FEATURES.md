@@ -29,6 +29,6 @@ These features are queued for future iteration to keep the initial UI lightweigh
 ---
 
 ## 🛡️ Phase 3: Separate Admin Application / Portal (Upcoming)
-- [ ] **Dedicated Caretaker App**: Separate admin repository/dashboard with staff auth login.
+- [ ] **Dedicated Admin App**: Separate admin repository/dashboard with staff auth login.
 - [ ] **Hardware QR Scanner Integration**: Native bluetooth/USB barcode reader support for event check-in desks.
 - [ ] **Automated WhatsApp Business Bot**: Direct API integration for sending H-2 due date reminders.

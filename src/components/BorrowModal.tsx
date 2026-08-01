@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { X, MapPin, Truck, Clock, Users, CheckCircle2 } from 'lucide-react';
-import confetti from 'canvas-confetti';
 import type { Book, HandoverMethod, Member } from '../types';
 
 interface BorrowModalProps {
@@ -47,14 +46,6 @@ export const BorrowModal: React.FC<BorrowModalProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
-    try {
-      confetti({
-        particleCount: 80,
-        spread: 60,
-        origin: { y: 0.6 }
-      });
-    } catch {}
 
     if (isAvailable) {
       onSubmitBorrow(book.id, durationDays, handoverMethod, notes);

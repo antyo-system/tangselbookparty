@@ -1,5 +1,5 @@
 -- ========================================================
--- TANGSEL BOOK PARTY — SUPABASE DATABASE SCHEMA
+-- TANGSEL BOOK PARTY — SUPABASE DATABASE SCHEMA (PRD v1.1)
 -- Copy and paste this script directly into Supabase SQL Editor
 -- ========================================================
 
@@ -10,13 +10,14 @@ CREATE TABLE IF NOT EXISTS public.members (
     email TEXT UNIQUE NOT NULL,
     phone TEXT,
     password_hash TEXT NOT NULL,
+    avatar TEXT,
     role TEXT NOT NULL DEFAULT 'member', -- 'member' or 'admin'
     joined_date TEXT NOT NULL,
     wishlist TEXT[] DEFAULT '{}',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- 2. BOOKS INVENTORY TABLE
+-- 2. BOOKS INVENTORY TABLE (Peer-to-Peer Community Library)
 CREATE TABLE IF NOT EXISTS public.books (
     id TEXT PRIMARY KEY,
     title TEXT NOT NULL,
@@ -27,8 +28,10 @@ CREATE TABLE IF NOT EXISTS public.books (
     synopsis TEXT,
     favorite_quote TEXT,
     quote_speaker TEXT,
-    status TEXT NOT NULL DEFAULT 'available', -- 'available' or 'borrowed'
+    status TEXT NOT NULL DEFAULT 'available', -- 'available', 'borrowed', 'reserved', 'delisted'
+    owner_id TEXT REFERENCES public.members(id) ON DELETE SET NULL, -- Owner of book (Admin or Member)
     owner_name TEXT NOT NULL,
+    owner_location TEXT, -- e.g. "Bintaro", "BSD", "Pamulang"
     shelf_location TEXT NOT NULL,
     page_count INT DEFAULT 250,
     publish_year INT DEFAULT 2024,
@@ -36,11 +39,10 @@ CREATE TABLE IF NOT EXISTS public.books (
     rating NUMERIC(3,2) DEFAULT 4.8,
     reviews_count INT DEFAULT 0,
     current_borrower TEXT,
+    current_borrower_id TEXT REFERENCES public.members(id) ON DELETE SET NULL,
     current_due_date TEXT,
     queue_count INT DEFAULT 0,
-    reading_time_hours NUMERIC(3,1) DEFAULT 4.0,
-    community_recommendation_score INT DEFAULT 95,
-    why_read_options TEXT[] DEFAULT '{}',
+    allowed_handover TEXT[] DEFAULT '{"meetup"}',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
@@ -50,25 +52,57 @@ CREATE TABLE IF NOT EXISTS public.borrow_requests (
     book_id TEXT REFERENCES public.books(id) ON DELETE CASCADE,
     book_title TEXT NOT NULL,
     book_cover TEXT,
+    owner_id TEXT REFERENCES public.members(id) ON DELETE SET NULL, -- ID of book owner
+    user_id TEXT REFERENCES public.members(id) ON DELETE SET NULL, -- ID of borrower
     user_name TEXT NOT NULL,
     user_phone TEXT NOT NULL,
     request_date TEXT NOT NULL,
-    status TEXT NOT NULL DEFAULT 'pending', -- 'pending', 'approved', 'rejected', 'returned'
     duration_days INT DEFAULT 14,
-    handover_method TEXT NOT NULL DEFAULT 'cod',
     due_date TEXT,
+    return_date TEXT,
+    handover_method TEXT NOT NULL DEFAULT 'meetup', -- 'meetup' or 'courier'
+    status TEXT NOT NULL DEFAULT 'pending', -- 'pending', 'approved', 'rejected', 'borrowed', 'returned'
+    notes TEXT,
+    approved_by TEXT, -- 'owner' or 'admin'
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- 4. COMMUNITY EVENTS TABLE
+-- 4. RESERVATION QUEUES TABLE
+CREATE TABLE IF NOT EXISTS public.reservation_queues (
+    id TEXT PRIMARY KEY,
+    book_id TEXT REFERENCES public.books(id) ON DELETE CASCADE,
+    book_title TEXT,
+    user_id TEXT REFERENCES public.members(id) ON DELETE CASCADE,
+    user_name TEXT,
+    user_phone TEXT,
+    queue_position INT NOT NULL DEFAULT 1,
+    duration_days INT DEFAULT 14,
+    requested_at TEXT NOT NULL,
+    estimated_available_date TEXT,
+    status TEXT NOT NULL DEFAULT 'waiting', -- 'waiting', 'ready_for_pickup', 'fulfilled', 'cancelled'
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- 5. BOOK REVIEWS TABLE
+CREATE TABLE IF NOT EXISTS public.book_reviews (
+    id TEXT PRIMARY KEY,
+    book_id TEXT REFERENCES public.books(id) ON DELETE CASCADE,
+    user_name TEXT NOT NULL,
+    user_avatar TEXT,
+    rating INT NOT NULL DEFAULT 5,
+    comment TEXT NOT NULL,
+    created_at TEXT NOT NULL
+);
+
+-- 6. COMMUNITY EVENTS TABLE
 CREATE TABLE IF NOT EXISTS public.events (
     id TEXT PRIMARY KEY,
     title TEXT NOT NULL,
     date TEXT NOT NULL,
-    time TEXT NOT NULL,
+    time TEXT,
     location TEXT NOT NULL,
     description TEXT NOT NULL,
-    organizer TEXT NOT NULL,
+    organizer TEXT DEFAULT 'Tangsel Book Party',
     attendees_count INT DEFAULT 0,
     max_capacity INT DEFAULT 30,
     image_url TEXT,
@@ -77,7 +111,7 @@ CREATE TABLE IF NOT EXISTS public.events (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- 5. ARTICLES & SEO BLOG POSTS TABLE
+-- 7. ARTICLES & SEO BLOG POSTS TABLE
 CREATE TABLE IF NOT EXISTS public.articles (
     id TEXT PRIMARY KEY,
     title TEXT NOT NULL,
@@ -85,7 +119,7 @@ CREATE TABLE IF NOT EXISTS public.articles (
     excerpt TEXT NOT NULL,
     content TEXT NOT NULL,
     author TEXT NOT NULL,
-    author_role TEXT DEFAULT 'Caretaker TBP',
+    author_role TEXT DEFAULT 'Admin TBP',
     category TEXT NOT NULL,
     tags TEXT[] DEFAULT '{}',
     cover_image TEXT NOT NULL,
@@ -97,16 +131,18 @@ CREATE TABLE IF NOT EXISTS public.articles (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- Disable RLS initially for seamless API access or create public read/write policies
+-- Disable RLS initially for seamless API access (Policy configuration handled in P4.3)
 ALTER TABLE public.members DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.books DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.borrow_requests DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.reservation_queues DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.book_reviews DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.events DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.articles DISABLE ROW LEVEL SECURITY;
 
--- SEED INITIAL SYSTEM ACCOUNTS
-INSERT INTO public.members (id, name, email, phone, password_hash, role, joined_date)
+-- SEED INITIAL SYSTEM ACCOUNTS (Admin Caretaker & Sample Member)
+INSERT INTO public.members (id, name, email, phone, password_hash, avatar, role, joined_date)
 VALUES 
-  ('usr_admin_01', 'Fian Caretaker', 'admin@tangselbookparty.org', '+6281234567890', 'admin123', 'admin', 'Desember 2024'),
-  ('usr_member_01', 'Budi Santoso', 'budi@tangselbookparty.org', '+6281234567890', 'user123', 'member', 'Januari 2025')
+  ('usr_admin_01', 'Fian Admin', 'admin@tangselbookparty.org', '+6281234567890', 'admin123', 'https://api.dicebear.com/7.x/avataaars/svg?seed=FianAdmin', 'admin', 'Desember 2024'),
+  ('usr_member_01', 'Budi Santoso', 'budi@tangselbookparty.org', '+6281234567890', 'user123', 'https://api.dicebear.com/7.x/avataaars/svg?seed=BudiMember', 'member', 'Januari 2025')
 ON CONFLICT (email) DO NOTHING;

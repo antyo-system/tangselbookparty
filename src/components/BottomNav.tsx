@@ -3,8 +3,8 @@ import { BookOpen, Calendar, User, QrCode, BookMarked } from 'lucide-react';
 import type { Member } from '../types';
 
 interface BottomNavProps {
-  activeTab: 'catalog' | 'events' | 'articles' | 'profile' | 'admin';
-  setActiveTab: (tab: 'catalog' | 'events' | 'articles' | 'profile' | 'admin') => void;
+  activeTab: 'catalog' | 'events' | 'articles' | 'profile' | 'admin' | 'login';
+  setActiveTab: (tab: 'catalog' | 'events' | 'articles' | 'profile' | 'admin' | 'login') => void;
   member: Member;
   onOpenScanner: () => void;
 }

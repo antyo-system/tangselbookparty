@@ -1,19 +1,20 @@
 import { useState, useEffect } from 'react';
 import type { Book, BorrowRequest, ReservationQueueItem, BookReview, Member, CommunityEvent, HandoverMethod, Article } from './types';
 import { StorageService, GUEST_MEMBER } from './services/storage';
+import { fetchBooksFromSupabase, fetchRequestsFromSupabase, fetchEventsFromSupabase, fetchArticlesFromSupabase } from './services/supabase';
 import { Navbar } from './components/Navbar';
 import { CatalogPage } from './pages/CatalogPage';
 import { EventsPage } from './pages/EventsPage';
 import { ArticlesPage } from './pages/ArticlesPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { AdminDashboard } from './pages/AdminDashboard';
+import { LoginPage } from './pages/LoginPage';
 import { BookDetailModal } from './components/BookDetailModal';
 import { BorrowModal } from './components/BorrowModal';
 import { QRModal } from './components/QRModal';
 import { QRScannerModal } from './components/QRScannerModal';
 import { WhatsAppReminderModal } from './components/WhatsAppReminderModal';
 import { AddBookModal } from './components/AddBookModal';
-import { LoginModal } from './components/LoginModal';
 import { Footer } from './components/Footer';
 import { BottomNav } from './components/BottomNav';
 
@@ -28,7 +29,7 @@ export function App() {
   const [articles, setArticles] = useState<Article[]>([]);
 
   // Navigation & UI state
-  const [activeTab, setActiveTab] = useState<'catalog' | 'events' | 'articles' | 'profile' | 'admin'>('catalog');
+  const [activeTab, setActiveTab] = useState<'catalog' | 'events' | 'articles' | 'profile' | 'admin' | 'login'>('catalog');
   const [searchQuery, setSearchQuery] = useState('');
 
   // Modal States
@@ -37,20 +38,49 @@ export function App() {
   const [qrModalBook, setQrModalBook] = useState<Book | null>(null);
   const [showScanner, setShowScanner] = useState(false);
   const [showAddBook, setShowAddBook] = useState(false);
-  const [showLoginModal, setShowLoginModal] = useState(false);
   const [waReminderData, setWaReminderData] = useState<{
     request: BorrowRequest;
     type: 'due_soon' | 'overdue' | 'approval';
   } | null>(null);
 
-  // Initial Load from Storage
+  // Initial Load from Storage & Supabase Sync
   useEffect(() => {
+    // 1. Instant local load
     setBooks(StorageService.getBooks());
     setRequests(StorageService.getRequests());
     setQueues(StorageService.getQueues());
     setReviews(StorageService.getReviews());
     setEvents(StorageService.getEvents());
     setArticles(StorageService.getArticles());
+
+    // 2. Async Supabase Sync (if configured)
+    async function syncSupabaseData() {
+      const [remoteBooks, remoteRequests, remoteEvents, remoteArticles] = await Promise.all([
+        fetchBooksFromSupabase(),
+        fetchRequestsFromSupabase(),
+        fetchEventsFromSupabase(),
+        fetchArticlesFromSupabase()
+      ]);
+
+      if (remoteBooks && remoteBooks.length > 0) {
+        setBooks(remoteBooks);
+        StorageService.saveBooks(remoteBooks);
+      }
+      if (remoteRequests && remoteRequests.length > 0) {
+        setRequests(remoteRequests);
+        StorageService.saveRequests(remoteRequests);
+      }
+      if (remoteEvents && remoteEvents.length > 0) {
+        setEvents(remoteEvents);
+        StorageService.saveEvents(remoteEvents);
+      }
+      if (remoteArticles && remoteArticles.length > 0) {
+        setArticles(remoteArticles);
+        StorageService.saveArticles(remoteArticles);
+      }
+    }
+
+    syncSupabaseData();
   }, []);
 
   // Save changes helper
@@ -99,6 +129,7 @@ export function App() {
       bookId: targetBook.id,
       bookTitle: targetBook.title,
       bookCover: targetBook.coverImage,
+      ownerId: targetBook.ownerId,
       userId: member.id,
       userName: member.name,
       userPhone: member.phone,
@@ -156,7 +187,7 @@ export function App() {
     if (!targetReq) return;
 
     const updatedRequests = requests.map((r) =>
-      r.id === requestId ? { ...r, status: 'borrowed' as const } : r
+      r.id === requestId ? { ...r, status: 'borrowed' as const, approvedBy: 'admin' as const } : r
     );
 
     const updatedBooks = books.map((b) =>
@@ -232,6 +263,7 @@ export function App() {
           bookId,
           bookTitle: targetBook.title,
           bookCover: targetBook.coverImage,
+          ownerId: targetBook.ownerId,
           userId: member.id,
           userName: member.name,
           userPhone: member.phone,
@@ -335,6 +367,7 @@ export function App() {
   const handleDeleteBook = (bookId: string) => {
     const nextBooks = books.filter((b) => b.id !== bookId);
     updateBooks(nextBooks);
+    StorageService.deleteBook(bookId);
   };
 
   // CMS Article Save / Delete
@@ -357,6 +390,7 @@ export function App() {
   const handleDeleteArticle = (articleId: string) => {
     const nextArticles = articles.filter((a) => a.id !== articleId);
     updateArticles(nextArticles);
+    StorageService.deleteArticle(articleId);
   };
 
   // CMS Event Save / Delete
@@ -379,6 +413,7 @@ export function App() {
   const handleDeleteEvent = (eventId: string) => {
     const nextEvents = events.filter((e) => e.id !== eventId);
     updateEvents(nextEvents);
+    StorageService.deleteEvent(eventId);
   };
 
   // Wishlist Toggle
@@ -435,7 +470,7 @@ export function App() {
           member={member}
           toggleRole={handleToggleRole}
           onOpenScanner={() => setShowScanner(true)}
-          onOpenLogin={() => setShowLoginModal(true)}
+          onOpenLogin={() => setActiveTab('login')}
           onLogout={handleLogout}
           onResetData={handleResetData}
         />
@@ -468,8 +503,23 @@ export function App() {
             onSelectBook={(book) => setSelectedBookDetail(book)}
             onBorrowBook={(book) => setBorrowModalBook(book)}
             onToggleWishlist={handleToggleWishlist}
-            onOpenLogin={() => setShowLoginModal(true)}
+            onAddBook={handleAddBook}
+            onApproveRequest={handleApproveRequest}
+            onRejectRequest={handleRejectRequest}
+            onReturnBook={handleReturnBook}
+            onOpenLogin={() => setActiveTab('login')}
             onLogout={handleLogout}
+          />
+        )}
+
+        {activeTab === 'login' && (
+          <LoginPage
+            onLoginSuccess={(newMember, targetTab) => {
+              setMember(newMember);
+              StorageService.saveCurrentMember(newMember);
+              setActiveTab(targetTab);
+            }}
+            onNavigateToCatalog={() => setActiveTab('catalog')}
           />
         )}
 
@@ -555,19 +605,6 @@ export function App() {
           onAddBook={(bookData) => {
             handleSaveBook(bookData);
             setShowAddBook(false);
-          }}
-        />
-      )}
-
-      {showLoginModal && (
-        <LoginModal
-          currentMember={member}
-          onClose={() => setShowLoginModal(false)}
-          onLoginSuccess={(newMember, targetTab) => {
-            setMember(newMember);
-            StorageService.saveCurrentMember(newMember);
-            setActiveTab(targetTab);
-            setShowLoginModal(false);
           }}
         />
       )}

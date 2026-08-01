@@ -3,8 +3,8 @@ import { BookOpen, Search, QrCode, User, Shield, Calendar, RefreshCw, BookMarked
 import type { Member } from '../types';
 
 interface NavbarProps {
-  activeTab: 'catalog' | 'events' | 'articles' | 'profile' | 'admin';
-  setActiveTab: (tab: 'catalog' | 'events' | 'articles' | 'profile' | 'admin') => void;
+  activeTab: 'catalog' | 'events' | 'articles' | 'profile' | 'admin' | 'login';
+  setActiveTab: (tab: 'catalog' | 'events' | 'articles' | 'profile' | 'admin' | 'login') => void;
   searchQuery: string;
   setSearchQuery: (query: string) => void;
   member: Member;
@@ -161,7 +161,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     }`}
                   >
                     <Shield className="w-3.5 h-3.5" />
-                    <span>Portal Caretaker</span>
+                    <span>Portal Admin</span>
                   </button>
                 )}
 

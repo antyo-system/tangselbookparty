@@ -97,6 +97,13 @@ export const BookCard: React.FC<BookCardProps> = ({
           <p className="text-[10px] sm:text-[11px] text-slate-500 font-medium line-clamp-1 break-words">
             {book.author}
           </p>
+
+          {/* Owner Label */}
+          <p className="text-[9px] font-bold text-emerald-800 line-clamp-1 truncate">
+            {book.ownerId === 'usr_admin_01' || book.ownerName.includes('Komunitas')
+              ? '📚 Koleksi Komunitas'
+              : `👤 Oleh ${book.ownerName}${book.ownerLocation ? ` (${book.ownerLocation})` : ''}`}
+          </p>
         </div>
 
         {/* Action Buttons */}

@@ -1,31 +1,27 @@
 import React, { useState } from 'react';
-import { X, BookOpen, PlusCircle, Save } from 'lucide-react';
-import type { Book } from '../types';
+import { X, BookOpen, PlusCircle } from 'lucide-react';
+import type { Book, Member } from '../types';
 import { ImageUploader } from './ImageUploader';
 
-interface AddBookModalProps {
-  bookToEdit?: Book | null;
+interface AddMyBookModalProps {
+  member: Member;
   onClose: () => void;
   onAddBook: (newBook: Omit<Book, 'id' | 'status' | 'rating' | 'reviewsCount' | 'queueCount'> & { id?: string }) => void;
 }
 
-export const AddBookModal: React.FC<AddBookModalProps> = ({ bookToEdit, onClose, onAddBook }) => {
-  const [title, setTitle] = useState(bookToEdit?.title || '');
-  const [author, setAuthor] = useState(bookToEdit?.author || '');
-  const [isbn, setIsbn] = useState(bookToEdit?.isbn || '');
-  const [genre, setGenre] = useState(bookToEdit?.genre || 'Pengembangan Diri');
+export const AddMyBookModal: React.FC<AddMyBookModalProps> = ({ member, onClose, onAddBook }) => {
+  const [title, setTitle] = useState('');
+  const [author, setAuthor] = useState('');
+  const [genre, setGenre] = useState('Pengembangan Diri');
   const [coverImage, setCoverImage] = useState(
-    bookToEdit?.coverImage || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80'
+    'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80'
   );
-  const [synopsis, setSynopsis] = useState(bookToEdit?.synopsis || '');
-  const [favoriteQuote, setFavoriteQuote] = useState(bookToEdit?.favoriteQuote || '');
-  const [quoteSpeaker, setQuoteSpeaker] = useState(bookToEdit?.quoteSpeaker || '');
-  const [ownerName, setOwnerName] = useState(bookToEdit?.ownerName || 'Komunitas Tangsel');
-  const [ownerLocation, setOwnerLocation] = useState(bookToEdit?.ownerLocation || 'Bintaro');
-  const [shelfLocation, setShelfLocation] = useState(bookToEdit?.shelfLocation || 'Rak A-01 (Markas Bintaro)');
-  const [pageCount, setPageCount] = useState(bookToEdit?.pageCount || 300);
-  const [publishYear, setPublishYear] = useState(bookToEdit?.publishYear || 2023);
-  const [language, setLanguage] = useState(bookToEdit?.language || 'Bahasa Indonesia');
+  const [synopsis, setSynopsis] = useState('');
+  const [ownerLocation, setOwnerLocation] = useState('Bintaro');
+  const [shelfLocation, setShelfLocation] = useState('Titik Kumpul Event / COD');
+  const [favoriteQuote, setFavoriteQuote] = useState('');
+  const [pageCount, setPageCount] = useState(250);
+  const [publishYear, setPublishYear] = useState(2024);
 
   const sampleCovers = [
     'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80',
@@ -36,25 +32,24 @@ export const AddBookModal: React.FC<AddBookModalProps> = ({ bookToEdit, onClose,
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title || !author) return;
+    if (!title.trim() || !author.trim() || !synopsis.trim()) return;
 
     onAddBook({
-      id: bookToEdit?.id,
-      title,
-      author,
-      isbn: isbn || `978-${Math.floor(100000000 + Math.random() * 900000000)}`,
+      title: title.trim(),
+      author: author.trim(),
+      isbn: `978-${Math.floor(100000000 + Math.random() * 900000000)}`,
       genre,
       coverImage: coverImage || sampleCovers[0],
-      synopsis,
-      favoriteQuote: favoriteQuote || undefined,
-      quoteSpeaker: quoteSpeaker || undefined,
-      ownerId: bookToEdit?.ownerId || 'usr_admin_01',
-      ownerName,
+      synopsis: synopsis.trim(),
+      favoriteQuote: favoriteQuote.trim() || undefined,
+      quoteSpeaker: favoriteQuote.trim() ? author.trim() : undefined,
+      ownerId: member.id,
+      ownerName: member.name,
       ownerLocation,
-      shelfLocation,
-      pageCount: Number(pageCount),
-      publishYear: Number(publishYear),
-      language
+      shelfLocation: `${shelfLocation} (${ownerLocation})`,
+      pageCount: Number(pageCount) || 250,
+      publishYear: Number(publishYear) || 2024,
+      language: 'Bahasa Indonesia'
     });
 
     onClose();
@@ -70,11 +65,9 @@ export const AddBookModal: React.FC<AddBookModalProps> = ({ bookToEdit, onClose,
               <BookOpen className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="font-anton text-xl tracking-wide text-white">
-                {bookToEdit ? 'Edit Data Buku Katalog' : 'Tambah Buku ke Katalog Komunitas'}
-              </h2>
+              <h2 className="font-anton text-xl tracking-wide text-white">Daftarkan Buku Fisik Saya</h2>
               <p className="text-[11px] text-emerald-200">
-                Kelola koleksi perpustakaan komunitas Tangsel Book Party
+                Pinjamkan buku pribadi Anda ke sesama anggota Tangsel Book Party
               </p>
             </div>
           </div>
@@ -87,8 +80,9 @@ export const AddBookModal: React.FC<AddBookModalProps> = ({ bookToEdit, onClose,
           </button>
         </div>
 
-        {/* Form Body */}
+        {/* Body Form */}
         <form onSubmit={handleSubmit} className="p-6 space-y-5 overflow-y-auto">
+          {/* Title & Author */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1.5">
@@ -99,7 +93,7 @@ export const AddBookModal: React.FC<AddBookModalProps> = ({ bookToEdit, onClose,
                 required
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="Judul buku"
+                placeholder="Contoh: Atomic Habits"
                 className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-[#053D27] focus:border-[#053D27] outline-none"
               />
             </div>
@@ -112,15 +106,18 @@ export const AddBookModal: React.FC<AddBookModalProps> = ({ bookToEdit, onClose,
                 required
                 value={author}
                 onChange={(e) => setAuthor(e.target.value)}
-                placeholder="Nama Penulis"
+                placeholder="Contoh: James Clear"
                 className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-[#053D27] focus:border-[#053D27] outline-none"
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {/* Genre & Wilayah */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">Genre / Kategori</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                Genre / Kategori <span className="text-rose-500">*</span>
+              </label>
               <select
                 value={genre}
                 onChange={(e) => setGenre(e.target.value)}
@@ -136,61 +133,39 @@ export const AddBookModal: React.FC<AddBookModalProps> = ({ bookToEdit, onClose,
               </select>
             </div>
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">Nomor ISBN</label>
-              <input
-                type="text"
-                value={isbn}
-                onChange={(e) => setIsbn(e.target.value)}
-                placeholder="978-..."
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-[#053D27] focus:border-[#053D27] outline-none"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">Bahasa</label>
-              <input
-                type="text"
-                value={language}
-                onChange={(e) => setLanguage(e.target.value)}
-                placeholder="Bahasa Indonesia"
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-[#053D27] focus:border-[#053D27] outline-none"
-              />
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                Wilayah Domisili Buku <span className="text-rose-500">*</span>
+              </label>
+              <select
+                value={ownerLocation}
+                onChange={(e) => setOwnerLocation(e.target.value)}
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-[#053D27] focus:border-[#053D27] outline-none bg-white"
+              >
+                <option value="Bintaro">Bintaro</option>
+                <option value="BSD">BSD / Serpong</option>
+                <option value="Pamulang">Pamulang</option>
+                <option value="Ciputat">Ciputat</option>
+                <option value="Tangerang Selatan">Area Tangsel Lainnya</option>
+              </select>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">Nama Pemilik / Koleksi</label>
-              <input
-                type="text"
-                value={ownerName}
-                onChange={(e) => setOwnerName(e.target.value)}
-                placeholder="misal: Komunitas Tangsel / Fian"
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-[#053D27] focus:border-[#053D27] outline-none"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">Lokasi Rak Physical / Titik Kumpul</label>
-              <input
-                type="text"
-                value={shelfLocation}
-                onChange={(e) => setShelfLocation(e.target.value)}
-                placeholder="Rak A-01 (Markas Bintaro)"
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-[#053D27] focus:border-[#053D27] outline-none"
-              />
-            </div>
-          </div>
-
+          {/* Synopsis */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1.5">Sinopsis Buku</label>
+            <label className="block text-xs font-bold text-slate-700 mb-1.5">
+              Sinopsis / Deskripsi Singkat <span className="text-rose-500">*</span>
+            </label>
             <textarea
+              required
               rows={3}
               value={synopsis}
               onChange={(e) => setSynopsis(e.target.value)}
-              placeholder="Deskripsi atau alur cerita singkat..."
+              placeholder="Tuliskan gambaran singkat mengenai isi buku ini..."
               className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-[#053D27] focus:border-[#053D27] outline-none"
             />
           </div>
 
+          {/* Cover Image Upload / Selection */}
           <div>
             <label className="block text-xs font-bold text-slate-700 mb-1.5">Foto Sampul Buku</label>
             <ImageUploader
@@ -200,8 +175,9 @@ export const AddBookModal: React.FC<AddBookModalProps> = ({ bookToEdit, onClose,
             />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-slate-100">
-            <div>
+          {/* Optional Details: Quote, Halaman, Tahun */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2 border-t border-slate-100">
+            <div className="sm:col-span-1">
               <label className="block text-xs font-semibold text-slate-600 mb-1">Jumlah Halaman</label>
               <input
                 type="number"
@@ -210,7 +186,7 @@ export const AddBookModal: React.FC<AddBookModalProps> = ({ bookToEdit, onClose,
                 className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs outline-none"
               />
             </div>
-            <div>
+            <div className="sm:col-span-1">
               <label className="block text-xs font-semibold text-slate-600 mb-1">Tahun Terbit</label>
               <input
                 type="number"
@@ -219,8 +195,19 @@ export const AddBookModal: React.FC<AddBookModalProps> = ({ bookToEdit, onClose,
                 className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs outline-none"
               />
             </div>
+            <div className="sm:col-span-1">
+              <label className="block text-xs font-semibold text-slate-600 mb-1">Lokasi Serah Terima</label>
+              <input
+                type="text"
+                value={shelfLocation}
+                onChange={(e) => setShelfLocation(e.target.value)}
+                placeholder="misal: Event Weekend Bintaro"
+                className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs outline-none"
+              />
+            </div>
           </div>
 
+          {/* Footer Submit */}
           <div className="pt-4 flex items-center justify-end gap-3 border-t border-slate-200">
             <button
               type="button"
@@ -233,8 +220,8 @@ export const AddBookModal: React.FC<AddBookModalProps> = ({ bookToEdit, onClose,
               type="submit"
               className="px-6 py-2.5 bg-[#053D27] hover:bg-[#03321F] text-white text-xs font-extrabold rounded-xl shadow-md transition-all flex items-center gap-2 cursor-pointer"
             >
-              {bookToEdit ? <Save className="w-4 h-4 text-[#FFBF00]" /> : <PlusCircle className="w-4 h-4 text-[#FFBF00]" />}
-              <span>{bookToEdit ? 'Simpan Perubahan' : 'Tambah ke Katalog'}</span>
+              <PlusCircle className="w-4 h-4 text-[#FFBF00]" />
+              <span>Daftarkan Buku Fisik Saya</span>
             </button>
           </div>
         </form>

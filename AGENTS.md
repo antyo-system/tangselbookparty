@@ -15,7 +15,7 @@ Objective: Write clean, robust, maintainable code. Prioritize clarity, speed, an
 ### Terminology & Branding Policy (STRICT RULE)
 - **NEVER use the term "ERP"** anywhere in the code, comments, UI text, or documentation. Tangsel Book Party is a community library platform, not a corporate ERP business.
 - **Approved Terminology**:
-  - "TANGSEL CARETAKER"
+  - "TANGSEL ADMIN"
   - "CMS Perpustakaan Komunitas"
   - "Sistem Perpustakaan Online"
   - "Tangsel Book Party"
@@ -26,12 +26,12 @@ Objective: Write clean, robust, maintainable code. Prioritize clarity, speed, an
 
 ### Admin Account Creation Security Rule
 - **NO PUBLIC ADMIN REGISTRATION**: The public website registration form MUST ONLY allow creating regular `member` accounts (`role = 'member'`).
-- **ADMIN PROMOTION VIA SUPABASE**: Admin/Caretaker privileges (`role = 'admin'`) CANNOT be selected or requested via the public frontend registration form.
+- **ADMIN PROMOTION VIA SUPABASE**: Admin privileges (`role = 'admin'`) CANNOT be selected or requested via the public frontend registration form.
 - **Granting Admin Privileges**: Assigning `role = 'admin'` MUST be done directly inside the Supabase PostgreSQL database table `members` or via an authorized database SQL script:
   ```sql
   UPDATE public.members 
   SET role = 'admin' 
-  WHERE email = 'caretaker@tangselbookparty.org';
+  WHERE email = 'admin@tangselbookparty.org';
   ```
 
 ---

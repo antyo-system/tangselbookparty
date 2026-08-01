@@ -95,7 +95,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             {isSidebarOpen && (
               <div className="flex flex-col justify-center min-w-0">
                 <h2 className="text-sm font-bold text-white leading-tight truncate">Tangsel Book Party</h2>
-                <p className="text-[10px] text-[#D0DF00] font-medium mt-0.5 truncate">Caretaker Panel</p>
+                <p className="text-[10px] text-[#D0DF00] font-medium mt-0.5 truncate">Admin Panel</p>
               </div>
             )}
           </div>
@@ -359,9 +359,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             </div>
           )}
 
-          {/* ERP TAB CONTENT PANELS */}
+          {/* CMS TAB CONTENT PANELS */}
 
-          {/* ERP TAB 1: PERMINTAAN PINJAM */}
+          {/* CMS TAB 1: PERMINTAAN PINJAM */}
           {activeTab === 'requests' && (
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden space-y-3">
               <div className="p-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
@@ -440,7 +440,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             </div>
           )}
 
-          {/* ERP TAB 2: PINJAMAN AKTIFF */}
+          {/* CMS TAB 2: PINJAMAN AKTIF */}
           {activeTab === 'active_loans' && (
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
               <div className="p-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
@@ -517,7 +517,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             </div>
           )}
 
-          {/* ERP TAB 3: KATALOG BUKU */}
+          {/* CMS TAB 3: KATALOG BUKU */}
           {activeTab === 'inventory' && (
             <div className="space-y-4">
               
@@ -624,6 +624,33 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                             </td>
                             <td className="p-3.5 text-right">
                               <div className="flex items-center justify-end gap-1.5">
+                                {book.status === 'borrowed' && (
+                                  <button
+                                    onClick={() => {
+                                      if (window.confirm(`[Moderasi Admin Override]\n\nKembalikan paksa buku "${book.title}"? Status buku akan di-reset menjadi 'Tersedia'.`)) {
+                                        onReturnBook(book.id);
+                                      }
+                                    }}
+                                    className="p-1.5 bg-amber-50 hover:bg-amber-600 text-amber-700 hover:text-white rounded-lg transition-colors border border-amber-200"
+                                    title="Moderasi Override: Tandai Dikembalikan (Force Return)"
+                                  >
+                                    <RotateCcw className="w-4 h-4" />
+                                  </button>
+                                )}
+                                {book.status === 'available' && requests.some((r) => r.bookId === book.id && r.status === 'pending') && (
+                                  <button
+                                    onClick={() => {
+                                      const reqToApprove = requests.find((r) => r.bookId === book.id && r.status === 'pending');
+                                      if (reqToApprove && window.confirm(`[Moderasi Admin Override]\n\nSetujui peminjaman "${book.title}" untuk peminjam ${reqToApprove.userName}?`)) {
+                                        onApproveRequest(reqToApprove.id);
+                                      }
+                                    }}
+                                    className="p-1.5 bg-emerald-50 hover:bg-emerald-600 text-emerald-700 hover:text-white rounded-lg transition-colors border border-emerald-200"
+                                    title="Moderasi Override: Setujui Peminjaman Pending"
+                                  >
+                                    <CheckCircle2 className="w-4 h-4" />
+                                  </button>
+                                )}
                                 <button
                                   onClick={() => onShowQR(book)}
                                   className="p-1.5 bg-slate-100 hover:bg-[#FFBF00] text-slate-700 hover:text-[#03321F] rounded-lg transition-colors"
@@ -637,7 +664,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                     setShowAddBook(true);
                                   }}
                                   className="p-1.5 bg-slate-100 hover:bg-[#053D27] text-slate-700 hover:text-[#D0DF00] rounded-lg transition-colors"
-                                  title="Edit Buku ERP"
+                                  title="Edit Buku CMS"
                                 >
                                   <Edit className="w-4 h-4" />
                                 </button>
@@ -665,7 +692,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             </div>
           )}
 
-          {/* ERP TAB 4: CMS ARTIKEL SEO */}
+          {/* CMS TAB 4: CMS ARTIKEL SEO */}
           {activeTab === 'articles' && (
             <div className="space-y-4">
               <div className="flex items-center justify-between bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
@@ -753,7 +780,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             </div>
           )}
 
-          {/* ERP TAB 5: CMS ACARA */}
+          {/* CMS TAB 5: CMS ACARA */}
           {activeTab === 'events' && (
             <div className="space-y-4">
               <div className="flex items-center justify-between bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
@@ -769,7 +796,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   className="py-2 px-4 bg-[#053D27] text-[#D0DF00] hover:bg-[#FFBF00] hover:text-[#03321F] rounded-xl text-xs font-extrabold flex items-center gap-1.5 shadow-sm transition-colors"
                 >
                   <Plus className="w-4 h-4" />
-                  <span>Tambah Acara Baru (ERP CMS)</span>
+                  <span>Tambah Acara Baru (CMS Acara)</span>
                 </button>
               </div>
 
@@ -804,7 +831,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                           <div className="flex items-center gap-3 text-xs text-slate-500">
                             <span>📍 {evt.location}</span>
                             <span>👥 <strong>{evt.attendeesCount}</strong>/{capacity} Pax</span>
-                            {evt.hostCaretakerName && <span>👤 Host: {evt.hostCaretakerName}</span>}
+                            {evt.hostAdminName && <span>👤 Host: {evt.hostAdminName}</span>}
                           </div>
                         </div>
                       </div>
@@ -816,7 +843,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                             setShowAddEvent(true);
                           }}
                           className="p-2 bg-slate-100 hover:bg-[#053D27] text-slate-700 hover:text-[#D0DF00] rounded-xl transition-colors"
-                          title="Edit Acara ERP"
+                          title="Edit Acara CMS"
                         >
                           <Edit className="w-4 h-4" />
                         </button>
@@ -839,7 +866,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             </div>
           )}
 
-          {/* ERP TAB 6: RESERVATION QUEUES */}
+          {/* CMS TAB 6: RESERVATION QUEUES */}
           {activeTab === 'queues' && (
             <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
               <div className="p-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
