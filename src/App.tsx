@@ -371,24 +371,39 @@ export function App() {
     updateBooks(updatedBooks);
   };
 
-  // QR Scan Result Handler
+  // QR Scan Result Handler (Smart Admin vs Member Scanner Workflow)
   const handleQRScanResult = (bookId: string, action: 'borrow' | 'return') => {
-    if (action === 'return') {
+    const targetBook = books.find((b) => b.id === bookId);
+    if (!targetBook) return;
+
+    const isAdmin = member.role === 'admin';
+
+    if (isAdmin || action === 'return') {
+      // Admin Scan -> Instant Book Return
       handleReturnBook(bookId);
+      showToast(`[ADMIN SCAN] Buku "${targetBook.title}" resmi dicatat DIKEMBALIKAN!`);
     } else {
-      // Find pending request or borrow directly
-      const pending = requests.find((r) => r.bookId === bookId && r.status === 'pending');
-      if (pending) {
-        handleApproveRequest(pending.id);
+      // Member Scan -> Instant Confirm Receipt (or create instant borrow)
+      const existingReq = requests.find(
+        (r) =>
+          r.bookId === bookId &&
+          (r.userId === member.id || (r.userName && member.name && r.userName.toLowerCase().trim() === member.name.toLowerCase().trim())) &&
+          (r.status === 'pending' || r.status === 'approved' || r.status === 'borrowed')
+      );
+
+      if (existingReq) {
+        if (existingReq.status === 'pending' || existingReq.status === 'approved') {
+          handleConfirmReceiveBook(existingReq.id);
+          showToast(`[MEMBER SCAN] Buku "${targetBook.title}" resmi DITERIMA & DIPINJAM!`);
+        } else {
+          showToast(`[MEMBER SCAN] Anda sedang memegang buku "${targetBook.title}".`);
+        }
       } else {
-        // Quick borrow default
+        // Quick instant borrow for member scanning an available book
         const todayStr = new Date().toISOString().split('T')[0];
         const dueDateObj = new Date();
         dueDateObj.setDate(dueDateObj.getDate() + 14);
         const dueDateStr = dueDateObj.toISOString().split('T')[0];
-
-        const targetBook = books.find((b) => b.id === bookId);
-        if (!targetBook) return;
 
         const quickReq: BorrowRequest = {
           id: `REQ-${Math.floor(1000 + Math.random() * 9000)}`,
@@ -412,13 +427,15 @@ export function App() {
             b.id === bookId
               ? {
                   ...b,
-                  status: 'borrowed',
+                  status: 'borrowed' as const,
                   currentBorrower: member.name,
+                  currentBorrowerId: member.id,
                   currentDueDate: dueDateStr
                 }
               : b
           )
         );
+        showToast(`[MEMBER SCAN] Buku "${targetBook.title}" resmi DITERIMA & DIPINJAM!`);
       }
     }
   };
@@ -737,6 +754,7 @@ export function App() {
       {showScanner && (
         <QRScannerModal
           books={books}
+          member={member}
           onClose={() => setShowScanner(false)}
           onScanResult={handleQRScanResult}
         />

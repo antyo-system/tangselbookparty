@@ -1,16 +1,18 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { X, Camera, CheckCircle2, RotateCcw, AlertCircle, Upload, RefreshCw } from 'lucide-react';
 import { Html5Qrcode } from 'html5-qrcode';
-import type { Book } from '../types';
+import type { Book, Member } from '../types';
 
 interface QRScannerModalProps {
   books: Book[];
+  member?: Member;
   onClose: () => void;
   onScanResult: (bookId: string, action: 'borrow' | 'return') => void;
 }
 
 export const QRScannerModal: React.FC<QRScannerModalProps> = ({
   books,
+  member,
   onClose,
   onScanResult
 }) => {
@@ -45,7 +47,22 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
 
     if (found) {
       setScannedBook(found);
-      setScanMessage(`✅ QR TERBACA INSTAN: "${found.title}" (${found.id})`);
+      const isAdmin = member?.role === 'admin';
+      const actionType: 'borrow' | 'return' = isAdmin ? 'return' : 'borrow';
+      
+      setScanMessage(
+        isAdmin
+          ? `⚡ [ADMIN SCAN] Otomatis mencatat Pengembalian "${found.title}"...`
+          : `⚡ [MEMBER SCAN] Otomatis mencatat Buku Diterima "${found.title}"...`
+      );
+
+      // Auto trigger action instantly after short 350ms delay for feedback
+      setTimeout(() => {
+        onScanResult(found.id, actionType);
+        setTimeout(() => {
+          onClose();
+        }, 600);
+      }, 350);
     } else {
       setScanMessage(`⚠️ QR Terbaca (${clean}), namun tidak ditemukan di katalog.`);
     }
