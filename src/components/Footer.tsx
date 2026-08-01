@@ -9,10 +9,12 @@ export const Footer: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
           {/* Col 1 */}
           <div className="space-y-2.5 min-w-0">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl bg-[#FFBF00] flex items-center justify-center text-[#03321F] font-extrabold shadow-md flex-shrink-0">
-                <BookOpen className="w-4 h-4" />
-              </div>
+            <div className="flex items-center gap-2.5">
+              <img 
+                src="/tbp-logo.png" 
+                alt="Tangsel Book Party Logo" 
+                className="w-9 h-9 rounded-xl object-cover border border-[#FFBF00]/40 shadow-md flex-shrink-0" 
+              />
               <span className="font-anton text-xl sm:text-2xl tracking-wide text-white truncate">
                 TANGSEL <span className="text-[#FFBF00]">BOOK PARTY</span>
               </span>

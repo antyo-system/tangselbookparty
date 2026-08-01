@@ -13,6 +13,7 @@ import { QRModal } from './components/QRModal';
 import { QRScannerModal } from './components/QRScannerModal';
 import { WhatsAppReminderModal } from './components/WhatsAppReminderModal';
 import { AddBookModal } from './components/AddBookModal';
+import { LoginModal } from './components/LoginModal';
 import { Footer } from './components/Footer';
 import { BottomNav } from './components/BottomNav';
 
@@ -36,6 +37,7 @@ export function App() {
   const [qrModalBook, setQrModalBook] = useState<Book | null>(null);
   const [showScanner, setShowScanner] = useState(false);
   const [showAddBook, setShowAddBook] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
   const [waReminderData, setWaReminderData] = useState<{
     request: BorrowRequest;
     type: 'due_soon' | 'overdue' | 'approval';
@@ -409,23 +411,28 @@ export function App() {
     }
   };
 
+  const isEditingAdmin = activeTab === 'admin';
+
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900 font-sans antialiased w-full max-w-full overflow-x-hidden box-border">
       
-      {/* Top Navigation */}
-      <Navbar
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-        member={member}
-        toggleRole={handleToggleRole}
-        onOpenScanner={() => setShowScanner(true)}
-        onResetData={handleResetData}
-      />
+      {/* Top Navigation - Hidden when in Admin Dashboard */}
+      {!isEditingAdmin && (
+        <Navbar
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          member={member}
+          toggleRole={handleToggleRole}
+          onOpenScanner={() => setShowScanner(true)}
+          onOpenLogin={() => setShowLoginModal(true)}
+          onResetData={handleResetData}
+        />
+      )}
 
       {/* Main View Container */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 pt-4 sm:pt-6 overflow-x-hidden">
+      <main className={isEditingAdmin ? "flex-1 w-full" : "flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 pt-4 sm:pt-6 overflow-x-hidden"}>
         {activeTab === 'catalog' && (
           <CatalogPage
             books={books}
@@ -451,6 +458,7 @@ export function App() {
             onSelectBook={(book) => setSelectedBookDetail(book)}
             onBorrowBook={(book) => setBorrowModalBook(book)}
             onToggleWishlist={handleToggleWishlist}
+            onOpenLogin={() => setShowLoginModal(true)}
           />
         )}
 
@@ -473,12 +481,18 @@ export function App() {
             onOpenScanner={() => setShowScanner(true)}
             onShowQR={(book) => setQrModalBook(book)}
             onOpenWAReminder={(req, type) => setWaReminderData({ request: req, type })}
+            onExitAdmin={() => {
+              const updatedMember: Member = { ...member, role: 'member' };
+              setMember(updatedMember);
+              StorageService.saveCurrentMember(updatedMember);
+              setActiveTab('catalog');
+            }}
           />
         )}
       </main>
 
-      {/* Footer */}
-      <Footer />
+      {/* Footer - Hidden when in Admin Dashboard */}
+      {!isEditingAdmin && <Footer />}
 
       {/* Modals */}
       {selectedBookDetail && (
@@ -534,13 +548,28 @@ export function App() {
         />
       )}
 
-      {/* Mobile App-like Bottom Navigation Bar */}
-      <BottomNav
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        member={member}
-        onOpenScanner={() => setShowScanner(true)}
-      />
+      {showLoginModal && (
+        <LoginModal
+          currentMember={member}
+          onClose={() => setShowLoginModal(false)}
+          onLoginSuccess={(newMember, targetTab) => {
+            setMember(newMember);
+            StorageService.saveCurrentMember(newMember);
+            setActiveTab(targetTab);
+            setShowLoginModal(false);
+          }}
+        />
+      )}
+
+      {/* Mobile App-like Bottom Navigation Bar - Hidden when in Admin Dashboard */}
+      {!isEditingAdmin && (
+        <BottomNav
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          member={member}
+          onOpenScanner={() => setShowScanner(true)}
+        />
+      )}
 
     </div>
   );

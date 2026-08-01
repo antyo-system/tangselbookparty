@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BookOpen, Clock, Heart, Users, CheckCircle2, ArrowRight } from 'lucide-react';
+import { BookOpen, Clock, Heart, Users, CheckCircle2, ArrowRight, User, LogIn } from 'lucide-react';
 import type { Member, Book, BorrowRequest, ReservationQueueItem } from '../types';
 
 interface ProfilePageProps {
@@ -10,6 +10,7 @@ interface ProfilePageProps {
   onSelectBook: (book: Book) => void;
   onBorrowBook: (book: Book) => void;
   onToggleWishlist: (bookId: string) => void;
+  onOpenLogin?: () => void;
 }
 
 export const ProfilePage: React.FC<ProfilePageProps> = ({
@@ -19,17 +20,57 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   queues,
   onSelectBook,
   onBorrowBook,
-  onToggleWishlist
+  onToggleWishlist,
+  onOpenLogin
 }) => {
   const [activeSubTab, setActiveSubTab] = useState<'borrowed' | 'queue' | 'history' | 'wishlist'>('borrowed');
 
-  const myActiveBorrows = requests.filter(
+  const isGuest = member.id === 'usr_guest';
+
+  const myActiveBorrows = isGuest ? [] : requests.filter(
     (r) => (r.status === 'borrowed' || r.status === 'approved')
   );
 
-  const myQueues = queues.filter((q) => q.status === 'waiting');
-  const myHistory = requests.filter((r) => r.status === 'returned');
-  const wishlistBooks = books.filter((b) => member.wishlist.includes(b.id));
+  const myQueues = isGuest ? [] : queues.filter((q) => q.status === 'waiting');
+  const myHistory = isGuest ? [] : requests.filter((r) => r.status === 'returned');
+  const wishlistBooks = isGuest ? [] : books.filter((b) => member.wishlist.includes(b.id));
+
+  if (isGuest) {
+    return (
+      <div className="space-y-8 pb-16">
+        <div className="bg-[#03321F] text-white rounded-3xl p-6 sm:p-10 border border-[#FFBF00]/30 shadow-xl flex flex-col items-center text-center space-y-4">
+          <div className="w-20 h-20 rounded-full bg-[#053D27] border-2 border-[#FFBF00] flex items-center justify-center shadow-lg text-[#FFBF00]">
+            <User className="w-10 h-10" />
+          </div>
+
+          <div className="space-y-1 max-w-md">
+            <span className="px-3 py-1 rounded-full text-[10px] font-extrabold bg-[#FFBF00] text-[#03321F] uppercase tracking-wider">
+              Tamu / Belum Login
+            </span>
+            <h1 className="font-anton text-2xl sm:text-3xl tracking-wide text-white pt-1">
+              Selamat Datang di Tangsel Book Party
+            </h1>
+            <p className="text-xs text-emerald-200">
+              Anda sedang menjelajah sebagai tamu. Silakan masuk atau daftar akun baru untuk meminjam buku fisik gratis & menyimpan wishlist koleksi.
+            </p>
+          </div>
+
+          <div className="pt-2 flex flex-wrap justify-center gap-3">
+            {onOpenLogin && (
+              <button
+                type="button"
+                onClick={onOpenLogin}
+                className="px-6 py-3 bg-[#FFBF00] hover:bg-white text-[#03321F] font-extrabold rounded-2xl text-xs shadow-md transition-all flex items-center gap-2 cursor-pointer"
+              >
+                <LogIn className="w-4 h-4" />
+                <span>Masuk / Daftar Akun Member</span>
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8 pb-16">

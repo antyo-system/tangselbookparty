@@ -10,6 +10,7 @@ interface NavbarProps {
   member: Member;
   toggleRole: () => void;
   onOpenScanner: () => void;
+  onOpenLogin: () => void;
   onResetData: () => void;
 }
 
@@ -21,6 +22,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   member,
   toggleRole,
   onOpenScanner,
+  onOpenLogin,
   onResetData
 }) => {
   // Context-aware search placeholder generator
@@ -49,11 +51,13 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Logo */}
           <div 
             onClick={() => setActiveTab('catalog')}
-            className="flex items-center gap-2 cursor-pointer group min-w-0 flex-shrink-0"
+            className="flex items-center gap-2.5 cursor-pointer group min-w-0 flex-shrink-0"
           >
-            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-[#FFBF00] flex items-center justify-center text-[#03321F] font-extrabold shadow-md shadow-[#FFBF00]/20 group-hover:scale-105 transition-transform flex-shrink-0">
-              <BookOpen className="w-4 h-4 sm:w-5 sm:h-5" />
-            </div>
+            <img 
+              src="/tbp-logo.png" 
+              alt="Tangsel Book Party Logo" 
+              className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl object-cover border border-[#FFBF00]/40 shadow-md shadow-[#FFBF00]/20 group-hover:scale-105 transition-transform flex-shrink-0" 
+            />
             <div className="min-w-0">
               <div className="font-anton text-base sm:text-lg tracking-wide text-white leading-none group-hover:text-[#D0DF00] transition-colors truncate">
                 TANGSEL <span className="text-[#FFBF00]">BOOK PARTY</span>
@@ -125,34 +129,49 @@ export const Navbar: React.FC<NavbarProps> = ({
               <span>Artikel</span>
             </button>
 
-            <button
-              onClick={() => setActiveTab('profile')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all ${
-                activeTab === 'profile'
-                  ? 'bg-[#FFBF00] text-[#03321F] shadow-md'
-                  : 'text-emerald-100 hover:text-[#FFBF00] hover:bg-[#03321F]'
-              }`}
-            >
-              <User className="w-3.5 h-3.5" />
-              <span>Profil</span>
-              {member.wishlist.length > 0 && (
-                <span className="w-3.5 h-3.5 rounded-full bg-[#D0DF00] text-[#03321F] text-[9px] flex items-center justify-center font-extrabold">
-                  {member.wishlist.length}
-                </span>
-              )}
-            </button>
+            {/* Conditional User Navigation */}
+            {member.id !== 'usr_guest' ? (
+              <>
+                <button
+                  onClick={() => setActiveTab('profile')}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all ${
+                    activeTab === 'profile'
+                      ? 'bg-[#FFBF00] text-[#03321F] shadow-md'
+                      : 'text-emerald-100 hover:text-[#FFBF00] hover:bg-[#03321F]'
+                  }`}
+                >
+                  <User className="w-3.5 h-3.5" />
+                  <span>Profil ({member.name.split(' ')[0]})</span>
+                  {member.wishlist.length > 0 && (
+                    <span className="w-3.5 h-3.5 rounded-full bg-[#D0DF00] text-[#03321F] text-[9px] flex items-center justify-center font-extrabold">
+                      {member.wishlist.length}
+                    </span>
+                  )}
+                </button>
 
-            {member.role === 'admin' && (
+                {member.role === 'admin' && (
+                  <button
+                    onClick={() => setActiveTab('admin')}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all ${
+                      activeTab === 'admin'
+                        ? 'bg-[#D0DF00] text-[#03321F] shadow-md'
+                        : 'text-emerald-100 hover:text-[#D0DF00] hover:bg-[#03321F]'
+                    }`}
+                  >
+                    <Shield className="w-3.5 h-3.5" />
+                    <span>Portal Caretaker</span>
+                  </button>
+                )}
+              </>
+            ) : (
               <button
-                onClick={() => setActiveTab('admin')}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all ${
-                  activeTab === 'admin'
-                    ? 'bg-[#D0DF00] text-[#03321F] shadow-md'
-                    : 'text-emerald-100 hover:text-[#D0DF00] hover:bg-[#03321F]'
-                }`}
+                type="button"
+                onClick={onOpenLogin}
+                className="px-4 py-1.5 rounded-xl text-xs font-extrabold bg-[#FFBF00] text-[#03321F] hover:bg-white transition-all shadow-md flex items-center gap-1.5 cursor-pointer"
+                title="Masuk ke Akun Komunitas"
               >
-                <Shield className="w-3.5 h-3.5" />
-                <span>Admin</span>
+                <User className="w-3.5 h-3.5" />
+                <span>Masuk / Daftar</span>
               </button>
             )}
 

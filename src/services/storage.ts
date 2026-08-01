@@ -334,15 +334,15 @@ const INITIAL_ARTICLES: Article[] = [
   }
 ];
 
-const CURRENT_MEMBER: Member = {
-  id: 'USER-01',
-  name: 'Budi Santoso',
-  email: 'budi.santoso@tangselbookparty.org',
-  phone: '+6281234567890',
-  avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Budi',
+export const GUEST_MEMBER: Member = {
+  id: 'usr_guest',
+  name: 'Tamu Komunitas',
+  email: '',
+  phone: '',
+  avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=GuestUser',
   role: 'member',
-  joinedDate: 'Januari 2025',
-  wishlist: ['TBP-BOOK-002', 'TBP-BOOK-003']
+  joinedDate: '-',
+  wishlist: []
 };
 
 const KEYS = {
@@ -350,7 +350,7 @@ const KEYS = {
   REQUESTS: 'tbp_requests_v5',
   QUEUES: 'tbp_queues_v5',
   REVIEWS: 'tbp_reviews_v5',
-  MEMBER: 'tbp_member_v5',
+  MEMBER: 'tbp_member_v7',
   EVENTS: 'tbp_events_v5',
   ARTICLES: 'tbp_articles_v5'
 };
@@ -411,10 +411,14 @@ export const StorageService = {
   getCurrentMember(): Member {
     const data = localStorage.getItem(KEYS.MEMBER);
     if (!data) {
-      localStorage.setItem(KEYS.MEMBER, JSON.stringify(CURRENT_MEMBER));
-      return CURRENT_MEMBER;
+      localStorage.setItem(KEYS.MEMBER, JSON.stringify(GUEST_MEMBER));
+      return GUEST_MEMBER;
     }
-    return JSON.parse(data);
+    try {
+      return JSON.parse(data);
+    } catch {
+      return GUEST_MEMBER;
+    }
   },
 
   saveCurrentMember(member: Member): void {
@@ -452,7 +456,7 @@ export const StorageService = {
     localStorage.setItem(KEYS.REQUESTS, JSON.stringify(INITIAL_REQUESTS));
     localStorage.setItem(KEYS.QUEUES, JSON.stringify(INITIAL_QUEUES));
     localStorage.setItem(KEYS.REVIEWS, JSON.stringify(INITIAL_REVIEWS));
-    localStorage.setItem(KEYS.MEMBER, JSON.stringify(CURRENT_MEMBER));
+    localStorage.setItem(KEYS.MEMBER, JSON.stringify(GUEST_MEMBER));
     localStorage.setItem(KEYS.EVENTS, JSON.stringify(INITIAL_EVENTS));
     localStorage.setItem(KEYS.ARTICLES, JSON.stringify(INITIAL_ARTICLES));
   }
