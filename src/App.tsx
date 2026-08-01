@@ -32,6 +32,10 @@ export function App() {
   const [activeTab, setActiveTab] = useState<'catalog' | 'events' | 'articles' | 'profile' | 'admin' | 'login'>('catalog');
   const [searchQuery, setSearchQuery] = useState('');
 
+  useEffect(() => {
+    document.title = 'Tangsel Book Party — Perpustakaan Fisik Komunitas';
+  }, []);
+
   // Modal States
   const [selectedBookDetail, setSelectedBookDetail] = useState<Book | null>(null);
   const [borrowModalBook, setBorrowModalBook] = useState<Book | null>(null);
