@@ -50,17 +50,25 @@ export async function authenticateUser(identifier: string, password: string): Pr
   const cleanId = identifier.trim().toLowerCase();
   const cleanPass = password.trim();
 
-  // Try Supabase Auth first if configured
+  if (!cleanId || !cleanPass) {
+    return {
+      success: false,
+      targetTab: 'profile',
+      message: 'Silakan isi username/email dan kata sandi.'
+    };
+  }
+
+  // 1. Try Supabase Auth/DB first if configured
   if (supabase) {
     try {
       const { data, error } = await supabase
         .from('members')
         .select('*')
         .or(`email.eq.${cleanId},phone.eq.${cleanId}`)
-        .single();
+        .maybeSingle();
 
       if (!error && data) {
-        if (data.password_hash === cleanPass || cleanPass === 'admin123' || cleanPass === 'user123' || cleanPass === 'tangsel2026') {
+        if (data.password_hash === cleanPass) {
           const loggedMember: Member = {
             id: data.id,
             name: data.name,
@@ -77,14 +85,20 @@ export async function authenticateUser(identifier: string, password: string): Pr
             member: loggedMember,
             targetTab: loggedMember.role === 'admin' ? 'admin' : 'profile'
           };
+        } else {
+          return {
+            success: false,
+            targetTab: 'profile',
+            message: 'Username / Email atau Kata Sandi yang Anda masukkan salah. Silakan periksa kembali.'
+          };
         }
       }
     } catch (e) {
-      console.warn('Supabase query error, falling back to local auth:', e);
+      console.warn('Supabase query error, checking fallback accounts:', e);
     }
   }
 
-  // Fallback Check: Admin credentials
+  // 2. Strict Fallback Check: Admin credentials
   if (cleanId === 'admin' || cleanId === 'admin@tangselbookparty.org' || cleanId === 'caretaker') {
     if (cleanPass === 'admin123' || cleanPass === 'tangsel2026') {
       return {
@@ -101,16 +115,12 @@ export async function authenticateUser(identifier: string, password: string): Pr
     }
   }
 
-  // Fallback Check: User credentials
-  if (cleanId === 'budi' || cleanId === 'budi@tangselbookparty.org' || cleanId === 'user' || cleanId === 'member' || cleanId.includes('@')) {
-    if (cleanPass === 'user123' || cleanPass.length >= 4) {
+  // 3. Strict Fallback Check: Member credentials
+  if (cleanId === 'budi' || cleanId === 'budi@tangselbookparty.org' || cleanId === 'budi.santoso@tangselbookparty.org') {
+    if (cleanPass === 'user123' || cleanPass === 'user2026') {
       return {
         success: true,
-        member: {
-          ...DEFAULT_ACCOUNTS[1],
-          name: cleanId.includes('@') ? cleanId.split('@')[0] : 'Budi Santoso',
-          email: cleanId.includes('@') ? cleanId : 'budi@tangselbookparty.org'
-        },
+        member: DEFAULT_ACCOUNTS[1],
         targetTab: 'profile'
       };
     } else {
@@ -122,29 +132,11 @@ export async function authenticateUser(identifier: string, password: string): Pr
     }
   }
 
-  // General registration fallback login
-  if (cleanPass.length >= 4) {
-    const fallbackName = identifier.includes('@') ? identifier.split('@')[0] : identifier;
-    return {
-      success: true,
-      member: {
-        id: `usr_${Date.now()}`,
-        name: fallbackName,
-        email: identifier.includes('@') ? identifier : `${identifier}@tangselbookparty.org`,
-        phone: '+6281234567890',
-        avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(fallbackName)}`,
-        joinedDate: 'Agustus 2026',
-        role: 'member',
-        wishlist: []
-      },
-      targetTab: 'profile'
-    };
-  }
-
+  // 4. Default rejection for non-existent accounts
   return {
     success: false,
     targetTab: 'profile',
-    message: 'Username / Email atau Kata Sandi yang Anda masukkan salah. Silakan periksa kembali.'
+    message: 'Username / Email atau Kata Sandi tidak terdaftar. Silakan buat akun baru terlebih dahulu.'
   };
 }
 
