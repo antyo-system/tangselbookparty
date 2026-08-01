@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { X, BookMarked, Sparkles, Search, CheckCircle2, AlertCircle, Info } from 'lucide-react';
 import type { Article, SEOMetadata } from '../types';
 import { calculateSEOScore } from '../utils/scoring';
+import { ImageUploader } from './ImageUploader';
 
 interface AddArticleModalProps {
   articleToEdit?: Article | null;
@@ -288,30 +289,12 @@ export const AddArticleModal: React.FC<AddArticleModalProps> = ({
                 />
               </div>
 
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-slate-700">Cover Image URL *</label>
-                <input
-                  type="text"
-                  required
-                  value={coverImage}
-                  onChange={(e) => setCoverImage(e.target.value)}
-                  className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#053D27] focus:outline-none"
-                />
-
-                <div className="flex items-center gap-2 overflow-x-auto pb-1">
-                  <span className="text-[10px] font-bold text-slate-400">Sample Image:</span>
-                  {sampleImages.map((imgUrl, i) => (
-                    <button
-                      key={i}
-                      type="button"
-                      onClick={() => setCoverImage(imgUrl)}
-                      className="w-8 h-8 rounded-lg overflow-hidden border border-slate-200 hover:border-[#053D27] flex-shrink-0"
-                    >
-                      <img src={imgUrl} alt="sample" className="w-full h-full object-cover" />
-                    </button>
-                  ))}
-                </div>
-              </div>
+              <ImageUploader
+                label="Foto Cover Artikel / Banner *"
+                value={coverImage}
+                onChange={setCoverImage}
+                sampleImages={sampleImages}
+              />
             </>
           ) : (
             <div className="space-y-4">

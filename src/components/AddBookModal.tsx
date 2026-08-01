@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { X, BookOpen, Sparkles, CheckCircle2, AlertCircle, Info } from 'lucide-react';
 import type { Book, BookConditionGrade, HandoverMethod } from '../types';
 import { calculateCatalogHealthScore } from '../utils/scoring';
+import { ImageUploader } from './ImageUploader';
 
 interface AddBookModalProps {
   bookToEdit?: Book | null;
@@ -272,30 +273,13 @@ export const AddBookModal: React.FC<AddBookModalProps> = ({ bookToEdit, onClose,
               />
             </div>
 
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-slate-700">Cover Image URL *</label>
-              <input
-                type="text"
-                required
-                value={coverImage}
-                onChange={(e) => setCoverImage(e.target.value)}
-                className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#053D27] focus:outline-none"
-              />
-
-              <div className="flex items-center gap-2 overflow-x-auto pb-1 mt-1">
-                <span className="text-[10px] font-bold text-slate-400">Sample Cover:</span>
-                {sampleCovers.map((imgUrl, i) => (
-                  <button
-                    key={i}
-                    type="button"
-                    onClick={() => setCoverImage(imgUrl)}
-                    className="w-8 h-10 rounded overflow-hidden border border-slate-200 hover:border-[#053D27] flex-shrink-0"
-                  >
-                    <img src={imgUrl} alt="sample" className="w-full h-full object-cover" />
-                  </button>
-                ))}
-              </div>
-            </div>
+          {/* Drag & Drop Image Uploader */}
+          <ImageUploader
+            label="Foto Utama Produk / Sampul Buku *"
+            value={coverImage}
+            onChange={setCoverImage}
+            sampleImages={sampleCovers}
+          />
           </div>
 
           <div className="space-y-1">
