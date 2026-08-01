@@ -18,7 +18,7 @@ export const supabase = isSupabaseConfigured()
 const DEFAULT_ACCOUNTS: Member[] = [
   {
     id: 'usr_admin_01',
-    name: 'Fian Caretaker (Admin)',
+    name: 'Fian',
     email: 'admin@tangselbookparty.org',
     phone: '+6281234567890',
     joinedDate: 'Desember 2024',

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BookOpen, Clock, Heart, Users, CheckCircle2, ArrowRight, User, LogIn } from 'lucide-react';
+import { BookOpen, Clock, Heart, Users, CheckCircle2, ArrowRight, User, LogIn, LogOut, Shield } from 'lucide-react';
 import type { Member, Book, BorrowRequest, ReservationQueueItem } from '../types';
 
 interface ProfilePageProps {
@@ -11,6 +11,7 @@ interface ProfilePageProps {
   onBorrowBook: (book: Book) => void;
   onToggleWishlist: (bookId: string) => void;
   onOpenLogin?: () => void;
+  onLogout?: () => void;
 }
 
 export const ProfilePage: React.FC<ProfilePageProps> = ({
@@ -21,7 +22,8 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   onSelectBook,
   onBorrowBook,
   onToggleWishlist,
-  onOpenLogin
+  onOpenLogin,
+  onLogout
 }) => {
   const [activeSubTab, setActiveSubTab] = useState<'borrowed' | 'queue' | 'history' | 'wishlist'>('borrowed');
 
@@ -78,39 +80,60 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
       {/* Profile Header */}
       <div className="bg-white text-slate-900 rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm flex flex-col sm:flex-row items-center gap-6">
         <img
-          src={member.avatar}
+          src={member.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=User'}
           alt={member.name}
-          className="w-20 h-20 rounded-2xl bg-slate-100 p-1 border-2 border-[#053D27] shadow-md"
+          className="w-20 h-20 rounded-2xl bg-slate-100 p-1 border-2 border-[#053D27] shadow-md object-cover"
         />
-        <div className="text-center sm:text-left flex-1 space-y-1">
-          <div className="flex items-center justify-center sm:justify-start gap-2">
-            <h1 className="font-anton text-2xl tracking-wide text-slate-900">{member.name}</h1>
-            <span className="px-3 py-0.5 rounded-full text-xs font-extrabold bg-[#053D27] text-[#D0DF00] uppercase">
-              {member.role}
+        <div className="text-center sm:text-left flex-1 space-y-1 min-w-0">
+          <div className="flex items-center justify-center sm:justify-start gap-2 flex-wrap">
+            <h1 className="font-anton text-2xl tracking-wide text-slate-900 truncate">{member.name}</h1>
+            <span
+              className={`px-3 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider ${
+                member.role === 'admin'
+                  ? 'bg-[#FFBF00] text-[#03321F] border border-[#03321F]/20'
+                  : 'bg-emerald-100 text-[#053D27] border border-emerald-300'
+              }`}
+            >
+              {member.role === 'admin' ? 'CARETAKER (ADMIN)' : 'MEMBER'}
             </span>
           </div>
           <p className="text-xs text-slate-600 font-medium">
-            {member.email} • {member.phone}
+            {member.email} {member.phone ? `• ${member.phone}` : ''}
           </p>
           <p className="text-xs text-slate-400">
             Member since {member.joinedDate} • Tangsel Community Library
           </p>
         </div>
 
-        {/* Quick Stats Pill */}
-        <div className="flex gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-200 text-center text-xs">
-          <div>
-            <span className="block font-anton text-xl text-amber-600">{myActiveBorrows.length}</span>
-            <span className="text-slate-500 font-medium">Active</span>
+        <div className="flex flex-col sm:flex-row items-center gap-4">
+          {/* Quick Stats Pill */}
+          <div className="flex gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-200 text-center text-xs">
+            <div>
+              <span className="block font-anton text-xl text-amber-600">{myActiveBorrows.length}</span>
+              <span className="text-slate-500 font-medium">Active</span>
+            </div>
+            <div className="border-l border-slate-200 pl-4">
+              <span className="block font-anton text-xl text-[#053D27]">{myQueues.length}</span>
+              <span className="text-slate-500 font-medium">In Queue</span>
+            </div>
+            <div className="border-l border-slate-200 pl-4">
+              <span className="block font-anton text-xl text-rose-600">{wishlistBooks.length}</span>
+              <span className="text-slate-500 font-medium">Wishlist</span>
+            </div>
           </div>
-          <div className="border-l border-slate-200 pl-4">
-            <span className="block font-anton text-xl text-[#053D27]">{myQueues.length}</span>
-            <span className="text-slate-500 font-medium">In Queue</span>
-          </div>
-          <div className="border-l border-slate-200 pl-4">
-            <span className="block font-anton text-xl text-rose-600">{wishlistBooks.length}</span>
-            <span className="text-slate-500 font-medium">Wishlist</span>
-          </div>
+
+          {/* Logout Button */}
+          {onLogout && (
+            <button
+              type="button"
+              onClick={onLogout}
+              className="py-2.5 px-4 bg-rose-50 hover:bg-rose-100 text-rose-700 hover:text-rose-900 rounded-2xl text-xs font-bold flex items-center gap-1.5 border border-rose-200 transition-all shadow-xs cursor-pointer"
+              title="Keluar dari Akun"
+            >
+              <LogOut className="w-4 h-4" />
+              <span>Keluar</span>
+            </button>
+          )}
         </div>
       </div>
 

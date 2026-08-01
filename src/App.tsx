@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { Book, BorrowRequest, ReservationQueueItem, BookReview, Member, CommunityEvent, HandoverMethod, Article } from './types';
-import { StorageService } from './services/storage';
+import { StorageService, GUEST_MEMBER } from './services/storage';
 import { Navbar } from './components/Navbar';
 import { CatalogPage } from './pages/CatalogPage';
 import { EventsPage } from './pages/EventsPage';
@@ -411,6 +411,15 @@ export function App() {
     }
   };
 
+  // Logout Handler
+  const handleLogout = () => {
+    setMember(GUEST_MEMBER);
+    StorageService.saveCurrentMember(GUEST_MEMBER);
+    if (activeTab === 'admin' || activeTab === 'profile') {
+      setActiveTab('catalog');
+    }
+  };
+
   const isEditingAdmin = activeTab === 'admin';
 
   return (
@@ -427,6 +436,7 @@ export function App() {
           toggleRole={handleToggleRole}
           onOpenScanner={() => setShowScanner(true)}
           onOpenLogin={() => setShowLoginModal(true)}
+          onLogout={handleLogout}
           onResetData={handleResetData}
         />
       )}
@@ -459,6 +469,7 @@ export function App() {
             onBorrowBook={(book) => setBorrowModalBook(book)}
             onToggleWishlist={handleToggleWishlist}
             onOpenLogin={() => setShowLoginModal(true)}
+            onLogout={handleLogout}
           />
         )}
 

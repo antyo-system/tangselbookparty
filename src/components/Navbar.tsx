@@ -1,5 +1,5 @@
 import React from 'react';
-import { BookOpen, Search, QrCode, User, Shield, Calendar, RefreshCw, BookMarked, X } from 'lucide-react';
+import { BookOpen, Search, QrCode, User, Shield, Calendar, RefreshCw, BookMarked, X, LogOut } from 'lucide-react';
 import type { Member } from '../types';
 
 interface NavbarProps {
@@ -11,6 +11,7 @@ interface NavbarProps {
   toggleRole: () => void;
   onOpenScanner: () => void;
   onOpenLogin: () => void;
+  onLogout?: () => void;
   onResetData: () => void;
 }
 
@@ -23,6 +24,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   toggleRole,
   onOpenScanner,
   onOpenLogin,
+  onLogout,
   onResetData
 }) => {
   // Context-aware search placeholder generator
@@ -160,6 +162,18 @@ export const Navbar: React.FC<NavbarProps> = ({
                   >
                     <Shield className="w-3.5 h-3.5" />
                     <span>Portal Caretaker</span>
+                  </button>
+                )}
+
+                {onLogout && (
+                  <button
+                    type="button"
+                    onClick={onLogout}
+                    className="px-2.5 py-1.5 rounded-xl text-xs font-bold text-rose-200 hover:text-white hover:bg-rose-900/60 transition-colors flex items-center gap-1 border border-rose-500/30 cursor-pointer"
+                    title="Keluar dari Akun"
+                  >
+                    <LogOut className="w-3.5 h-3.5" />
+                    <span>Keluar</span>
                   </button>
                 )}
               </>
