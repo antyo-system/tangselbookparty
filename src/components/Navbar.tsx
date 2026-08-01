@@ -1,10 +1,10 @@
 import React from 'react';
-import { BookOpen, Search, QrCode, User, Shield, Calendar, RefreshCw } from 'lucide-react';
+import { BookOpen, Search, QrCode, User, Shield, Calendar, RefreshCw, BookMarked } from 'lucide-react';
 import type { Member } from '../types';
 
 interface NavbarProps {
-  activeTab: 'catalog' | 'events' | 'profile' | 'admin';
-  setActiveTab: (tab: 'catalog' | 'events' | 'profile' | 'admin') => void;
+  activeTab: 'catalog' | 'events' | 'articles' | 'profile' | 'admin';
+  setActiveTab: (tab: 'catalog' | 'events' | 'articles' | 'profile' | 'admin') => void;
   searchQuery: string;
   setSearchQuery: (query: string) => void;
   member: Member;
@@ -82,6 +82,18 @@ export const Navbar: React.FC<NavbarProps> = ({
             >
               <Calendar className="w-4 h-4" />
               <span>Acara Komunitas</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('articles')}
+              className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-1.5 transition-all ${
+                activeTab === 'articles'
+                  ? 'bg-[#FFBF00] text-[#03321F] shadow-md'
+                  : 'text-emerald-100 hover:text-[#FFBF00] hover:bg-[#03321F]'
+              }`}
+            >
+              <BookMarked className="w-4 h-4" />
+              <span>Artikel & Tips</span>
             </button>
 
             <button

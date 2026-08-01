@@ -1,4 +1,4 @@
-import type { Book, BorrowRequest, ReservationQueueItem, BookReview, Member, CommunityEvent } from '../types';
+import type { Book, BorrowRequest, ReservationQueueItem, BookReview, Member, CommunityEvent, Article } from '../types';
 
 const INITIAL_BOOKS: Book[] = [
   {
@@ -275,6 +275,65 @@ const INITIAL_EVENTS: CommunityEvent[] = [
   }
 ];
 
+const INITIAL_ARTICLES: Article[] = [
+  {
+    id: 'ART-01',
+    title: '5 Spot Baca Buku Hidden Gem & Quiet Cafe Terfavorit di Bintaro & BSD',
+    slug: '5-spot-baca-buku-hidden-gem-bintaro-bsd',
+    excerpt: 'Mencari tempat membaca buku fisik yang tenang dengan pepohonan rimbun dan kopi nikmat di Tangerang Selatan? Simak 5 rekomendasi lokasi terbaik dari komunitas.',
+    content: [
+      'Membaca buku fisik memerlukan suasana yang tenang dan kondusif. Di kawasan Tangerang Selatan (Bintaro, BSD, Pamulang), terdapat beberapa lokasi ruang terbuka dan kafe berkonsep syahdu yang sangat cocok untuk menghabiskan akhir pekan bersama buku kesayangan.',
+      '1. Taman Bintaro Sector 7: Area pepohonan teduh dengan banyak bangku taman kayu. Sangat ramah untuk pembaca solo maupun kelompok kecil.',
+      '2. Bintaro Creative Hub: Fasilitas ruang terbuka kreatif lengkap dengan rak buku komunitas dan koneksi tenang.',
+      '3. Taman Kota 1 BSD (Serpong): Hutan kota bernuansa sejuk dengan suara gemericik air dan hembusan angin sepoi-sepoi.',
+      '4. Katros Kopi Pamulang: Kafe ramah pembaca dengan sudut Quiet Reading Corner khusus hari Sabtu sore.',
+      '5. Alun-Alun Pemkot Pamulang: Area santai sore hari yang cocok untuk membaca buku fiksi dan menikmati makanan ringan lokal.'
+    ],
+    author: 'Tim Komunitas Tangsel',
+    category: 'Literasi Tangsel',
+    readTime: '4 menit baca',
+    publishedDate: '1 Agustus 2026',
+    coverImage: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=800&q=80',
+    views: 342
+  },
+  {
+    id: 'ART-02',
+    title: 'Panduan Lengkap Peminjaman Buku Fisik Gratis Antar Anggota Komunitas',
+    slug: 'panduan-peminjaman-buku-fisik-gratis',
+    excerpt: 'Ingin meminjam buku fisik di Tangsel Book Party? Pelajari alur pengajuan, serah terima COD/meetup, dan etika merawat buku komunitas.',
+    content: [
+      'Tangsel Book Party hadir sebagai perpustakaan fisik independen berbasis komunitas. Seluruh proses peminjaman buku antar anggota dilakukan secara gratis tanpa biaya sewa.',
+      'Langkah 1: Cari & Pilih Buku. Jelajahi katalog online kami untuk menemukan buku fiksi, non-fiksi, maupun pengembangan diri.',
+      'Langkah 2: Pilih Durasi Peminjaman (7, 14, atau 21 hari) dan Metode Serah Terima (In-Person Meetup di event weekend atau Kurir/COD).',
+      'Langkah 3: Persetujuan WhatsApp. Sistem akan membuat tautan konfirmasi pesan WhatsApp langsung ke pemilik buku.',
+      'Langkah 4: Kembalikan Tepat Waktu. Jaga kebersihan sampul dan halaman buku agar anggota berikutnya dapat menikmati bacaan dengan nyaman.'
+    ],
+    author: 'Fian (Founder)',
+    category: 'Panduan Komunitas',
+    readTime: '3 menit baca',
+    publishedDate: '28 Juli 2026',
+    coverImage: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=800&q=80',
+    views: 520
+  },
+  {
+    id: 'ART-03',
+    title: 'Manfaat Membaca Buku Fisik vs E-Book: Meningkatkan Fokus & Retensi Memori',
+    slug: 'manfaat-membaca-buku-fisik-vs-ebook',
+    excerpt: 'Mengapa memegang buku kertas dan membalik halaman secara fisik memberikan ketenangan mental dan retensi ingatan yang lebih tinggi?',
+    content: [
+      'Di era serba digital dengan paparan layar smartphone yang konstan, membaca buku fisik menawarkan pengalaman tactile (sentuhan) yang tak tergantikan.',
+      'Studi neurologi menunjukkan bahwa tekstur kertas, aroma buku, dan navigasi fisik membantu otak menciptakan peta kognitif (*cognitive map*) yang memperkuat ingatan atas materi yang dibaca.',
+      'Selain itu, membaca buku kertas sebelum tidur terbukti bebas radiasi sinar biru (*blue light*), membantu tidur lebih nyenyak dan mengurangi tingkat stres harian.'
+    ],
+    author: 'Sarah (Anggota BSD)',
+    category: 'Gaya Hidup & Kesehatan',
+    readTime: '5 menit baca',
+    publishedDate: '25 Juli 2026',
+    coverImage: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=800&q=80',
+    views: 418
+  }
+];
+
 const CURRENT_MEMBER: Member = {
   id: 'USER-01',
   name: 'Budi Santoso',
@@ -287,12 +346,13 @@ const CURRENT_MEMBER: Member = {
 };
 
 const KEYS = {
-  BOOKS: 'tbp_books_v4',
-  REQUESTS: 'tbp_requests_v4',
-  QUEUES: 'tbp_queues_v4',
-  REVIEWS: 'tbp_reviews_v4',
-  MEMBER: 'tbp_member_v4',
-  EVENTS: 'tbp_events_v4'
+  BOOKS: 'tbp_books_v5',
+  REQUESTS: 'tbp_requests_v5',
+  QUEUES: 'tbp_queues_v5',
+  REVIEWS: 'tbp_reviews_v5',
+  MEMBER: 'tbp_member_v5',
+  EVENTS: 'tbp_events_v5',
+  ARTICLES: 'tbp_articles_v5'
 };
 
 export const StorageService = {
@@ -370,6 +430,15 @@ export const StorageService = {
     return JSON.parse(data);
   },
 
+  getArticles(): Article[] {
+    const data = localStorage.getItem(KEYS.ARTICLES);
+    if (!data) {
+      localStorage.setItem(KEYS.ARTICLES, JSON.stringify(INITIAL_ARTICLES));
+      return INITIAL_ARTICLES;
+    }
+    return JSON.parse(data);
+  },
+
   resetToDefault(): void {
     localStorage.setItem(KEYS.BOOKS, JSON.stringify(INITIAL_BOOKS));
     localStorage.setItem(KEYS.REQUESTS, JSON.stringify(INITIAL_REQUESTS));
@@ -377,5 +446,6 @@ export const StorageService = {
     localStorage.setItem(KEYS.REVIEWS, JSON.stringify(INITIAL_REVIEWS));
     localStorage.setItem(KEYS.MEMBER, JSON.stringify(CURRENT_MEMBER));
     localStorage.setItem(KEYS.EVENTS, JSON.stringify(INITIAL_EVENTS));
+    localStorage.setItem(KEYS.ARTICLES, JSON.stringify(INITIAL_ARTICLES));
   }
 };

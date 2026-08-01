@@ -103,3 +103,17 @@ export interface CommunityEvent {
   image: string;
   attendeesCount: number;
 }
+
+export interface Article {
+  id: string;
+  title: string;
+  slug: string;
+  excerpt: string;
+  content: string[];
+  author: string;
+  category: string;
+  readTime: string;
+  publishedDate: string;
+  coverImage: string;
+  views: number;
+}

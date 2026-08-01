@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import type { Book, BorrowRequest, ReservationQueueItem, BookReview, Member, CommunityEvent, HandoverMethod } from './types';
+import type { Book, BorrowRequest, ReservationQueueItem, BookReview, Member, CommunityEvent, HandoverMethod, Article } from './types';
 import { StorageService } from './services/storage';
 import { Navbar } from './components/Navbar';
 import { CatalogPage } from './pages/CatalogPage';
 import { EventsPage } from './pages/EventsPage';
+import { ArticlesPage } from './pages/ArticlesPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { AdminDashboard } from './pages/AdminDashboard';
 import { BookDetailModal } from './components/BookDetailModal';
@@ -23,9 +24,10 @@ export function App() {
   const [reviews, setReviews] = useState<BookReview[]>([]);
   const [member, setMember] = useState<Member>(StorageService.getCurrentMember());
   const [events, setEvents] = useState<CommunityEvent[]>([]);
+  const [articles, setArticles] = useState<Article[]>([]);
 
   // Navigation & UI state
-  const [activeTab, setActiveTab] = useState<'catalog' | 'events' | 'profile' | 'admin'>('catalog');
+  const [activeTab, setActiveTab] = useState<'catalog' | 'events' | 'articles' | 'profile' | 'admin'>('catalog');
   const [searchQuery, setSearchQuery] = useState('');
 
   // Modal States
@@ -46,6 +48,7 @@ export function App() {
     setQueues(StorageService.getQueues());
     setReviews(StorageService.getReviews());
     setEvents(StorageService.getEvents());
+    setArticles(StorageService.getArticles());
   }, []);
 
   // Save changes helper
@@ -338,6 +341,7 @@ export function App() {
       setReviews(StorageService.getReviews());
       setMember(StorageService.getCurrentMember());
       setEvents(StorageService.getEvents());
+      setArticles(StorageService.getArticles());
     }
   };
 
@@ -371,6 +375,8 @@ export function App() {
         )}
 
         {activeTab === 'events' && <EventsPage events={events} />}
+
+        {activeTab === 'articles' && <ArticlesPage articles={articles} />}
 
         {activeTab === 'profile' && (
           <ProfilePage
