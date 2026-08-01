@@ -93,7 +93,7 @@ Fokus: Membersihkan kode, testing, dan deploy production.
 
 - [x] **P4.1** — Audit & hapus kode/field bloat (lihat `docs/audit.md`)
 - [x] **P4.2** — Migrasi data dari localStorage ke Supabase penuh
-- [ ] **P4.3** — Supabase Row Level Security (RLS) policies
+- [x] **P4.3** — Supabase Row Level Security (RLS) policies
 - [x] **P4.4** — Update `supabase_schema.sql` sesuai PRD v1.1
 - [ ] **P4.5** — Error handling & loading states yang konsisten
 - [ ] **P4.6** — Responsive mobile testing

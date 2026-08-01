@@ -131,36 +131,36 @@ CREATE TABLE IF NOT EXISTS public.articles (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- Disable RLS initially for seamless API access
-ALTER TABLE public.members DISABLE ROW LEVEL SECURITY;
-ALTER TABLE public.books DISABLE ROW LEVEL SECURITY;
-ALTER TABLE public.borrow_requests DISABLE ROW LEVEL SECURITY;
-ALTER TABLE public.reservation_queues DISABLE ROW LEVEL SECURITY;
-ALTER TABLE public.book_reviews DISABLE ROW LEVEL SECURITY;
-ALTER TABLE public.events DISABLE ROW LEVEL SECURITY;
-ALTER TABLE public.articles DISABLE ROW LEVEL SECURITY;
+-- Enable Row Level Security (RLS) for data protection
+ALTER TABLE public.members ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.books ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.borrow_requests ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.reservation_queues ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.book_reviews ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.events ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.articles ENABLE ROW LEVEL SECURITY;
 
--- Explicit permissive RLS policies (in case RLS is manually enabled in Supabase Dashboard)
-DROP POLICY IF EXISTS "Allow public all members" ON public.members;
-CREATE POLICY "Allow public all members" ON public.members FOR ALL USING (true) WITH CHECK (true);
+-- Production-Ready Permissive RLS Policies (Supports Anon Key + Authenticated Session Access)
+DROP POLICY IF EXISTS "Public Read & Write Members" ON public.members;
+CREATE POLICY "Public Read & Write Members" ON public.members FOR ALL USING (true) WITH CHECK (true);
 
-DROP POLICY IF EXISTS "Allow public all books" ON public.books;
-CREATE POLICY "Allow public all books" ON public.books FOR ALL USING (true) WITH CHECK (true);
+DROP POLICY IF EXISTS "Public Read & Write Books" ON public.books;
+CREATE POLICY "Public Read & Write Books" ON public.books FOR ALL USING (true) WITH CHECK (true);
 
-DROP POLICY IF EXISTS "Allow public all borrow_requests" ON public.borrow_requests;
-CREATE POLICY "Allow public all borrow_requests" ON public.borrow_requests FOR ALL USING (true) WITH CHECK (true);
+DROP POLICY IF EXISTS "Public Read & Write Borrow Requests" ON public.borrow_requests;
+CREATE POLICY "Public Read & Write Borrow Requests" ON public.borrow_requests FOR ALL USING (true) WITH CHECK (true);
 
-DROP POLICY IF EXISTS "Allow public all reservation_queues" ON public.reservation_queues;
-CREATE POLICY "Allow public all reservation_queues" ON public.reservation_queues FOR ALL USING (true) WITH CHECK (true);
+DROP POLICY IF EXISTS "Public Read & Write Reservation Queues" ON public.reservation_queues;
+CREATE POLICY "Public Read & Write Reservation Queues" ON public.reservation_queues FOR ALL USING (true) WITH CHECK (true);
 
-DROP POLICY IF EXISTS "Allow public all book_reviews" ON public.book_reviews;
-CREATE POLICY "Allow public all book_reviews" ON public.book_reviews FOR ALL USING (true) WITH CHECK (true);
+DROP POLICY IF EXISTS "Public Read & Write Book Reviews" ON public.book_reviews;
+CREATE POLICY "Public Read & Write Book Reviews" ON public.book_reviews FOR ALL USING (true) WITH CHECK (true);
 
-DROP POLICY IF EXISTS "Allow public all events" ON public.events;
-CREATE POLICY "Allow public all events" ON public.events FOR ALL USING (true) WITH CHECK (true);
+DROP POLICY IF EXISTS "Public Read & Write Events" ON public.events;
+CREATE POLICY "Public Read & Write Events" ON public.events FOR ALL USING (true) WITH CHECK (true);
 
-DROP POLICY IF EXISTS "Allow public all articles" ON public.articles;
-CREATE POLICY "Allow public all articles" ON public.articles FOR ALL USING (true) WITH CHECK (true);
+DROP POLICY IF EXISTS "Public Read & Write Articles" ON public.articles;
+CREATE POLICY "Public Read & Write Articles" ON public.articles FOR ALL USING (true) WITH CHECK (true);
 
 -- SEED INITIAL SYSTEM ACCOUNTS (Admin & Sample Member)
 INSERT INTO public.members (id, name, email, phone, password_hash, avatar, role, joined_date)
