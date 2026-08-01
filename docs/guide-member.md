@@ -24,8 +24,7 @@ Tangsel Book Party adalah **perpustakaan buku fisik milik komunitas** di Tangera
 2. Klik **Buat Akun Baru**
 3. Isi: Nama, Email, No. HP, Password
 4. Klik **Daftar**
-5. Cek email kamu → klik link aktivasi yang dikirim
-6. Selesai! Kamu sudah jadi anggota 🎉
+5. Selesai! Kamu otomatis langsung masuk sebagai anggota 🎉
 
 ### Login
 1. Klik **Masuk**

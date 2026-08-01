@@ -93,8 +93,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({
       });
 
       if (res.success && res.member) {
-        // Show Activation Notice Modal
-        setActivationMember({ member: res.member, targetTab: res.targetTab });
+        // Direct instant login without email activation modal barrier
+        onLoginSuccess(res.member, res.targetTab);
       } else {
         setErrorMessage(res.message || 'Gagal mendaftar akun baru.');
       }
