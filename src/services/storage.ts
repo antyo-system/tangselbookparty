@@ -65,7 +65,7 @@ const INITIAL_BOOKS: Book[] = [
     author: 'Morgan Housel',
     isbn: '978-0857197689',
     genre: 'Bisnis',
-    coverImage: 'https://images.unsplash.com/photo-1554774853-a10877b768a7?auto=format&fit=crop&w=600&q=80',
+    coverImage: 'https://images.unsplash.com/photo-1592496431122-2349e0fbc666?auto=format&fit=crop&w=600&q=80',
     synopsis: 'Pelajaran abadi tentang kekayaan, ketakutan, dan kebahagiaan. Memahami keuangan bukan hanya soal matematika, tetapi tentang perilaku dan psikologi manusia.',
     favoriteQuote: 'Menghabiskan uang untuk menunjukkan kepada orang lain seberapa banyak uang yang Anda miliki adalah cara tercepat untuk memiliki lebih sedikit uang.',
     quoteSpeaker: 'Morgan Housel',
@@ -287,12 +287,12 @@ const CURRENT_MEMBER: Member = {
 };
 
 const KEYS = {
-  BOOKS: 'tbp_books_v3',
-  REQUESTS: 'tbp_requests_v3',
-  QUEUES: 'tbp_queues_v3',
-  REVIEWS: 'tbp_reviews_v3',
-  MEMBER: 'tbp_member_v3',
-  EVENTS: 'tbp_events_v3'
+  BOOKS: 'tbp_books_v4',
+  REQUESTS: 'tbp_requests_v4',
+  QUEUES: 'tbp_queues_v4',
+  REVIEWS: 'tbp_reviews_v4',
+  MEMBER: 'tbp_member_v4',
+  EVENTS: 'tbp_events_v4'
 };
 
 export const StorageService = {
