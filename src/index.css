@@ -10,10 +10,19 @@
 }
 
 @layer base {
-  body {
-    font-family: 'Montserrat', Arial, sans-serif;
+  *, *:before, *:after {
+    box-sizing: border-box;
+  }
+
+  html, body, #root {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden !important;
+    margin: 0;
+    padding: 0;
     background-color: #f8fafc;
     color: #0f172a;
+    font-family: 'Montserrat', Arial, sans-serif;
   }
 
   h1, h2, h3, h4 {
