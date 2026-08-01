@@ -1,8 +1,8 @@
 # Tangsel Book Party — Project Roadmap & Checklist
 
-> **Versi**: 1.0  
-> **Tanggal**: 1 Agustus 2026  
-> **Status**: Phase 0 selesai, Phase 1 sedang berjalan
+> **Versi**: 1.1  
+> **Tanggal**: 2 Agustus 2026  
+> **Status**: Phase 0–2 selesai, Phase 3–4 sebagian, Phase 5 (Book Collateral) planned
 
 ---
 
@@ -20,7 +20,7 @@ Fondasi proyek: setup, branding, dan dokumentasi awal.
 
 ---
 
-## Phase 1: Core MVP — Katalog & Peminjaman Buku 🔄 IN PROGRESS
+## Phase 1: Core MVP — Katalog & Peminjaman Buku ✅ SELESAI
 
 Fokus: Alur peminjaman buku yang **benar-benar bisa dipakai** end-to-end.
 
@@ -38,6 +38,9 @@ Fokus: Alur peminjaman buku yang **benar-benar bisa dipakai** end-to-end.
 - [x] **P1B.4** — Login fallback lokal (tanpa Supabase)
 - [x] **P1B.5** — Halaman "Buku Saya" di profil (daftar buku milik member)
 - [x] **P1B.6** — Form "Tambahkan Buku Saya" (member listing buku pribadi)
+- [x] **P1B.7** — Supabase Auth signUp integration & email verification
+- [x] **P1B.8** — Login error validation (wrong password vs unregistered)
+- [x] **P1B.9** — Forgot password modal & flow
 
 ### 1C. Alur Peminjaman
 - [x] **P1C.1** — Form peminjaman (durasi 7/14/21 hari, metode serah terima)
@@ -54,7 +57,7 @@ Fokus: Alur peminjaman buku yang **benar-benar bisa dipakai** end-to-end.
 
 ---
 
-## Phase 2: Admin Portal (Admin Dashboard)
+## Phase 2: Admin Portal (Admin Dashboard) ✅ SELESAI
 
 Fokus: Tools Admin untuk moderasi dan pengelolaan komunitas.
 
@@ -69,11 +72,10 @@ Fokus: Tools Admin untuk moderasi dan pengelolaan komunitas.
 - [x] **P2B.1** — CRUD inventaris buku
 - [x] **P2B.2** — CRUD artikel SEO
 - [x] **P2B.3** — CRUD event komunitas
-- [ ] **P2B.4** — Simplifikasi form CMS (hapus field yang tidak perlu)
 
 ---
 
-## Phase 3: Public Content Pages
+## Phase 3: Public Content Pages 🔄 80%
 
 Fokus: Halaman publik untuk SEO dan engagement komunitas.
 
@@ -85,42 +87,122 @@ Fokus: Halaman publik untuk SEO dan engagement komunitas.
 
 ---
 
-## Phase 4: Polish & Production Readiness
+## Phase 4: Polish & Production Readiness 🔄 40%
 
 Fokus: Membersihkan kode, testing, dan deploy production.
 
 - [x] **P4.1** — Audit & hapus kode/field bloat (lihat `docs/audit.md`)
 - [x] **P4.2** — Migrasi data dari localStorage ke Supabase penuh
 - [ ] **P4.3** — Supabase Row Level Security (RLS) policies
-- [x] **P4.4** — Update `supabase_schema.sql` sesuai PRD v1.1 (tambah `owner_id`, dll.)
+- [x] **P4.4** — Update `supabase_schema.sql` sesuai PRD v1.1
 - [ ] **P4.5** — Error handling & loading states yang konsisten
 - [ ] **P4.6** — Responsive mobile testing
 - [ ] **P4.7** — Build production & deploy (Vercel/Netlify)
 - [x] **P4.8** — Update README.md sesuai fitur aktual
+- [x] **P4.9** — Architecture & user flow documentation (`docs/architecture-userflow.md`)
 
 ---
 
-## Phase 5: Future Enhancements (Post-MVP)
+## Phase 5: Sistem Jaminan Buku (Book Collateral) ⬜ PLANNED
 
-- [ ] **P5.1** — Notifikasi push otomatis (Firebase Cloud Messaging)
-- [ ] **P5.2** — Reminder WhatsApp otomatis (cron job / Supabase Edge Functions)
-- [ ] **P5.3** — Perpanjangan masa pinjam online
-- [ ] **P5.4** — Reputasi / trust score pemilik & peminjam
-- [ ] **P5.5** — Gamifikasi (badge, leaderboard membaca)
-- [ ] **P5.6** — Chat dalam platform
-- [ ] **P5.7** — Hardware QR Scanner (bluetooth/USB)
+> **PRD Referensi**: [`docs/prd-book-collateral.md`](./prd-book-collateral.md)
+
+Fokus: Mekanisme "tukar sementara" — peminjam wajib menitipkan buku miliknya sebagai jaminan selama masa pinjam. Mencegah buku tidak dikembalikan tanpa melibatkan uang.
+
+### 5A. Fondasi Skor & Tipe Data (Backend)
+
+Menyiapkan infrastruktur data untuk Book Value Score (BVS) dan status collateral.
+
+- [ ] **P5A.1** — Tambah `conditionGrade` field ke `Book` interface (`types/index.ts`)
+  > Enum: `'Baik'` | `'Cukup'` | `'Kurang'`. Default: `'Baik'`
+- [ ] **P5A.2** — Tambah `bvsScore` field ke `Book` interface
+  > Auto-calculated integer (1–100). Tidak diisi manual.
+- [ ] **P5A.3** — Update `BookStatus` type: tambah `'collateral_hold'`
+  > `'available' | 'borrowed' | 'reserved' | 'collateral_hold'`
+- [ ] **P5A.4** — Tambah `collateralBookId` & `collateralBookTitle` ke `BorrowRequest` interface
+  > ID & judul buku jaminan yang dititipkan peminjam
+- [ ] **P5A.5** — Jalankan SQL migration di Supabase
+  ```sql
+  ALTER TABLE public.books ADD COLUMN IF NOT EXISTS condition_grade TEXT DEFAULT 'Baik';
+  ALTER TABLE public.books ADD COLUMN IF NOT EXISTS bvs_score INT;
+  ALTER TABLE public.borrow_requests ADD COLUMN IF NOT EXISTS collateral_book_id TEXT;
+  ALTER TABLE public.borrow_requests ADD COLUMN IF NOT EXISTS collateral_book_title TEXT;
+  ```
+
+### 5B. Implementasi BVS Calculator (Logic)
+
+Membangun fungsi kalkulasi skor otomatis dari metadata buku yang sudah ada.
+
+- [ ] **P5B.1** — Buat fungsi `calculateBVS(book: Book): number` di `services/supabase.ts`
+  > Formula: Kondisi (40%) + Halaman (20%) + Tahun (20%) + Rating (20%)
+- [ ] **P5B.2** — Auto-calculate BVS saat buku disimpan/di-upsert
+  > Panggil `calculateBVS()` di dalam `handleSaveBook` sebelum `updateBooks()`
+- [ ] **P5B.3** — Buat fungsi `getEligibleCollateralBooks(borrowerBooks, targetBVS): Book[]`
+  > Filter buku milik peminjam yang memenuhi syarat: status `available`, kondisi ≥ `Cukup`, BVS ≥ 60% target
+
+### 5C. UI — Form Pemilihan Jaminan (Frontend)
+
+Menambahkan 1 langkah tambahan ke modal peminjaman (BorrowModal).
+
+- [ ] **P5C.1** — Tambah input "Kondisi Buku" (dropdown: Baik/Cukup/Kurang) di `AddBookModal` & `AddMyBookModal`
+  > Ditampilkan saat member mendaftarkan atau mengedit buku
+- [ ] **P5C.2** — Tampilkan **BVS Badge** di `BookCard.tsx`
+  > 🟢 80-100 (Premium) | 🟡 50-79 (Standard) | 🔴 1-49 (Economy)
+- [ ] **P5C.3** — Tambah **Step 2: Pilih Buku Jaminan** di `BorrowModal.tsx`
+  > Dropdown/list buku milik peminjam yang eligible. Buku tidak eligible ditampilkan grayed-out.
+- [ ] **P5C.4** — Tampilkan info jaminan di halaman detail request (Admin & Member)
+  > "Buku Jaminan: [Judul] (BVS: 82)"
+- [ ] **P5C.5** — Tampilkan BVS score di `BookDetailModal.tsx`
+  > Section kecil di bawah info buku: "Nilai Buku (BVS): 94/100 — Premium"
+
+### 5D. Logic — Lifecycle Jaminan (State Management)
+
+Mengelola status buku jaminan secara otomatis sesuai siklus peminjaman.
+
+- [ ] **P5D.1** — Saat request disubmit: update buku jaminan ke status `collateral_hold`
+  > Buku jaminan tidak bisa dipinjam/dihapus selama masa hold
+- [ ] **P5D.2** — Saat buku dikembalikan: auto-release jaminan ke `available`
+  > Trigger di `handleReturnBook()` — buku jaminan kembali bisa dipakai
+- [ ] **P5D.3** — Saat request ditolak/dibatalkan: auto-release jaminan
+  > Trigger di `handleRejectRequest()` — jaminan langsung kembali
+- [ ] **P5D.4** — Proteksi: blokir penghapusan buku berstatus `collateral_hold`
+  > Tampilkan error: "Buku ini sedang digunakan sebagai jaminan peminjaman aktif"
+
+### 5E. Grace Rules & Trust System (Post-MVP)
+
+Pengecualian untuk peminjam baru dan member terpercaya.
+
+- [ ] **P5E.1** — Peminjam tanpa buku terdaftar: boleh pinjam buku BVS ≤ 50 tanpa jaminan (maks 1 aktif)
+- [ ] **P5E.2** — Buku komunitas: threshold jaminan turun ke 40% BVS
+- [ ] **P5E.3** — Trust badge "Terpercaya": member ≥ 5 pengembalian tepat waktu → threshold 50%
+- [ ] **P5E.4** — Trust score tracking di `Member` interface (total_returns, on_time_returns)
+
+---
+
+## Phase 6: Future Enhancements (Post-MVP) ⬜ PLANNED
+
+- [ ] **P6.1** — Notifikasi push otomatis (Firebase Cloud Messaging)
+- [ ] **P6.2** — Reminder WhatsApp otomatis (cron job / Supabase Edge Functions)
+- [ ] **P6.3** — Perpanjangan masa pinjam online
+- [ ] **P6.4** — Gamifikasi (badge, leaderboard membaca)
+- [ ] **P6.5** — Chat dalam platform
+- [ ] **P6.6** — Hardware QR Scanner (bluetooth/USB)
 
 ---
 
 ## Status Saat Ini: Di Mana Kita Sekarang?
 
 ```
-Phase 0  ██████████████████████  100%  ✅ Foundation
-Phase 1  ██████████████████████  100%  ✅ Core MVP (Katalog, Auth, P2P Lending, Buku Saya, Approval)
-Phase 2  ██████████████████████  100%  ✅ Admin Portal (Dashboard & CMS Form Simplifikasi)
+Phase 0  ██████████████████████  100%  ✅ Foundation & Planning
+Phase 1  ██████████████████████  100%  ✅ Core MVP (Katalog, Auth, P2P, Supabase Auth)
+Phase 2  ██████████████████████  100%  ✅ Admin Portal (Dashboard & CMS)
 Phase 3  ██████████████████░░░░   80%  🔄 Public Content (Pages ✅, SEO Meta ❌)
-Phase 4  ░░░░░░░░░░░░░░░░░░░░░░    0%  ⬜ Polish & Production
-Phase 5  ░░░░░░░░░░░░░░░░░░░░░░    0%  ⬜ Future
+Phase 4  ████████░░░░░░░░░░░░░░   40%  🔄 Polish & Production
+Phase 5  ░░░░░░░░░░░░░░░░░░░░░░    0%  ⬜ Book Collateral System
+Phase 6  ░░░░░░░░░░░░░░░░░░░░░░    0%  ⬜ Future Enhancements
 ```
 
-**Prioritas berikutnya**: Selesaikan **Phase 1** (P1A.5, P1B.5, P1B.6, P1C.4-7) — fitur peer-to-peer lending yang belum ada.
+**Prioritas berikutnya**:
+1. Selesaikan **Phase 4** — RLS, error handling, deploy production
+2. Mulai **Phase 5A** — Fondasi data collateral (types + SQL migration)
+3. Lanjut **Phase 5B–5D** — BVS calculator, UI jaminan, lifecycle management
