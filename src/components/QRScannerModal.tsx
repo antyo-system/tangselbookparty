@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { X, QrCode, Camera, CheckCircle2, RotateCcw } from 'lucide-react';
+import { X, Camera, CheckCircle2, RotateCcw } from 'lucide-react';
 import { Html5QrcodeScanner } from 'html5-qrcode';
 import type { Book } from '../types';
 
@@ -14,7 +14,6 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
   onClose,
   onScanResult
 }) => {
-  const [selectedBookId, setSelectedBookId] = useState<string>('');
   const [scannedBook, setScannedBook] = useState<Book | null>(null);
   const [scanMessage, setScanMessage] = useState<string>('');
   const scannerRef = useRef<Html5QrcodeScanner | null>(null);
@@ -53,19 +52,9 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
     const found = books.find((b) => b.id === bookId || b.isbn === bookId);
     if (found) {
       setScannedBook(found);
-      setScanMessage(`Successfully scanned ${found.title} (${found.id})`);
+      setScanMessage(`Berhasil memindai ${found.title} (${found.id})`);
     } else {
-      setScanMessage(`No book found matching ID: ${bookId}`);
-    }
-  };
-
-  const handleSimulateSelect = (bookId: string) => {
-    setSelectedBookId(bookId);
-    if (bookId) {
-      handleBookFound(bookId);
-    } else {
-      setScannedBook(null);
-      setScanMessage('');
+      setScanMessage(`Buku tidak ditemukan untuk ID: ${bookId}`);
     }
   };
 
@@ -106,28 +95,8 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
           <div className="bg-slate-50 border border-slate-200 rounded-2xl overflow-hidden p-2 text-center">
             <div id="reader" className="w-full"></div>
             <p className="text-[11px] text-slate-500 py-1 font-medium">
-              Point camera at QR Code on the book cover.
+              Arahkan kamera ke stiker QR Code pada buku fisik.
             </p>
-          </div>
-
-          {/* Quick Simulation Selector */}
-          <div className="space-y-2 bg-slate-50 p-4 rounded-2xl border border-slate-200">
-            <label className="text-xs font-extrabold text-[#053D27] flex items-center gap-1.5">
-              <QrCode className="w-4 h-4 text-[#053D27]" />
-              <span>Simulated QR Code Scanner (Test Pick)</span>
-            </label>
-            <select
-              value={selectedBookId}
-              onChange={(e) => handleSimulateSelect(e.target.value)}
-              className="w-full px-3 py-2 text-xs sm:text-sm bg-white text-slate-900 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#053D27] font-medium"
-            >
-              <option value="">-- Choose a book to simulate QR scan --</option>
-              {books.map((b) => (
-                <option key={b.id} value={b.id}>
-                  {b.id} - {b.title} [{b.status.toUpperCase()}]
-                </option>
-              ))}
-            </select>
           </div>
 
           {/* Scanned Book Action Card */}
