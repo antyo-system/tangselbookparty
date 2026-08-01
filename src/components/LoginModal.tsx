@@ -100,75 +100,33 @@ export const LoginModal: React.FC<LoginModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-white text-slate-900 flex flex-col md:flex-row w-full h-full min-h-screen overflow-y-auto animate-fade-in font-sans">
-      
-      {/* Left Side Branding Hero (Visible on Desktop) */}
-      <div className="hidden md:flex md:w-5/12 bg-[#03321F] text-white p-8 lg:p-12 flex-col justify-between relative overflow-hidden border-r border-[#FFBF00]/20 shrink-0">
-        <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-[#053D27] rounded-full blur-3xl opacity-50 pointer-events-none" />
-        <div className="absolute top-12 right-12 w-64 h-64 bg-[#D0DF00]/10 rounded-full blur-2xl opacity-40 pointer-events-none" />
+    <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-fade-in font-sans">
+      <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden border border-slate-200 animate-in fade-in zoom-in-95 duration-200 my-auto relative">
+        
+        {/* Header Banner */}
+        <div className="bg-[#03321F] p-6 text-white text-center relative border-b border-[#FFBF00]/30">
+          <button
+            type="button"
+            onClick={onClose}
+            className="absolute top-4 right-4 p-1.5 rounded-full bg-[#053D27] text-emerald-200 hover:text-white hover:bg-[#022416] transition-colors cursor-pointer"
+            title="Tutup Modal"
+          >
+            <X className="w-5 h-5" />
+          </button>
 
-        {/* Brand Top */}
-        <div className="relative z-10 flex items-center gap-3.5">
-          <div className="w-12 h-12 rounded-2xl overflow-hidden border-2 border-[#FFBF00] bg-[#022416] p-0.5 shadow-lg">
+          <div className="w-14 h-14 rounded-2xl mx-auto mb-3 overflow-hidden border-2 border-[#FFBF00] shadow-lg shadow-[#FFBF00]/20 bg-[#022416]">
             <img src="/tbp-logo.png" alt="Tangsel Book Party Logo" className="w-full h-full object-cover" />
           </div>
-          <div>
-            <h2 className="font-anton text-2xl tracking-wider text-white">
-              TANGSEL <span className="text-[#FFBF00]">BOOK PARTY</span>
-            </h2>
-            <p className="text-xs text-emerald-200 font-medium">CMS & Keanggotaan Perpustakaan Komunitas</p>
-          </div>
+
+          <h3 className="font-anton text-2xl tracking-wider text-white">
+            TANGSEL <span className="text-[#FFBF00]">BOOK PARTY</span>
+          </h3>
+          <p className="text-xs text-emerald-200 mt-0.5 font-medium">Perpustakaan Fisik Komunitas Tangerang Selatan</p>
         </div>
 
-        {/* Hero Headline */}
-        <div className="relative z-10 space-y-4 my-auto py-12">
-          <span className="px-3.5 py-1 rounded-full text-xs font-extrabold bg-[#FFBF00] text-[#03321F] uppercase tracking-wider inline-block">
-            Komunitas Baca Bintaro & Tangsel
-          </span>
-          <h1 className="font-anton text-4xl lg:text-5xl text-white tracking-wide leading-tight">
-            Ruang Baca Gratis & Peminjaman Buku Fisik Independent.
-          </h1>
-          <p className="text-sm text-emerald-100 font-medium leading-relaxed max-w-md">
-            Masuk ke portal keanggotaan untuk meminjam koleksi buku fisik, mengelola wishlist, dan mengakses portal pengurus Caretaker TBP.
-          </p>
-        </div>
-
-        {/* Hero Footer */}
-        <div className="relative z-10 border-t border-emerald-800/60 pt-6 text-xs text-emerald-300 flex items-center justify-between font-medium">
-          <span>© 2026 Tangsel Book Party</span>
-          <span className="text-[#FFBF00]">Tangerang Selatan, Banten</span>
-        </div>
-      </div>
-
-      {/* Right Side Form View (Full Screen Height) */}
-      <div className="flex-1 bg-white p-6 sm:p-12 flex flex-col justify-between min-h-screen overflow-y-auto w-full">
-        
-        {/* Top Navigation Row */}
-        <div className="flex items-center justify-between pb-6 border-b border-slate-100">
-          <div className="flex items-center gap-2.5 md:hidden">
-            <img src="/tbp-logo.png" alt="TBP Logo" className="w-8 h-8 rounded-lg border border-[#FFBF00]" />
-            <span className="font-anton text-lg tracking-wide text-[#03321F]">TANGSEL BOOK PARTY</span>
-          </div>
-
-          <div className="ml-auto">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 rounded-2xl bg-slate-100 hover:bg-[#03321F] text-slate-700 hover:text-white border border-slate-200 hover:border-[#03321F] text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shadow-xs"
-              title="Kembali ke Halaman Utama"
-            >
-              <X className="w-4 h-4 text-slate-500 hover:text-[#FFBF00]" />
-              <span>Kembali ke Website</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Center Main Form Container */}
-        <div className="max-w-md w-full mx-auto my-auto py-8 space-y-6">
-          
-          {/* Mode Selector Tabs (Login vs Register) */}
-          <div className="bg-slate-100 p-1.5 rounded-2xl border border-slate-200">
-            <div className="grid grid-cols-2 gap-1">
+        {/* Mode Selector Tabs (Login vs Register) */}
+        <div className="p-4 bg-slate-50 border-b border-slate-200">
+          <div className="grid grid-cols-2 gap-2 bg-slate-200/80 p-1 rounded-2xl">
             <button
               type="button"
               onClick={() => {
@@ -424,7 +382,6 @@ export const LoginModal: React.FC<LoginModalProps> = ({
           </form>
         )}
 
-        </div>
       </div>
     </div>
   );

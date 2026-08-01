@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { X, Calendar, Sparkles, CheckCircle2, AlertCircle, Info, ArrowLeft } from 'lucide-react';
+import { X, Calendar, Sparkles, CheckCircle2, AlertCircle, Info } from 'lucide-react';
 import type { CommunityEvent } from '../types';
 import { calculateEventReadinessScore } from '../utils/scoring';
 import { ImageUploader } from './ImageUploader';
@@ -87,46 +87,38 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-50 text-slate-900 flex flex-col w-full h-full min-h-screen overflow-y-auto animate-fade-in">
-      
-      {/* Sticky Fullscreen Topbar Header */}
-      <div className="sticky top-0 z-20 bg-[#03321F] text-white px-4 sm:px-8 py-4 border-b border-[#FFBF00]/30 flex items-center justify-between shadow-md">
-        <div className="flex items-center gap-3">
+    <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 overflow-y-auto animate-fade-in font-sans">
+      <div className="bg-white rounded-3xl shadow-2xl max-w-3xl w-full max-h-[90vh] border border-slate-200 flex flex-col overflow-hidden my-auto relative">
+        
+        {/* Header Banner */}
+        <div className="bg-[#03321F] text-white px-6 py-4 border-b border-[#FFBF00]/30 flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-[#053D27] border border-[#FFBF00]/40 flex items-center justify-center text-[#FFBF00] shrink-0">
+              <Calendar className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="font-anton text-lg sm:text-xl tracking-wide text-white">
+                {eventToEdit ? 'EDIT ACARA KOMUNITAS' : 'TAMBAH ACARA KOMUNITAS BARU'}
+              </h3>
+              <p className="text-[11px] text-emerald-200 font-medium">Logistics & Operational Readiness Score System</p>
+            </div>
+          </div>
+
           <button
             type="button"
             onClick={onClose}
-            className="px-3.5 py-2 rounded-2xl bg-[#053D27] hover:bg-[#085a3a] text-emerald-100 hover:text-white border border-[#FFBF00]/30 text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shadow-sm"
-            title="Kembali ke Dashboard CMS"
+            className="p-1.5 rounded-full bg-[#053D27] text-emerald-200 hover:text-white hover:bg-[#022416] transition-colors cursor-pointer"
+            title="Tutup Modal"
           >
-            <ArrowLeft className="w-4 h-4 text-[#FFBF00]" />
-            <span className="hidden sm:inline">Kembali ke Dashboard</span>
+            <X className="w-5 h-5" />
           </button>
-
-          <div className="h-6 w-px bg-emerald-800/60 hidden sm:block" />
-
-          <div>
-            <h3 className="font-anton text-lg sm:text-xl tracking-wide text-white flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-[#FFBF00]" />
-              <span>{eventToEdit ? 'EDIT ACARA KOMUNITAS' : 'TAMBAH ACARA KOMUNITAS BARU'}</span>
-            </h3>
-            <p className="text-[11px] text-emerald-200 hidden sm:block font-medium">Logistics & Operational Readiness Score System</p>
-          </div>
         </div>
 
-        <button
-          type="button"
-          onClick={onClose}
-          className="p-2 rounded-full hover:bg-rose-900/60 text-emerald-200 hover:text-white transition-colors cursor-pointer"
-        >
-          <X className="w-5 h-5 text-rose-300" />
-        </button>
-      </div>
-
-      <div className="flex-1 bg-white text-slate-900 w-full min-h-screen">
-        <div className="max-w-5xl mx-auto p-4 sm:p-8 space-y-6 pb-20">
+        {/* Modal Scrollable Content */}
+        <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-white">
 
           {/* Live Event Readiness Score Gauge Banner */}
-          <div className="bg-slate-900 text-white p-6 rounded-3xl border border-slate-800 flex items-center justify-between shadow-md">
+          <div className="bg-slate-900 text-white p-5 rounded-2xl border border-slate-800 flex items-center justify-between shadow-md">
           <div className="flex items-center gap-3">
             <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm font-mono border ${
               readinessResult.score >= 80 ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' :
