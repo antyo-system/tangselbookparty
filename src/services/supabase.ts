@@ -96,7 +96,7 @@ export async function authenticateUser(identifier: string, password: string): Pr
       return {
         success: false,
         targetTab: 'admin',
-        message: 'Kata sandi admin tidak cocok. Gunakan password: admin123'
+        message: 'Username / Email atau Kata Sandi yang Anda masukkan salah. Silakan periksa kembali.'
       };
     }
   }
@@ -117,7 +117,7 @@ export async function authenticateUser(identifier: string, password: string): Pr
       return {
         success: false,
         targetTab: 'profile',
-        message: 'Kata sandi salah. Gunakan password demo: user123'
+        message: 'Username / Email atau Kata Sandi yang Anda masukkan salah. Silakan periksa kembali.'
       };
     }
   }
@@ -144,7 +144,7 @@ export async function authenticateUser(identifier: string, password: string): Pr
   return {
     success: false,
     targetTab: 'profile',
-    message: 'Username / Password tidak terdaftar. Silakan buat akun baru.'
+    message: 'Username / Email atau Kata Sandi yang Anda masukkan salah. Silakan periksa kembali.'
   };
 }
 
