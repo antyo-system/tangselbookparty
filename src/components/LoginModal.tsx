@@ -100,33 +100,52 @@ export const LoginModal: React.FC<LoginModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-      <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden border border-slate-200 animate-in fade-in zoom-in-95 duration-200 my-auto">
-        
-        {/* Header Banner */}
-        <div className="bg-[#03321F] p-6 text-white text-center relative border-b border-[#FFBF00]/30">
-          <button
-            type="button"
-            onClick={onClose}
-            className="absolute top-4 right-4 p-1.5 rounded-full bg-[#053D27] text-emerald-200 hover:text-white hover:bg-[#022416] transition-colors"
-            title="Tutup Modal"
-          >
-            <X className="w-5 h-5" />
-          </button>
-
-          <div className="w-14 h-14 rounded-2xl mx-auto mb-3 overflow-hidden border-2 border-[#FFBF00] shadow-lg shadow-[#FFBF00]/20 bg-[#022416]">
-            <img src="/tbp-logo.png" alt="Tangsel Book Party Logo" className="w-full h-full object-cover" />
+    <div className="fixed inset-0 z-50 bg-[#03321F] text-slate-900 flex flex-col w-full h-full min-h-screen overflow-y-auto animate-fade-in">
+      
+      {/* Fullscreen Sticky Header Bar */}
+      <div className="sticky top-0 z-20 bg-[#022416] text-white px-4 sm:px-8 py-4 border-b border-[#FFBF00]/20 flex items-center justify-between shadow-md">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl overflow-hidden border border-[#FFBF00] bg-slate-900 shrink-0">
+            <img src="/tbp-logo.png" alt="Tangsel Book Party" className="w-full h-full object-cover" />
           </div>
-
-          <h3 className="font-anton text-2xl tracking-wider text-white">
-            TANGSEL <span className="text-[#FFBF00]">BOOK PARTY</span>
-          </h3>
-          <p className="text-xs text-emerald-200 mt-0.5 font-medium">Perpustakaan Fisik Komunitas Tangerang Selatan</p>
+          <div>
+            <h3 className="font-anton text-lg sm:text-xl tracking-wide text-white flex items-center gap-1.5">
+              <span>TANGSEL</span> <span className="text-[#FFBF00]">BOOK PARTY</span>
+            </h3>
+            <p className="text-[11px] text-emerald-200 hidden sm:block">Portal Masuk Akun & Keanggotaan Perpustakaan Komunitas</p>
+          </div>
         </div>
 
-        {/* Mode Selector Tabs (Login vs Register) */}
-        <div className="p-4 bg-slate-50 border-b border-slate-200">
-          <div className="grid grid-cols-2 gap-2 bg-slate-200/80 p-1 rounded-2xl">
+        <button
+          type="button"
+          onClick={onClose}
+          className="px-4 py-2 rounded-2xl bg-[#053D27] hover:bg-[#085a3a] text-emerald-100 hover:text-white border border-[#FFBF00]/30 text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shadow-sm"
+          title="Kembali ke Website Utama"
+        >
+          <X className="w-4 h-4 text-[#FFBF00]" />
+          <span>Kembali ke Website</span>
+        </button>
+      </div>
+
+      {/* Fullscreen Content Area */}
+      <div className="flex-1 flex items-center justify-center p-4 sm:p-8 w-full max-w-7xl mx-auto my-auto">
+        <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full overflow-hidden border border-slate-200 my-auto">
+          
+          {/* Header Banner Inside Card */}
+          <div className="bg-[#03321F] p-6 text-white text-center border-b border-[#FFBF00]/30">
+            <div className="w-14 h-14 rounded-2xl mx-auto mb-3 overflow-hidden border-2 border-[#FFBF00] shadow-lg shadow-[#FFBF00]/20 bg-[#022416]">
+              <img src="/tbp-logo.png" alt="Tangsel Book Party Logo" className="w-full h-full object-cover" />
+            </div>
+
+            <h3 className="font-anton text-2xl tracking-wider text-white">
+              TANGSEL <span className="text-[#FFBF00]">BOOK PARTY</span>
+            </h3>
+            <p className="text-xs text-emerald-200 mt-0.5 font-medium">Perpustakaan Fisik Komunitas Tangerang Selatan</p>
+          </div>
+
+          {/* Mode Selector Tabs (Login vs Register) */}
+          <div className="p-4 bg-slate-50 border-b border-slate-200">
+            <div className="grid grid-cols-2 gap-2 bg-slate-200/80 p-1 rounded-2xl">
             <button
               type="button"
               onClick={() => {
@@ -382,6 +401,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
           </form>
         )}
 
+        </div>
       </div>
     </div>
   );

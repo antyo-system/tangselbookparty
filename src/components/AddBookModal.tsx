@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { X, BookOpen, Sparkles, CheckCircle2, AlertCircle, Info } from 'lucide-react';
+import { X, BookOpen, Sparkles, CheckCircle2, AlertCircle, Info, ArrowLeft } from 'lucide-react';
 import type { Book, BookConditionGrade, HandoverMethod } from '../types';
 import { calculateCatalogHealthScore } from '../utils/scoring';
 import { ImageUploader } from './ImageUploader';
@@ -88,30 +88,46 @@ export const AddBookModal: React.FC<AddBookModalProps> = ({ bookToEdit, onClose,
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-2 sm:p-4 bg-slate-900/70 backdrop-blur-md animate-fade-in overflow-y-auto">
-      <div className="bg-white text-slate-900 rounded-t-3xl sm:rounded-3xl max-w-2xl w-full max-h-[92vh] sm:max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-200 flex flex-col my-0 sm:my-auto">
-        
-        {/* Header */}
-        <div className="sticky top-0 z-10 bg-[#053D27] text-white px-6 py-4 border-b border-[#03321F] flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <BookOpen className="w-5 h-5 text-[#FFBF00]" />
-            <div>
-              <h3 className="font-anton text-xl tracking-wide text-white">
-                {bookToEdit ? 'EDIT KATALOG BUKU' : 'TAMBAH KATALOG BUKU'}
-              </h3>
-              <p className="text-[11px] text-emerald-200">Management & Health Audit Score System</p>
-            </div>
-          </div>
+    <div className="fixed inset-0 z-50 bg-slate-50 text-slate-900 flex flex-col w-full h-full min-h-screen overflow-y-auto animate-fade-in">
+      
+      {/* Sticky Fullscreen Topbar Header */}
+      <div className="sticky top-0 z-20 bg-[#03321F] text-white px-4 sm:px-8 py-4 border-b border-[#FFBF00]/30 flex items-center justify-between shadow-md">
+        <div className="flex items-center gap-3">
           <button
+            type="button"
             onClick={onClose}
-            className="p-1 rounded-full hover:bg-[#03321F] text-emerald-200 hover:text-white transition-colors"
+            className="px-3.5 py-2 rounded-2xl bg-[#053D27] hover:bg-[#085a3a] text-emerald-100 hover:text-white border border-[#FFBF00]/30 text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shadow-sm"
+            title="Kembali ke Dashboard Admin"
           >
-            <X className="w-5 h-5" />
+            <ArrowLeft className="w-4 h-4 text-[#FFBF00]" />
+            <span className="hidden sm:inline">Kembali ke Dashboard</span>
           </button>
+
+          <div className="h-6 w-px bg-emerald-800/60 hidden sm:block" />
+
+          <div>
+            <h3 className="font-anton text-lg sm:text-xl tracking-wide text-white flex items-center gap-2">
+              <BookOpen className="w-5 h-5 text-[#FFBF00]" />
+              <span>{bookToEdit ? 'EDIT KATALOG BUKU' : 'TAMBAH BUKU FISIK BARU'}</span>
+            </h3>
+            <p className="text-[11px] text-emerald-200 hidden sm:block font-medium">CMS Management & Real-time Health Audit Score</p>
+          </div>
         </div>
 
-        {/* Live Catalog Health Score Widget Banner */}
-        <div className="bg-slate-900 text-white px-6 py-3 border-b border-slate-800 flex items-center justify-between">
+        <button
+          type="button"
+          onClick={onClose}
+          className="p-2 rounded-full hover:bg-rose-900/60 text-emerald-200 hover:text-white transition-colors cursor-pointer"
+        >
+          <X className="w-5 h-5 text-rose-300" />
+        </button>
+      </div>
+
+      <div className="flex-1 max-w-4xl w-full mx-auto p-4 sm:p-8 space-y-6 pb-20">
+        <div className="bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden">
+
+          {/* Live Catalog Health Score Widget Banner */}
+          <div className="bg-slate-900 text-white px-6 py-4 border-b border-slate-800 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm font-mono border ${
               healthResult.score >= 80 ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' :
@@ -394,6 +410,7 @@ export const AddBookModal: React.FC<AddBookModalProps> = ({ bookToEdit, onClose,
 
       </div>
     </div>
-  );
+  </div>
+);
 };
 
