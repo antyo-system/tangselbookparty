@@ -298,21 +298,85 @@ export function App() {
     }
   };
 
-  // Add New Book
-  const handleAddBookSubmit = (
-    newBookData: Omit<Book, 'id' | 'status' | 'rating' | 'reviewsCount' | 'queueCount'>
-  ) => {
-    const newBook: Book = {
-      ...newBookData,
-      id: `TBP-BOOK-${String(books.length + 1).padStart(3, '0')}`,
-      status: 'available',
-      rating: 5.0,
-      reviewsCount: 0,
-      queueCount: 0
-    };
+  const updateArticles = (newArticles: Article[]) => {
+    setArticles(newArticles);
+    StorageService.saveArticles(newArticles);
+  };
 
-    updateBooks([newBook, ...books]);
-    setShowAddBook(false);
+  const updateEvents = (newEvents: CommunityEvent[]) => {
+    setEvents(newEvents);
+    StorageService.saveEvents(newEvents);
+  };
+
+  // CMS Katalog Book Save / Delete
+  const handleSaveBook = (
+    bookData: Omit<Book, 'id' | 'status' | 'rating' | 'reviewsCount' | 'queueCount'> & { id?: string }
+  ) => {
+    if (bookData.id) {
+      // Edit existing book
+      const nextBooks = books.map((b) => (b.id === bookData.id ? { ...b, ...bookData } : b));
+      updateBooks(nextBooks);
+    } else {
+      // Add new book
+      const newBook: Book = {
+        ...bookData,
+        id: `TBP-BOOK-${String(books.length + 1).padStart(3, '0')}`,
+        status: 'available',
+        rating: 5.0,
+        reviewsCount: 0,
+        queueCount: 0
+      };
+      updateBooks([newBook, ...books]);
+    }
+  };
+
+  const handleDeleteBook = (bookId: string) => {
+    const nextBooks = books.filter((b) => b.id !== bookId);
+    updateBooks(nextBooks);
+  };
+
+  // CMS Article Save / Delete
+  const handleSaveArticle = (
+    articleData: Omit<Article, 'id' | 'views'> & { id?: string }
+  ) => {
+    if (articleData.id) {
+      const nextArticles = articles.map((a) => (a.id === articleData.id ? { ...a, ...articleData } : a));
+      updateArticles(nextArticles);
+    } else {
+      const newArticle: Article = {
+        ...articleData,
+        id: `ART-${String(articles.length + 1).padStart(2, '0')}`,
+        views: 1
+      };
+      updateArticles([newArticle, ...articles]);
+    }
+  };
+
+  const handleDeleteArticle = (articleId: string) => {
+    const nextArticles = articles.filter((a) => a.id !== articleId);
+    updateArticles(nextArticles);
+  };
+
+  // CMS Event Save / Delete
+  const handleSaveEvent = (
+    eventData: Omit<CommunityEvent, 'id' | 'attendeesCount'> & { id?: string }
+  ) => {
+    if (eventData.id) {
+      const nextEvents = events.map((e) => (e.id === eventData.id ? { ...e, ...eventData } : e));
+      updateEvents(nextEvents);
+    } else {
+      const newEvent: CommunityEvent = {
+        ...eventData,
+        id: `EVT-${String(events.length + 1).padStart(2, '0')}`,
+        attendeesCount: 0
+      };
+      updateEvents([newEvent, ...events]);
+    }
+  };
+
+  const handleDeleteEvent = (eventId: string) => {
+    const nextEvents = events.filter((e) => e.id !== eventId);
+    updateEvents(nextEvents);
   };
 
   // Wishlist Toggle
@@ -395,10 +459,17 @@ export function App() {
             books={books}
             requests={requests}
             queues={queues}
+            events={events}
+            articles={articles}
             onApproveRequest={handleApproveRequest}
             onRejectRequest={handleRejectRequest}
             onReturnBook={handleReturnBook}
-            onOpenAddBook={() => setShowAddBook(true)}
+            onSaveBook={handleSaveBook}
+            onDeleteBook={handleDeleteBook}
+            onSaveArticle={handleSaveArticle}
+            onDeleteArticle={handleDeleteArticle}
+            onSaveEvent={handleSaveEvent}
+            onDeleteEvent={handleDeleteEvent}
             onOpenScanner={() => setShowScanner(true)}
             onShowQR={(book) => setQrModalBook(book)}
             onOpenWAReminder={(req, type) => setWaReminderData({ request: req, type })}
@@ -456,7 +527,10 @@ export function App() {
       {showAddBook && (
         <AddBookModal
           onClose={() => setShowAddBook(false)}
-          onAddBook={handleAddBookSubmit}
+          onAddBook={(bookData) => {
+            handleSaveBook(bookData);
+            setShowAddBook(false);
+          }}
         />
       )}
 

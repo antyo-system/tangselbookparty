@@ -430,6 +430,10 @@ export const StorageService = {
     return JSON.parse(data);
   },
 
+  saveEvents(events: CommunityEvent[]): void {
+    localStorage.setItem(KEYS.EVENTS, JSON.stringify(events));
+  },
+
   getArticles(): Article[] {
     const data = localStorage.getItem(KEYS.ARTICLES);
     if (!data) {
@@ -437,6 +441,10 @@ export const StorageService = {
       return INITIAL_ARTICLES;
     }
     return JSON.parse(data);
+  },
+
+  saveArticles(articles: Article[]): void {
+    localStorage.setItem(KEYS.ARTICLES, JSON.stringify(articles));
   },
 
   resetToDefault(): void {
