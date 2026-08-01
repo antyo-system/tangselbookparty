@@ -19,14 +19,35 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
   const [cameraError, setCameraError] = useState<string | null>(null);
   const html5QrCodeRef = useRef<Html5Qrcode | null>(null);
 
-  const handleBookFound = (bookId: string) => {
-    const cleanId = bookId.trim();
-    const found = books.find((b) => b.id === cleanId || b.isbn === cleanId || cleanId.includes(b.id));
+  const parseQRText = (rawText: string): string => {
+    const trimmed = rawText.trim();
+    if (trimmed.startsWith('{')) {
+      try {
+        const parsed = JSON.parse(trimmed);
+        return parsed.id || parsed.isbn || parsed.title || trimmed;
+      } catch (e) {
+        return trimmed;
+      }
+    }
+    return trimmed;
+  };
+
+  const handleBookFound = (rawText: string) => {
+    const clean = parseQRText(rawText);
+    const lowerClean = clean.toLowerCase();
+
+    const found = books.find((b) => {
+      const idMatch = b.id.toLowerCase() === lowerClean || lowerClean.includes(b.id.toLowerCase());
+      const isbnMatch = b.isbn && (b.isbn.toLowerCase() === lowerClean || lowerClean.includes(b.isbn.toLowerCase()));
+      const titleMatch = b.title.toLowerCase().includes(lowerClean) || lowerClean.includes(b.title.toLowerCase());
+      return idMatch || isbnMatch || titleMatch;
+    });
+
     if (found) {
       setScannedBook(found);
-      setScanMessage(`Berhasil memindai "${found.title}" (${found.id})`);
+      setScanMessage(`✅ QR TERBACA INSTAN: "${found.title}" (${found.id})`);
     } else {
-      setScanMessage(`Buku tidak ditemukan untuk kode QR: ${cleanId}`);
+      setScanMessage(`⚠️ QR Terbaca (${clean}), namun tidak ditemukan di katalog.`);
     }
   };
 
@@ -47,20 +68,15 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
       await qrCodeInstance.start(
         { facingMode: 'environment' },
         {
-          fps: 10,
-          qrbox: { width: 220, height: 220 }
+          fps: 20, // High scan rate for instant sub-second detection
+          qrbox: (viewfinderWidth, viewfinderHeight) => {
+            const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
+            const edge = Math.floor(minEdge * 0.85);
+            return { width: Math.max(edge, 220), height: Math.max(edge, 220) };
+          }
         },
         (decodedText) => {
-          try {
-            let bookId = decodedText;
-            if (decodedText.startsWith('{')) {
-              const parsed = JSON.parse(decodedText);
-              bookId = parsed.id || decodedText;
-            }
-            handleBookFound(bookId);
-          } catch {
-            handleBookFound(decodedText);
-          }
+          handleBookFound(decodedText);
         },
         () => {
           // Frame scan quiet error
