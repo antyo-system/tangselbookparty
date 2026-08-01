@@ -25,19 +25,19 @@ export const Navbar: React.FC<NavbarProps> = ({
 }) => {
   return (
     <header className="sticky top-0 z-40 bg-[#053D27]/95 backdrop-blur-md border-b border-[#03321F] shadow-md transition-all">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-14 sm:h-16 gap-3">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-14 sm:h-16 gap-2 sm:gap-3">
           
           {/* Logo */}
           <div 
             onClick={() => setActiveTab('catalog')}
-            className="flex items-center gap-2 cursor-pointer group flex-shrink-0"
+            className="flex items-center gap-2 cursor-pointer group min-w-0 flex-shrink"
           >
-            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#FFBF00] flex items-center justify-center text-[#03321F] font-extrabold shadow-md shadow-[#FFBF00]/20 group-hover:scale-105 transition-transform">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-[#FFBF00] flex items-center justify-center text-[#03321F] font-extrabold shadow-md shadow-[#FFBF00]/20 group-hover:scale-105 transition-transform flex-shrink-0">
               <BookOpen className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
-            <div>
-              <div className="font-anton text-lg sm:text-xl tracking-wider text-white leading-tight group-hover:text-[#D0DF00] transition-colors">
+            <div className="min-w-0">
+              <div className="font-anton text-base sm:text-xl tracking-wide text-white leading-none group-hover:text-[#D0DF00] transition-colors truncate">
                 TANGSEL <span className="text-[#FFBF00]">BOOK PARTY</span>
               </div>
               <p className="text-[9px] sm:text-[10px] text-[#D0DF00] font-bold tracking-widest uppercase hidden sm:block">PERPUSTAKAAN KOMUNITAS</p>
@@ -126,11 +126,11 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
 
           {/* Mobile Right Action Bar */}
-          <div className="flex items-center gap-2 md:hidden">
+          <div className="flex items-center gap-1.5 md:hidden flex-shrink-0">
             <button
               onClick={toggleRole}
               title="Simulasi role"
-              className="px-2.5 py-1 rounded-full text-[10px] font-extrabold bg-[#FFBF00] text-[#03321F]"
+              className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-[#FFBF00] text-[#03321F] whitespace-nowrap"
             >
               {member.role === 'admin' ? '👑 Admin' : '👤 Member'}
             </button>
@@ -147,15 +147,15 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
 
         {/* Mobile Search input */}
-        <div className="pb-2.5 pt-1 md:hidden">
+        <div className="pb-2 pt-0.5 md:hidden">
           <div className="relative">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#D0DF00]" />
+            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-[#D0DF00]" />
             <input
               type="text"
-              placeholder="Cari Judul, Penulis, Genre, ISBN..."
+              placeholder="Cari judul, penulis, ISBN..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 py-1.5 text-xs bg-[#03321F] text-white border border-[#FFBF00]/30 rounded-full focus:outline-none focus:ring-2 focus:ring-[#D0DF00]"
+              className="w-full pl-8 pr-3 py-1.5 text-xs bg-[#03321F] text-white border border-[#FFBF00]/30 rounded-full focus:outline-none focus:ring-2 focus:ring-[#D0DF00] placeholder:text-emerald-200/60"
             />
           </div>
         </div>
