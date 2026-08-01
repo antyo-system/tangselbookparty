@@ -15,6 +15,7 @@ interface ProfilePageProps {
   onApproveRequest?: (requestId: string) => void;
   onRejectRequest?: (requestId: string) => void;
   onReturnBook?: (bookId: string) => void;
+  onConfirmReceiveBook?: (requestId: string) => void;
   onOpenLogin?: () => void;
   onLogout?: () => void;
 }
@@ -31,6 +32,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   onApproveRequest,
   onRejectRequest,
   onReturnBook,
+  onConfirmReceiveBook,
   onOpenLogin,
   onLogout
 }) => {
@@ -439,22 +441,49 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                       />
                       <div className="flex-1 space-y-1.5">
                         <div className="flex items-center justify-between">
-                          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-100 text-amber-800 uppercase">
-                            {req.status}
+                          <span
+                            className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${
+                              req.status === 'pending'
+                                ? 'bg-amber-100 text-amber-800 border border-amber-300'
+                                : req.status === 'approved'
+                                ? 'bg-blue-100 text-blue-800 border border-blue-300'
+                                : 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                            }`}
+                          >
+                            {req.status === 'pending'
+                              ? '🟡 SEDANG DIAJUKAN'
+                              : req.status === 'approved'
+                              ? '🔵 DISETUJUI (SIAP SERAH TERIMA)'
+                              : '🟢 SUDAH DITERIMA (DIPINJAM)'}
                           </span>
                           <span className="text-[11px] text-slate-400 font-mono">REQ: {req.id}</span>
                         </div>
                         <h3 className="font-bold text-slate-900 text-sm">{req.bookTitle}</h3>
-                        <div className="text-xs text-slate-700 space-y-0.5 bg-slate-50 p-2 rounded-xl border border-slate-100">
+                        <div className="text-xs text-slate-700 space-y-0.5 bg-slate-50 p-2.5 rounded-xl border border-slate-100">
                           <div className="flex justify-between">
                             <span className="text-slate-500">Jatuh Tempo:</span>
-                            <span className="font-bold text-amber-600">{req.dueDate || 'Menunggu persetujuan'}</span>
+                            <span className="font-bold text-emerald-700">{req.dueDate || 'Menunggu persetujuan'}</span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-slate-500">Serah Terima:</span>
+                            <span className="text-slate-500">Metode Serah Terima:</span>
                             <span className="font-semibold text-slate-800 capitalize">{req.handoverMethod}</span>
                           </div>
                         </div>
+
+                        {/* Confirmation Button when Request is Approved */}
+                        {req.status === 'approved' && onConfirmReceiveBook && (
+                          <div className="pt-1">
+                            <button
+                              type="button"
+                              onClick={() => onConfirmReceiveBook(req.id)}
+                              className="w-full py-2 bg-[#053D27] hover:bg-[#022416] text-[#D0DF00] border border-[#FFBF00]/40 font-extrabold rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-md transition-all cursor-pointer active:scale-98"
+                            >
+                              <CheckCircle2 className="w-4 h-4 text-[#FFBF00]" />
+                              <span>📦 Konfirmasi Sudah Terima Buku</span>
+                            </button>
+                          </div>
+                        )}
+
                         {matchingBook && (
                           <button
                             onClick={() => onSelectBook(matchingBook)}

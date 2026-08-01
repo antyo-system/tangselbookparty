@@ -189,6 +189,20 @@ export function App() {
     const targetBook = books.find((b) => b.id === bookId);
     if (!targetBook) return;
 
+    // Prevent Duplicate Active Requests by Same Member
+    const existingReq = requests.find(
+      (r) =>
+        r.bookId === bookId &&
+        (r.userId === member.id || (r.userName && member.name && r.userName.toLowerCase().trim() === member.name.toLowerCase().trim())) &&
+        (r.status === 'pending' || r.status === 'approved' || r.status === 'borrowed')
+    );
+
+    if (existingReq) {
+      showToast(`Anda sudah memiliki pengajuan aktif untuk "${targetBook.title}".`, 'error');
+      setBorrowModalBook(null);
+      return;
+    }
+
     const todayStr = new Date().toISOString().split('T')[0];
     const dueDateObj = new Date();
     dueDateObj.setDate(dueDateObj.getDate() + durationDays);
@@ -225,6 +239,20 @@ export function App() {
     const targetBook = books.find((b) => b.id === bookId);
     if (!targetBook) return;
 
+    // Prevent Duplicate Queue Entries
+    const existingQueue = queues.find(
+      (q) =>
+        q.bookId === bookId &&
+        (q.userId === member.id || (q.userName && member.name && q.userName.toLowerCase().trim() === member.name.toLowerCase().trim())) &&
+        q.status === 'waiting'
+    );
+
+    if (existingQueue) {
+      showToast(`Anda sudah terdaftar di antrean "${targetBook.title}" (Posisi #${existingQueue.queuePosition}).`, 'error');
+      setBorrowModalBook(null);
+      return;
+    }
+
     const currentBookQueues = queues.filter((q) => q.bookId === bookId && q.status === 'waiting');
     const newPosition = currentBookQueues.length + 1;
 
@@ -253,13 +281,43 @@ export function App() {
     showToast(`Berhasil mendaftar antrean untuk "${targetBook.title}"!`);
   };
 
-  // Admin Approval Handlers
+  // Admin / Owner Approval Handlers
   const handleApproveRequest = (requestId: string) => {
     const targetReq = requests.find((r) => r.id === requestId);
     if (!targetReq) return;
 
     const updatedRequests = requests.map((r) =>
-      r.id === requestId ? { ...r, status: 'borrowed' as const, approvedBy: 'admin' as const } : r
+      r.id === requestId ? { ...r, status: 'approved' as const, approvedBy: 'admin' as const } : r
+    );
+
+    const updatedBooks = books.map((b) =>
+      b.id === targetReq.bookId
+        ? {
+            ...b,
+            status: 'reserved' as const,
+            currentBorrower: targetReq.userName,
+            currentBorrowerId: targetReq.userId,
+            currentDueDate: targetReq.dueDate
+          }
+        : b
+    );
+
+    updateRequests(updatedRequests);
+    updateBooks(updatedBooks);
+    showToast(`Peminjaman "${targetReq.bookTitle}" disetujui! Peminjam dapat mengonfirmasi serah terima.`);
+  };
+
+  // Confirm Physical Handover Receipt (By Borrower or Admin)
+  const handleConfirmReceiveBook = (requestId: string) => {
+    const targetReq = requests.find((r) => r.id === requestId);
+    if (!targetReq) return;
+
+    const dueDateObj = new Date();
+    dueDateObj.setDate(dueDateObj.getDate() + targetReq.durationDays);
+    const dueDateStr = dueDateObj.toISOString().split('T')[0];
+
+    const updatedRequests = requests.map((r) =>
+      r.id === requestId ? { ...r, status: 'borrowed' as const, dueDate: dueDateStr } : r
     );
 
     const updatedBooks = books.map((b) =>
@@ -268,14 +326,15 @@ export function App() {
             ...b,
             status: 'borrowed' as const,
             currentBorrower: targetReq.userName,
-            currentDueDate: targetReq.dueDate
+            currentBorrowerId: targetReq.userId,
+            currentDueDate: dueDateStr
           }
         : b
     );
 
     updateRequests(updatedRequests);
     updateBooks(updatedBooks);
-    showToast(`Peminjaman "${targetReq.bookTitle}" disetujui!`);
+    showToast(`Konfirmasi serah terima buku "${targetReq.bookTitle}" berhasil!`);
   };
 
   const handleRejectRequest = (requestId: string) => {
@@ -601,6 +660,7 @@ export function App() {
             onApproveRequest={handleApproveRequest}
             onRejectRequest={handleRejectRequest}
             onReturnBook={handleReturnBook}
+            onConfirmReceiveBook={handleConfirmReceiveBook}
             onOpenLogin={() => setActiveTab('login')}
             onLogout={handleLogout}
           />
@@ -650,6 +710,8 @@ export function App() {
           book={selectedBookDetail}
           reviews={reviews}
           isWishlisted={member.wishlist.includes(selectedBookDetail.id)}
+          member={member}
+          requests={requests}
           onClose={() => setSelectedBookDetail(null)}
           onBorrow={(b) => setBorrowModalBook(b)}
           onShowQR={(b) => setQrModalBook(b)}

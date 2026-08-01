@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { X, Star, MapPin, User, QrCode, Quote, Send, Clock, ArrowRight, Heart } from 'lucide-react';
-import type { Book, BookReview } from '../types';
+import type { Book, BookReview, Member, BorrowRequest } from '../types';
 
 interface BookDetailModalProps {
   book: Book | null;
   reviews: BookReview[];
   isWishlisted: boolean;
+  member?: Member;
+  requests?: BorrowRequest[];
   onClose: () => void;
   onBorrow: (book: Book) => void;
   onShowQR: (book: Book) => void;
@@ -17,6 +19,8 @@ export const BookDetailModal: React.FC<BookDetailModalProps> = ({
   book,
   reviews,
   isWishlisted,
+  member,
+  requests,
   onClose,
   onBorrow,
   onShowQR,
@@ -29,6 +33,19 @@ export const BookDetailModal: React.FC<BookDetailModalProps> = ({
   if (!book) return null;
 
   const bookReviews = reviews.filter((r) => r.bookId === book.id);
+
+  const cleanMemName = member?.name?.toLowerCase().trim();
+  const isOwner = member && (
+    (book.ownerId && book.ownerId === member.id) ||
+    (book.ownerName && cleanMemName && book.ownerName.toLowerCase().trim() === cleanMemName)
+  );
+
+  const existingRequest = member && requests && requests.find(
+    (r) =>
+      r.bookId === book.id &&
+      (r.userId === member.id || (r.userName && cleanMemName && r.userName.toLowerCase().trim() === cleanMemName)) &&
+      (r.status === 'pending' || r.status === 'approved' || r.status === 'borrowed')
+  );
   const isAvailable = book.status === 'available';
 
   const handleSubmitReview = (e: React.FormEvent) => {
@@ -153,20 +170,44 @@ export const BookDetailModal: React.FC<BookDetailModalProps> = ({
               </div>
 
               {/* Action CTA */}
-              <button
-                onClick={() => {
-                  onClose();
-                  onBorrow(book);
-                }}
-                className={`w-full py-3.5 px-4 rounded-2xl text-sm font-extrabold flex items-center justify-center gap-2 shadow-lg transition-all ${
-                  isAvailable
-                    ? 'bg-[#FFBF00] text-[#03321F] hover:bg-[#053D27] hover:text-[#D0DF00] shadow-amber-200'
-                    : 'bg-[#053D27] text-[#D0DF00] hover:bg-[#FFBF00] hover:text-[#03321F] shadow-emerald-200'
-                }`}
-              >
-                <span>{isAvailable ? 'Ajukan Peminjaman Buku' : 'Masuk Antrian Reservasi'}</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
+              {isOwner ? (
+                <button
+                  disabled
+                  className="w-full py-3.5 px-4 rounded-2xl text-xs font-extrabold bg-slate-100 text-slate-500 border border-slate-200 flex items-center justify-center gap-2 cursor-not-allowed"
+                >
+                  <span>📗 Buku Ini Adalah Koleksi Pribadi Anda</span>
+                </button>
+              ) : existingRequest ? (
+                <button
+                  disabled
+                  className="w-full py-3.5 px-4 rounded-2xl text-xs font-extrabold bg-amber-100 text-amber-900 border border-amber-300 flex items-center justify-center gap-2 cursor-not-allowed"
+                >
+                  <span>
+                    🟡 Sudah Diajukan (
+                    {existingRequest.status === 'pending'
+                      ? 'Menunggu Persetujuan'
+                      : existingRequest.status === 'approved'
+                      ? 'Siap Serah Terima'
+                      : 'Sedang Dipinjam'}
+                    )
+                  </span>
+                </button>
+              ) : (
+                <button
+                  onClick={() => {
+                    onClose();
+                    onBorrow(book);
+                  }}
+                  className={`w-full py-3.5 px-4 rounded-2xl text-sm font-extrabold flex items-center justify-center gap-2 shadow-lg transition-all cursor-pointer ${
+                    isAvailable
+                      ? 'bg-[#FFBF00] text-[#03321F] hover:bg-[#053D27] hover:text-[#D0DF00] shadow-amber-200'
+                      : 'bg-[#053D27] text-[#D0DF00] hover:bg-[#FFBF00] hover:text-[#03321F] shadow-emerald-200'
+                  }`}
+                >
+                  <span>{isAvailable ? 'Ajukan Peminjaman Buku' : 'Masuk Antrian Reservasi'}</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              )}
 
             </div>
 
