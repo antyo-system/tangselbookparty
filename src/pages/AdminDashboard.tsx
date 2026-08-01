@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { 
-  Shield, BookOpen, Clock, CheckCircle2, XCircle, QrCode, Plus, 
+  BookOpen, Clock, CheckCircle2, XCircle, QrCode, Plus, 
   MessageSquare, Search, RotateCcw, Users, Printer, Edit, Trash2, 
-  Calendar, BookMarked, Eye, LogOut, ArrowLeft, Activity, PanelLeftClose, PanelLeftOpen
+  Calendar, BookMarked, Eye, LogOut, ArrowLeft, PanelLeftClose, PanelLeftOpen
 } from 'lucide-react';
 import type { Book, BorrowRequest, ReservationQueueItem, CommunityEvent, Article } from '../types';
 import { AddBookModal } from '../components/AddBookModal';

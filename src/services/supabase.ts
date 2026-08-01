@@ -21,6 +21,7 @@ const DEFAULT_ACCOUNTS: Member[] = [
     name: 'Fian',
     email: 'admin@tangselbookparty.org',
     phone: '+6281234567890',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=FianAdmin',
     joinedDate: 'Desember 2024',
     role: 'admin',
     wishlist: ['TBP-BOOK-001']
@@ -30,6 +31,7 @@ const DEFAULT_ACCOUNTS: Member[] = [
     name: 'Budi Santoso',
     email: 'budi@tangselbookparty.org',
     phone: '+6281234567890',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=BudiMember',
     joinedDate: 'Januari 2025',
     role: 'member',
     wishlist: ['TBP-BOOK-002']
@@ -64,6 +66,7 @@ export async function authenticateUser(identifier: string, password: string): Pr
             name: data.name,
             email: data.email,
             phone: data.phone,
+            avatar: data.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(data.name || 'User')}`,
             joinedDate: data.joined_date || 'Agustus 2026',
             role: data.role === 'admin' ? 'admin' : 'member',
             wishlist: data.wishlist || []
@@ -121,13 +124,15 @@ export async function authenticateUser(identifier: string, password: string): Pr
 
   // General registration fallback login
   if (cleanPass.length >= 4) {
+    const fallbackName = identifier.includes('@') ? identifier.split('@')[0] : identifier;
     return {
       success: true,
       member: {
         id: `usr_${Date.now()}`,
-        name: identifier.includes('@') ? identifier.split('@')[0] : identifier,
+        name: fallbackName,
         email: identifier.includes('@') ? identifier : `${identifier}@tangselbookparty.org`,
         phone: '+6281234567890',
+        avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(fallbackName)}`,
         joinedDate: 'Agustus 2026',
         role: 'member',
         wishlist: []
@@ -166,6 +171,7 @@ export async function registerUser(params: {
     name,
     email,
     phone: phone.startsWith('+62') ? phone : `+62${phone.replace(/^0/, '')}`,
+    avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(name)}`,
     joinedDate: 'Agustus 2026',
     role: 'member', // Strictly member role
     wishlist: []

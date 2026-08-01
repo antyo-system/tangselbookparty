@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, User, Lock, Eye, EyeOff, LogIn, UserPlus, Phone, Mail, Shield, CheckCircle2, ArrowRight } from 'lucide-react';
+import { X, User, Lock, Eye, EyeOff, LogIn, UserPlus, Phone, Mail, CheckCircle2 } from 'lucide-react';
 import type { Member } from '../types';
 import { authenticateUser, registerUser } from '../services/supabase';
 
@@ -335,24 +335,6 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                 <Phone className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
               </div>
             </div>
-
-            {/* Caretaker Passcode field if Admin role */}
-            {regRole === 'admin' && (
-              <div className="space-y-1 bg-amber-50 p-2.5 rounded-xl border border-amber-200">
-                <label className="text-xs font-bold text-amber-900 block flex items-center gap-1">
-                  <Shield className="w-3.5 h-3.5 text-amber-700" />
-                  <span>Kode Otentikasi Caretaker *</span>
-                </label>
-                <input
-                  type="password"
-                  required
-                  value={caretakerCode}
-                  onChange={(e) => setCaretakerCode(e.target.value)}
-                  placeholder="Passcode khusus pengurus (tangsel2026)"
-                  className="w-full px-3 py-1.5 text-xs bg-white border border-amber-300 rounded-lg focus:ring-2 focus:ring-amber-600 focus:outline-none font-mono"
-                />
-              </div>
-            )}
 
             {/* Password */}
             <div className="space-y-1">

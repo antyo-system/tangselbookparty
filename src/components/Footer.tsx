@@ -1,5 +1,5 @@
 import React from 'react';
-import { BookOpen, Heart, MapPin, Sparkles } from 'lucide-react';
+import { Heart, MapPin, Sparkles } from 'lucide-react';
 
 export const Footer: React.FC = () => {
   return (

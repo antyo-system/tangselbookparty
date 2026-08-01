@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BookOpen, Clock, Heart, Users, CheckCircle2, ArrowRight, User, LogIn, LogOut, Shield } from 'lucide-react';
+import { BookOpen, Clock, Heart, Users, CheckCircle2, ArrowRight, User, LogIn, LogOut } from 'lucide-react';
 import type { Member, Book, BorrowRequest, ReservationQueueItem } from '../types';
 
 interface ProfilePageProps {
