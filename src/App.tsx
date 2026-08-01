@@ -374,9 +374,9 @@ export function App() {
           />
         )}
 
-        {activeTab === 'events' && <EventsPage events={events} />}
+        {activeTab === 'events' && <EventsPage events={events} searchQuery={searchQuery} />}
 
-        {activeTab === 'articles' && <ArticlesPage articles={articles} />}
+        {activeTab === 'articles' && <ArticlesPage articles={articles} searchQuery={searchQuery} />}
 
         {activeTab === 'profile' && (
           <ProfilePage

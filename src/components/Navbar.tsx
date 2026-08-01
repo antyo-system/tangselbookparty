@@ -1,5 +1,5 @@
 import React from 'react';
-import { BookOpen, Search, QrCode, User, Shield, Calendar, RefreshCw, BookMarked, Filter } from 'lucide-react';
+import { BookOpen, Search, QrCode, User, Shield, Calendar, RefreshCw, BookMarked, X } from 'lucide-react';
 import type { Member } from '../types';
 
 interface NavbarProps {
@@ -23,12 +23,28 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenScanner,
   onResetData
 }) => {
-  const genres = ['Semua Genre', 'Fiksi', 'Non-Fiksi', 'Pengembangan Diri', 'Komik', 'Bisnis'];
+  // Context-aware search placeholder generator
+  const getSearchPlaceholder = () => {
+    switch (activeTab) {
+      case 'catalog':
+        return 'Cari judul buku, penulis, ISBN...';
+      case 'events':
+        return 'Cari lokasi & event (Bintaro, BSD, Pamulang)...';
+      case 'articles':
+        return 'Cari artikel & tips literasi...';
+      case 'profile':
+        return 'Cari di koleksi dipinjam & wishlist...';
+      case 'admin':
+        return 'Cari permintaan pinjaman & anggota...';
+      default:
+        return 'Cari di Tangsel Book Party...';
+    }
+  };
 
   return (
     <header className="sticky top-0 z-40 bg-[#053D27]/95 backdrop-blur-md border-b border-[#03321F] shadow-md transition-all">
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-14 sm:h-16 gap-2 sm:gap-3">
+        <div className="flex items-center justify-between h-14 sm:h-16 gap-2 sm:gap-4">
           
           {/* Logo */}
           <div 
@@ -46,41 +62,28 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
           </div>
 
-          {/* Desktop Search Bar with Filter Dropdown */}
+          {/* Context-Aware Global Search Bar (Desktop) */}
           <div className="flex-1 max-w-md hidden md:block">
-            <div className="flex items-center bg-[#03321F] border border-[#FFBF00]/35 rounded-full px-3 py-1 focus-within:ring-2 focus-within:ring-[#D0DF00] focus-within:border-[#D0DF00] transition-all">
+            <div className="relative flex items-center bg-[#03321F] border border-[#FFBF00]/30 rounded-full px-3.5 py-1.5 focus-within:ring-2 focus-within:ring-[#D0DF00] focus-within:border-[#D0DF00] transition-all">
               <Search className="w-4 h-4 text-[#D0DF00] flex-shrink-0" />
               
               <input
                 type="text"
-                placeholder="Cari buku, penulis, ISBN..."
+                placeholder={getSearchPlaceholder()}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-transparent px-2.5 py-1 text-xs text-white placeholder:text-emerald-200/50 focus:outline-none"
+                className="w-full bg-transparent px-2.5 text-xs text-white placeholder:text-emerald-200/50 focus:outline-none"
               />
 
-              {/* Integrated Search Filter */}
-              <div className="flex items-center gap-1 border-l border-[#FFBF00]/30 pl-2 flex-shrink-0">
-                <Filter className="w-3 h-3 text-[#FFBF00]" />
-                <select
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    if (val === 'Semua Genre') {
-                      setSearchQuery('');
-                    } else {
-                      setSearchQuery(val);
-                    }
-                  }}
-                  className="bg-transparent text-[11px] font-bold text-[#FFBF00] focus:outline-none cursor-pointer pr-1"
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="text-emerald-300 hover:text-white p-0.5"
+                  title="Bersihkan pencarian"
                 >
-                  {genres.map((g) => (
-                    <option key={g} value={g} className="bg-[#053D27] text-white">
-                      {g}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
             </div>
           </div>
 
@@ -190,11 +193,19 @@ export const Navbar: React.FC<NavbarProps> = ({
             <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-[#D0DF00]" />
             <input
               type="text"
-              placeholder="Cari judul, penulis, ISBN..."
+              placeholder={getSearchPlaceholder()}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-8 pr-3 py-1.5 text-xs bg-[#03321F] text-white border border-[#FFBF00]/30 rounded-full focus:outline-none focus:ring-2 focus:ring-[#D0DF00] placeholder:text-emerald-200/60"
+              className="w-full pl-8 pr-7 py-1.5 text-xs bg-[#03321F] text-white border border-[#FFBF00]/30 rounded-full focus:outline-none focus:ring-2 focus:ring-[#D0DF00] placeholder:text-emerald-200/60"
             />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-emerald-300 hover:text-white p-0.5"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            )}
           </div>
         </div>
 
