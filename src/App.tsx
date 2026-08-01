@@ -32,8 +32,38 @@ export function App() {
   const [events, setEvents] = useState<CommunityEvent[]>([]);
   const [articles, setArticles] = useState<Article[]>([]);
 
-  // Navigation & UI state
-  const [activeTab, setActiveTab] = useState<'catalog' | 'events' | 'articles' | 'profile' | 'admin' | 'login'>('catalog');
+  // Active Tab & Session Restoration
+  const getInitialTab = (): 'catalog' | 'events' | 'articles' | 'profile' | 'admin' | 'login' => {
+    try {
+      const currentMember = StorageService.getCurrentMember();
+      const savedTab = localStorage.getItem('tbp_active_tab_v1');
+
+      if (savedTab && ['catalog', 'events', 'articles', 'profile', 'admin', 'login'].includes(savedTab)) {
+        if (savedTab === 'admin' && currentMember.role !== 'admin') {
+          return 'catalog';
+        }
+        return savedTab as any;
+      }
+      if (currentMember.role === 'admin') {
+        return 'admin';
+      }
+    } catch {
+      // fallback
+    }
+    return 'catalog';
+  };
+
+  const [activeTab, setActiveTabState] = useState<'catalog' | 'events' | 'articles' | 'profile' | 'admin' | 'login'>(getInitialTab);
+
+  const setActiveTab = (tab: 'catalog' | 'events' | 'articles' | 'profile' | 'admin' | 'login') => {
+    setActiveTabState(tab);
+    try {
+      localStorage.setItem('tbp_active_tab_v1', tab);
+    } catch {
+      // quiet error
+    }
+  };
+
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {

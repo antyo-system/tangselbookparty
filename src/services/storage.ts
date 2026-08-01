@@ -403,7 +403,7 @@ export const StorageService = {
     }
     try {
       const parsed = JSON.parse(data);
-      if (parsed.name === 'Fian' || parsed.id === 'usr_admin_01') {
+      if (parsed.name === 'Fian') {
         localStorage.setItem(KEYS.MEMBER, JSON.stringify(GUEST_MEMBER));
         return GUEST_MEMBER;
       }
