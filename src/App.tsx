@@ -80,6 +80,17 @@ export function App() {
     type: 'due_soon' | 'overdue' | 'approval';
   } | null>(null);
 
+  // Toast Notification State & Loading Sync State
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'info' | 'error' } | null>(null);
+  const [isSyncing, setIsSyncing] = useState<boolean>(true);
+
+  const showToast = (message: string, type: 'success' | 'info' | 'error' = 'success') => {
+    setToast({ message, type });
+    setTimeout(() => {
+      setToast(null);
+    }, 4000);
+  };
+
   // Initial Load from Storage & Supabase Sync
   useEffect(() => {
     // 1. Instant local load
@@ -92,43 +103,50 @@ export function App() {
 
     // 2. Async Supabase Sync (if configured)
     async function syncSupabaseData() {
-      const [remoteBooks, remoteRequests, remoteEvents, remoteArticles] = await Promise.all([
-        fetchBooksFromSupabase(),
-        fetchRequestsFromSupabase(),
-        fetchEventsFromSupabase(),
-        fetchArticlesFromSupabase()
-      ]);
+      setIsSyncing(true);
+      try {
+        const [remoteBooks, remoteRequests, remoteEvents, remoteArticles] = await Promise.all([
+          fetchBooksFromSupabase(),
+          fetchRequestsFromSupabase(),
+          fetchEventsFromSupabase(),
+          fetchArticlesFromSupabase()
+        ]);
 
-      const localBooks = StorageService.getBooks();
-      if (remoteBooks && remoteBooks.length > 0) {
-        setBooks(remoteBooks);
-        StorageService.saveBooksLocallyOnly(remoteBooks);
-      } else if (localBooks && localBooks.length > 0) {
-        localBooks.forEach((b) => upsertBookToSupabase(b));
-      }
+        const localBooks = StorageService.getBooks();
+        if (remoteBooks && remoteBooks.length > 0) {
+          setBooks(remoteBooks);
+          StorageService.saveBooksLocallyOnly(remoteBooks);
+        } else if (localBooks && localBooks.length > 0) {
+          localBooks.forEach((b) => upsertBookToSupabase(b));
+        }
 
-      const localRequests = StorageService.getRequests();
-      if (remoteRequests && remoteRequests.length > 0) {
-        setRequests(remoteRequests);
-        StorageService.saveRequestsLocallyOnly(remoteRequests);
-      } else if (localRequests && localRequests.length > 0) {
-        localRequests.forEach((r) => upsertRequestToSupabase(r));
-      }
+        const localRequests = StorageService.getRequests();
+        if (remoteRequests && remoteRequests.length > 0) {
+          setRequests(remoteRequests);
+          StorageService.saveRequestsLocallyOnly(remoteRequests);
+        } else if (localRequests && localRequests.length > 0) {
+          localRequests.forEach((r) => upsertRequestToSupabase(r));
+        }
 
-      const localEvents = StorageService.getEvents();
-      if (remoteEvents && remoteEvents.length > 0) {
-        setEvents(remoteEvents);
-        StorageService.saveEventsLocallyOnly(remoteEvents);
-      } else if (localEvents && localEvents.length > 0) {
-        localEvents.forEach((evt) => upsertEventToSupabase(evt));
-      }
+        const localEvents = StorageService.getEvents();
+        if (remoteEvents && remoteEvents.length > 0) {
+          setEvents(remoteEvents);
+          StorageService.saveEventsLocallyOnly(remoteEvents);
+        } else if (localEvents && localEvents.length > 0) {
+          localEvents.forEach((evt) => upsertEventToSupabase(evt));
+        }
 
-      const localArticles = StorageService.getArticles();
-      if (remoteArticles && remoteArticles.length > 0) {
-        setArticles(remoteArticles);
-        StorageService.saveArticlesLocallyOnly(remoteArticles);
-      } else if (localArticles && localArticles.length > 0) {
-        localArticles.forEach((art) => upsertArticleToSupabase(art));
+        const localArticles = StorageService.getArticles();
+        if (remoteArticles && remoteArticles.length > 0) {
+          setArticles(remoteArticles);
+          StorageService.saveArticlesLocallyOnly(remoteArticles);
+        } else if (localArticles && localArticles.length > 0) {
+          localArticles.forEach((art) => upsertArticleToSupabase(art));
+        }
+      } catch (e) {
+        console.warn('Sync warning:', e);
+      } finally {
+        setIsSyncing(false);
       }
     }
 
@@ -196,6 +214,7 @@ export function App() {
     const nextRequests = [newRequest, ...requests];
     updateRequests(nextRequests);
     setBorrowModalBook(null);
+    showToast(`Permintaan pinjam "${targetBook.title}" berhasil diajukan!`);
   };
 
   const handleQueueSubmit = (
@@ -231,6 +250,7 @@ export function App() {
     updateBooks(updatedBooks);
     updateQueues([...queues, newQueueItem]);
     setBorrowModalBook(null);
+    showToast(`Berhasil mendaftar antrean untuk "${targetBook.title}"!`);
   };
 
   // Admin Approval Handlers
@@ -255,6 +275,7 @@ export function App() {
 
     updateRequests(updatedRequests);
     updateBooks(updatedBooks);
+    showToast(`Peminjaman "${targetReq.bookTitle}" disetujui!`);
   };
 
   const handleRejectRequest = (requestId: string) => {
@@ -512,6 +533,27 @@ export function App() {
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900 font-sans antialiased w-full max-w-full overflow-x-hidden box-border">
       
+      {/* Sync Indicator Bar */}
+      {isSyncing && (
+        <div className="bg-[#053D27] text-white text-xs py-1 px-4 text-center flex items-center justify-center gap-2 animate-pulse z-50">
+          <span className="w-2 h-2 rounded-full bg-[#FFBF00]"></span>
+          <span>Menyingkronkan data terbaru dengan server Supabase...</span>
+        </div>
+      )}
+
+      {/* Global Toast Notification */}
+      {toast && (
+        <div className="fixed bottom-20 right-4 sm:bottom-6 sm:right-6 z-50 max-w-sm w-full bg-[#03321F] text-white p-4 rounded-2xl shadow-2xl border border-[#FFBF00]/40 flex items-center justify-between gap-3 animate-fade-in">
+          <div className="flex items-center gap-2.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#FFBF00] shrink-0"></span>
+            <p className="text-xs font-semibold text-emerald-100">{toast.message}</p>
+          </div>
+          <button onClick={() => setToast(null)} className="text-xs text-emerald-300 hover:text-white font-bold p-1">
+            ✕
+          </button>
+        </div>
+      )}
+
       {/* Top Navigation - Hidden when in Admin Dashboard */}
       {!isEditingAdmin && (
         <Navbar

@@ -95,8 +95,8 @@ Fokus: Membersihkan kode, testing, dan deploy production.
 - [x] **P4.2** — Migrasi data dari localStorage ke Supabase penuh
 - [x] **P4.3** — Supabase Row Level Security (RLS) policies
 - [x] **P4.4** — Update `supabase_schema.sql` sesuai PRD v1.1
-- [ ] **P4.5** — Error handling & loading states yang konsisten
-- [ ] **P4.6** — Responsive mobile testing
+- [x] **P4.5** — Error handling & loading states yang konsisten
+- [x] **P4.6** — Responsive mobile testing
 - [ ] **P4.7** — Build production & deploy (Vercel/Netlify)
 - [x] **P4.8** — Update README.md sesuai fitur aktual
 - [x] **P4.9** — Architecture & user flow documentation (`docs/architecture-userflow.md`)
