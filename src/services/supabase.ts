@@ -396,6 +396,20 @@ export async function fetchBooksFromSupabase(): Promise<Book[] | null> {
 export async function upsertBookToSupabase(book: Book): Promise<boolean> {
   if (!supabase) return false;
   try {
+    // Sanitize owner_id to prevent Foreign Key constraint error if user ID is not yet in Supabase members table
+    let safeOwnerId: string | null = book.ownerId || null;
+    if (safeOwnerId) {
+      const { data: ownerCheck } = await supabase
+        .from('members')
+        .select('id')
+        .eq('id', safeOwnerId)
+        .maybeSingle();
+
+      if (!ownerCheck) {
+        safeOwnerId = null;
+      }
+    }
+
     const { error } = await supabase.from('books').upsert({
       id: book.id,
       title: book.title,
@@ -407,7 +421,7 @@ export async function upsertBookToSupabase(book: Book): Promise<boolean> {
       favorite_quote: book.favoriteQuote,
       quote_speaker: book.quoteSpeaker,
       status: book.status,
-      owner_id: book.ownerId,
+      owner_id: safeOwnerId,
       owner_name: book.ownerName,
       owner_location: book.ownerLocation,
       shelf_location: book.shelfLocation,
@@ -420,7 +434,12 @@ export async function upsertBookToSupabase(book: Book): Promise<boolean> {
       current_due_date: book.currentDueDate,
       queue_count: book.queueCount
     });
-    return !error;
+
+    if (error) {
+      console.error('Supabase books upsert error:', error.message);
+      return false;
+    }
+    return true;
   } catch (e) {
     console.warn('Failed to upsert book to Supabase:', e);
     return false;
@@ -469,13 +488,25 @@ export async function fetchRequestsFromSupabase(): Promise<BorrowRequest[] | nul
 export async function upsertRequestToSupabase(req: BorrowRequest): Promise<boolean> {
   if (!supabase) return false;
   try {
+    let safeOwnerId: string | null = req.ownerId || null;
+    let safeUserId: string | null = req.userId || null;
+
+    if (safeOwnerId) {
+      const { data: oCheck } = await supabase.from('members').select('id').eq('id', safeOwnerId).maybeSingle();
+      if (!oCheck) safeOwnerId = null;
+    }
+    if (safeUserId) {
+      const { data: uCheck } = await supabase.from('members').select('id').eq('id', safeUserId).maybeSingle();
+      if (!uCheck) safeUserId = null;
+    }
+
     const { error } = await supabase.from('borrow_requests').upsert({
       id: req.id,
       book_id: req.bookId,
       book_title: req.bookTitle,
       book_cover: req.bookCover,
-      owner_id: req.ownerId,
-      user_id: req.userId,
+      owner_id: safeOwnerId,
+      user_id: safeUserId,
       user_name: req.userName,
       user_phone: req.userPhone,
       request_date: req.requestDate,
@@ -485,7 +516,12 @@ export async function upsertRequestToSupabase(req: BorrowRequest): Promise<boole
       due_date: req.dueDate,
       approved_by: req.approvedBy
     });
-    return !error;
+
+    if (error) {
+      console.error('Supabase request upsert error:', error.message);
+      return false;
+    }
+    return true;
   } catch (e) {
     console.warn('Failed to upsert request to Supabase:', e);
     return false;
@@ -527,7 +563,12 @@ export async function upsertEventToSupabase(event: CommunityEvent): Promise<bool
       attendees_count: event.attendeesCount,
       image_url: event.image
     });
-    return !error;
+
+    if (error) {
+      console.error('Supabase event upsert error:', error.message);
+      return false;
+    }
+    return true;
   } catch (e) {
     console.warn('Failed to upsert event to Supabase:', e);
     return false;
@@ -600,7 +641,12 @@ export async function upsertArticleToSupabase(article: Article): Promise<boolean
       read_time_minutes: parseInt(article.readTime) || 4,
       views_count: article.views
     });
-    return !error;
+
+    if (error) {
+      console.error('Supabase article upsert error:', error.message);
+      return false;
+    }
+    return true;
   } catch (e) {
     console.warn('Failed to upsert article to Supabase:', e);
     return false;

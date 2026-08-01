@@ -338,6 +338,10 @@ export const StorageService = {
     return JSON.parse(data);
   },
 
+  saveBooksLocallyOnly(books: Book[]): void {
+    localStorage.setItem(KEYS.BOOKS, JSON.stringify(books));
+  },
+
   saveBooks(books: Book[]): void {
     localStorage.setItem(KEYS.BOOKS, JSON.stringify(books));
     books.forEach((b) => upsertBookToSupabase(b));
@@ -354,6 +358,10 @@ export const StorageService = {
       return INITIAL_REQUESTS;
     }
     return JSON.parse(data);
+  },
+
+  saveRequestsLocallyOnly(requests: BorrowRequest[]): void {
+    localStorage.setItem(KEYS.REQUESTS, JSON.stringify(requests));
   },
 
   saveRequests(requests: BorrowRequest[]): void {
@@ -418,6 +426,10 @@ export const StorageService = {
     return JSON.parse(data);
   },
 
+  saveEventsLocallyOnly(events: CommunityEvent[]): void {
+    localStorage.setItem(KEYS.EVENTS, JSON.stringify(events));
+  },
+
   saveEvents(events: CommunityEvent[]): void {
     localStorage.setItem(KEYS.EVENTS, JSON.stringify(events));
     events.forEach((evt) => upsertEventToSupabase(evt));
@@ -434,6 +446,10 @@ export const StorageService = {
       return INITIAL_ARTICLES;
     }
     return JSON.parse(data);
+  },
+
+  saveArticlesLocallyOnly(articles: Article[]): void {
+    localStorage.setItem(KEYS.ARTICLES, JSON.stringify(articles));
   },
 
   saveArticles(articles: Article[]): void {

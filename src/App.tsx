@@ -1,7 +1,12 @@
 import { useState, useEffect } from 'react';
 import type { Book, BorrowRequest, ReservationQueueItem, BookReview, Member, CommunityEvent, HandoverMethod, Article } from './types';
 import { StorageService, GUEST_MEMBER } from './services/storage';
-import { fetchBooksFromSupabase, fetchRequestsFromSupabase, fetchEventsFromSupabase, fetchArticlesFromSupabase } from './services/supabase';
+import {
+  fetchBooksFromSupabase, upsertBookToSupabase,
+  fetchRequestsFromSupabase, upsertRequestToSupabase,
+  fetchEventsFromSupabase, upsertEventToSupabase,
+  fetchArticlesFromSupabase, upsertArticleToSupabase
+} from './services/supabase';
 import { Navbar } from './components/Navbar';
 import { CatalogPage } from './pages/CatalogPage';
 import { EventsPage } from './pages/EventsPage';
@@ -64,21 +69,36 @@ export function App() {
         fetchArticlesFromSupabase()
       ]);
 
+      const localBooks = StorageService.getBooks();
       if (remoteBooks && remoteBooks.length > 0) {
         setBooks(remoteBooks);
-        StorageService.saveBooks(remoteBooks);
+        StorageService.saveBooksLocallyOnly(remoteBooks);
+      } else if (localBooks && localBooks.length > 0) {
+        localBooks.forEach((b) => upsertBookToSupabase(b));
       }
+
+      const localRequests = StorageService.getRequests();
       if (remoteRequests && remoteRequests.length > 0) {
         setRequests(remoteRequests);
-        StorageService.saveRequests(remoteRequests);
+        StorageService.saveRequestsLocallyOnly(remoteRequests);
+      } else if (localRequests && localRequests.length > 0) {
+        localRequests.forEach((r) => upsertRequestToSupabase(r));
       }
+
+      const localEvents = StorageService.getEvents();
       if (remoteEvents && remoteEvents.length > 0) {
         setEvents(remoteEvents);
-        StorageService.saveEvents(remoteEvents);
+        StorageService.saveEventsLocallyOnly(remoteEvents);
+      } else if (localEvents && localEvents.length > 0) {
+        localEvents.forEach((evt) => upsertEventToSupabase(evt));
       }
+
+      const localArticles = StorageService.getArticles();
       if (remoteArticles && remoteArticles.length > 0) {
         setArticles(remoteArticles);
-        StorageService.saveArticles(remoteArticles);
+        StorageService.saveArticlesLocallyOnly(remoteArticles);
+      } else if (localArticles && localArticles.length > 0) {
+        localArticles.forEach((art) => upsertArticleToSupabase(art));
       }
     }
 
