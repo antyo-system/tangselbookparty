@@ -39,15 +39,35 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
 
   const isGuest = member.id === 'usr_guest';
 
-  // Filter owned books by this member
-  const myOwnedBooks = isGuest ? [] : books.filter((b) => b.ownerId === member.id);
+  const cleanMemName = member.name?.toLowerCase().trim();
+  const cleanMemEmail = member.email?.toLowerCase().trim();
 
-  const myActiveBorrows = isGuest ? [] : requests.filter(
-    (r) => (r.userId === member.id && (r.status === 'borrowed' || r.status === 'approved' || r.status === 'pending'))
-  );
+  // Filter owned books by this member (resilient to ID, name, or email matching)
+  const myOwnedBooks = isGuest ? [] : books.filter((b) => {
+    const matchId = b.ownerId && b.ownerId === member.id;
+    const matchName = b.ownerName && cleanMemName && b.ownerName.toLowerCase().trim() === cleanMemName;
+    const matchEmail = b.ownerEmail && cleanMemEmail && b.ownerEmail.toLowerCase().trim() === cleanMemEmail;
+    return Boolean(matchId || matchName || matchEmail);
+  });
 
-  const myQueues = isGuest ? [] : queues.filter((q) => q.userId === member.id && q.status === 'waiting');
-  const myHistory = isGuest ? [] : requests.filter((r) => r.userId === member.id && r.status === 'returned');
+  const myActiveBorrows = isGuest ? [] : requests.filter((r) => {
+    const matchId = r.userId === member.id;
+    const matchName = r.userName && cleanMemName && r.userName.toLowerCase().trim() === cleanMemName;
+    return Boolean(matchId || matchName) && (r.status === 'borrowed' || r.status === 'approved' || r.status === 'pending');
+  });
+
+  const myQueues = isGuest ? [] : queues.filter((q) => {
+    const matchId = q.userId === member.id;
+    const matchName = q.userName && cleanMemName && q.userName.toLowerCase().trim() === cleanMemName;
+    return Boolean(matchId || matchName) && q.status === 'waiting';
+  });
+
+  const myHistory = isGuest ? [] : requests.filter((r) => {
+    const matchId = r.userId === member.id;
+    const matchName = r.userName && cleanMemName && r.userName.toLowerCase().trim() === cleanMemName;
+    return Boolean(matchId || matchName) && r.status === 'returned';
+  });
+
   const wishlistBooks = isGuest ? [] : books.filter((b) => member.wishlist.includes(b.id));
 
   if (isGuest) {

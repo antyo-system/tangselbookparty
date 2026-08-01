@@ -26,6 +26,7 @@ export interface Book {
   status: BookStatus;
   ownerId?: string; // ID of member who owns this book ('usr_admin_01' for community books or member ID)
   ownerName: string;
+  ownerEmail?: string;
   ownerLocation?: string; // e.g. "Bintaro", "BSD", "Pamulang"
   shelfLocation: string; // e.g. "Rak A-04 (Markas BSD)"
   pageCount: number;
