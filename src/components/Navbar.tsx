@@ -1,5 +1,5 @@
 import React from 'react';
-import { BookOpen, Search, QrCode, User, Shield, Calendar, RefreshCw, BookMarked, X, LogOut } from 'lucide-react';
+import { BookOpen, Search, QrCode, User, Shield, Calendar, BookMarked, X, LogOut } from 'lucide-react';
 import type { Member } from '../types';
 
 interface NavbarProps {
@@ -8,11 +8,11 @@ interface NavbarProps {
   searchQuery: string;
   setSearchQuery: (query: string) => void;
   member: Member;
-  toggleRole: () => void;
+  toggleRole?: () => void;
   onOpenScanner: () => void;
   onOpenLogin: () => void;
   onLogout?: () => void;
-  onResetData: () => void;
+  onResetData?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -21,11 +21,9 @@ export const Navbar: React.FC<NavbarProps> = ({
   searchQuery,
   setSearchQuery,
   member,
-  toggleRole,
   onOpenScanner,
   onOpenLogin,
-  onLogout,
-  onResetData
+  onLogout
 }) => {
   // Context-aware search placeholder generator
   const getSearchPlaceholder = () => {
@@ -201,20 +199,49 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* Mobile Right Action Bar */}
           <div className="flex items-center gap-1.5 md:hidden flex-shrink-0">
-            <button
-              onClick={toggleRole}
-              title="Simulasi role"
-              className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-[#FFBF00] text-[#03321F] whitespace-nowrap"
-            >
-              {member.role === 'admin' ? '👑 Admin' : '👤 Member'}
-            </button>
+            {member.id !== 'usr_guest' ? (
+              <div className="flex items-center gap-1.5">
+                {member.role === 'admin' && (
+                  <button
+                    onClick={() => setActiveTab('admin')}
+                    className="px-2.5 py-1 rounded-xl text-[11px] font-extrabold bg-[#D0DF00] text-[#03321F] flex items-center gap-1 shadow-xs"
+                    title="Masuk ke Panel Caretaker Admin"
+                  >
+                    <Shield className="w-3 h-3" />
+                    <span>Admin</span>
+                  </button>
+                )}
+
+                {onLogout && (
+                  <button
+                    type="button"
+                    onClick={onLogout}
+                    className="px-2.5 py-1 rounded-xl text-[11px] font-extrabold bg-rose-950/80 text-rose-200 border border-rose-800/40 hover:bg-rose-900 flex items-center gap-1 transition-all cursor-pointer"
+                    title="Keluar dari Akun"
+                  >
+                    <LogOut className="w-3 h-3" />
+                    <span>Keluar</span>
+                  </button>
+                )}
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={onOpenLogin}
+                className="px-3 py-1 rounded-xl text-xs font-extrabold bg-[#FFBF00] text-[#03321F] hover:bg-white transition-all shadow-sm flex items-center gap-1 cursor-pointer"
+                title="Masuk ke Akun Komunitas"
+              >
+                <User className="w-3.5 h-3.5" />
+                <span>Masuk</span>
+              </button>
+            )}
 
             <button
-              onClick={onResetData}
-              title="Reset data"
-              className="p-1 text-emerald-300 hover:text-[#D0DF00]"
+              onClick={onOpenScanner}
+              title="Scan QR Code Buku"
+              className="p-1.5 rounded-xl bg-[#03321F] text-[#FFBF00] border border-[#FFBF00]/30 cursor-pointer"
             >
-              <RefreshCw className="w-3.5 h-3.5" />
+              <QrCode className="w-4 h-4" />
             </button>
           </div>
 
