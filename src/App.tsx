@@ -13,6 +13,7 @@ import { QRScannerModal } from './components/QRScannerModal';
 import { WhatsAppReminderModal } from './components/WhatsAppReminderModal';
 import { AddBookModal } from './components/AddBookModal';
 import { Footer } from './components/Footer';
+import { BottomNav } from './components/BottomNav';
 
 export function App() {
   // Master Data State
@@ -452,6 +453,14 @@ export function App() {
           onAddBook={handleAddBookSubmit}
         />
       )}
+
+      {/* Mobile App-like Bottom Navigation Bar */}
+      <BottomNav
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        member={member}
+        onOpenScanner={() => setShowScanner(true)}
+      />
 
     </div>
   );

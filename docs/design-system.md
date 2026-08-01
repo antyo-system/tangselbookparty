@@ -74,6 +74,11 @@ Tangsel Book Party prioritizes a clean, high-density, uncluttered browsing exper
 - **High Grid Density**: Responsive grid displaying **up to 6 columns** on large screens (`grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6`), allowing users to preview significantly more books at once.
 - **Compact Padding**: Tight padding (`p-3`), crisp badge overlays, and clean action triggers.
 
+### 2. Mobile App-like UI/UX Standards
+- **Sticky Bottom Navigation Bar (`BottomNav.tsx`)**: App-like bottom bar on mobile screens (`md:hidden`) with `Katalog`, `Acara`, `Scan QR` (center CTA), `Profil`, and `Admin` tabs.
+- **Mobile Bottom-Sheet Modals**: All modal popups transition gracefully into bottom drawers (`rounded-t-3xl`, `max-h-[92vh]`) for easy thumb reachability on smartphones.
+- **Responsive Padding Buffer**: Pages include bottom padding (`pb-24`) so content is never covered by the bottom navigation bar.
+
 ### 2. Phase 2 & 3 Roadmap
 Refer to [UPCOMING_FEATURES.md](file:///d:/01_Projects/tangselbookparty/UPCOMING_FEATURES.md) for the phased feature checklist.
 
