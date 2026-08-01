@@ -32,9 +32,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({
   const [forgotSubmitted, setForgotSubmitted] = useState(false);
   const [forgotLoading, setForgotLoading] = useState(false);
 
-  // Activation Notice Modal State (after registration)
-  const [activationMember, setActivationMember] = useState<{ member: Member; targetTab: 'catalog' | 'profile' | 'admin' } | null>(null);
-
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
@@ -503,61 +500,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                 </button>
               </div>
             )}
-          </div>
-        </div>
-      )}
-
-      {/* ========================================== */}
-      {/* MODAL 2: REGISTRATION ACTIVATION NOTICE */}
-      {/* ========================================== */}
-      {activationMember && (
-        <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in font-sans">
-          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl border border-slate-100 relative space-y-6">
-            
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-[#FFBF00] text-[#03321F] flex items-center justify-center font-bold shrink-0 shadow-sm">
-                <Mail className="w-6 h-6" />
-              </div>
-              <div>
-                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100 text-emerald-800 uppercase tracking-wider">
-                  Registrasi Sukses
-                </span>
-                <h3 className="font-extrabold text-slate-900 text-xl pt-0.5">Pendaftaran Akun Berhasil!</h3>
-              </div>
-            </div>
-
-            <div className="bg-emerald-50 border border-emerald-200/90 rounded-2xl p-4 text-xs text-emerald-950 space-y-2">
-              <div className="font-bold text-emerald-900 flex items-center gap-2 text-sm">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                <span>Email Aktivasi Dikirimkan</span>
-              </div>
-              <p className="leading-relaxed text-slate-700">
-                Tautan verifikasi & aktivasi akun telah dikirimkan ke email{' '}
-                <span className="font-extrabold text-[#053D27] underline">{activationMember.member.email}</span>.
-                Silakan periksa kotak masuk atau folder spam email Anda untuk mengaktifkan akun secara penuh.
-              </p>
-            </div>
-
-            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3.5 text-xs text-slate-600 flex items-center gap-3">
-              <Sparkles className="w-5 h-5 text-amber-500 shrink-0" />
-              <div>
-                <div className="font-bold text-slate-800">Status Akun Anda Selesai!</div>
-                <div className="text-[11px] text-slate-500">Anda dapat langsung menggunakan akun ini untuk meminjam koleksi buku fisik.</div>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => {
-                const target = activationMember;
-                setActivationMember(null);
-                onLoginSuccess(target.member, target.targetTab);
-              }}
-              className="w-full py-3.5 bg-[#053D27] hover:bg-[#022416] text-[#D0DF00] rounded-2xl text-xs font-extrabold shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
-            >
-              <LogIn className="w-4 h-4 text-[#FFBF00]" />
-              <span>Mengerti, Masuk ke Profil Saya</span>
-            </button>
           </div>
         </div>
       )}
