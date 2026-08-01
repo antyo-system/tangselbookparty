@@ -132,8 +132,8 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1.5">Foto Header / Poster Event</label>
             <ImageUploader
+              label="Cover / Poster Event *"
               value={image}
               onChange={(url) => setImage(url)}
               sampleImages={sampleImages}

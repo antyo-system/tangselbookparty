@@ -7,7 +7,7 @@ Platform perpustakaan digital dan sistem peminjaman buku fisik peer-to-peer berb
 ## 🌟 Konsep Utama: Satu Katalog, Dua Sumber Buku
 
 Tangsel Book Party menggabungkan dua sumber buku dalam satu katalog fisik terpadu:
-1. **Koleksi Komunitas Tangsel** — Buku fisik bersama yang dikelola langsung oleh Admin / Caretaker.
+1. **Koleksi Komunitas Tangsel** — Buku fisik bersama yang dikelola langsung oleh Admin.
 2. **Buku Milik Anggota (Member)** — Buku pribadi anggota yang didaftarkan ke katalog publik agar dapat dipinjamkan secara gratis kepada sesama pecinta buku.
 
 Seluruh siklus peminjaman bersifat **100% Gratis** (tanpa biaya sewa atau pendaftaran).
@@ -26,8 +26,8 @@ Seluruh siklus peminjaman bersifat **100% Gratis** (tanpa biaya sewa atau pendaf
 - **Persetujuan oleh Pemilik**: Pemilik buku berhak menyetujui (*approve*) atau menolak (*reject*) pengajuan pinjam atas buku milik mereka sendiri.
 - **Pencatatan Pengembalian**: Pemilik buku dapat menandai pengembalian saat buku fisik telah diterima kembali.
 
-### 🛡️ 3. TANGSEL CARETAKER (Admin Dashboard)
-- **Moderasi & Override**: Admin Caretaker memiliki otorisasi penuh untuk melakukan *override approval* atau *force return* jika terjadi kendala/sengketa.
+### 🛡️ 3. TANGSEL ADMIN (Admin Dashboard)
+- **Moderasi & Override**: Admin memiliki otorisasi penuh untuk melakukan *override approval* atau *force return* jika terjadi kendala/sengketa.
 - **Sidebar Navigasi Collapsible (Kembang Seladang Standard)**: Desain sidebar modern dengan mode ringkas (68px) dan mode penuh (256px).
 - **CMS Artikel SEO & Event**: Kelola postingan edukasi literasi dan jadwal gathering kumpul baca komunitas di Taman Bintaro, Taman Kota 1 BSD, & Alun-Alun Pamulang.
 

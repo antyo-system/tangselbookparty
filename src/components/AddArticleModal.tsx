@@ -169,8 +169,8 @@ export const AddArticleModal: React.FC<AddArticleModalProps> = ({
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1.5">Foto Cover Artikel</label>
             <ImageUploader
+              label="Cover Artikel *"
               value={coverImage}
               onChange={(url) => setCoverImage(url)}
               sampleImages={sampleImages}

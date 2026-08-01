@@ -18,11 +18,11 @@ export const AddBookModal: React.FC<AddBookModalProps> = ({ bookToEdit, onClose,
     bookToEdit?.coverImage || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80'
   );
   const [synopsis, setSynopsis] = useState(bookToEdit?.synopsis || '');
-  const [favoriteQuote, setFavoriteQuote] = useState(bookToEdit?.favoriteQuote || '');
-  const [quoteSpeaker, setQuoteSpeaker] = useState(bookToEdit?.quoteSpeaker || '');
   const [ownerName, setOwnerName] = useState(bookToEdit?.ownerName || 'Komunitas Tangsel');
-  const [ownerLocation, setOwnerLocation] = useState(bookToEdit?.ownerLocation || 'Bintaro');
+  const [ownerLocation] = useState(bookToEdit?.ownerLocation || 'Bintaro');
   const [shelfLocation, setShelfLocation] = useState(bookToEdit?.shelfLocation || 'Rak A-01 (Markas Bintaro)');
+  const favoriteQuote = bookToEdit?.favoriteQuote || '';
+  const quoteSpeaker = bookToEdit?.quoteSpeaker || '';
   const [pageCount, setPageCount] = useState(bookToEdit?.pageCount || 300);
   const [publishYear, setPublishYear] = useState(bookToEdit?.publishYear || 2023);
   const [language, setLanguage] = useState(bookToEdit?.language || 'Bahasa Indonesia');
@@ -159,12 +159,12 @@ export const AddBookModal: React.FC<AddBookModalProps> = ({ bookToEdit, onClose,
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">Nama Pemilik / Koleksi</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">Pemilik / Admin *</label>
               <input
                 type="text"
                 value={ownerName}
                 onChange={(e) => setOwnerName(e.target.value)}
-                placeholder="misal: Komunitas Tangsel / Fian"
+                placeholder="misal: Komunitas Tangsel / Admin"
                 className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-[#053D27] focus:border-[#053D27] outline-none"
               />
             </div>
@@ -192,8 +192,8 @@ export const AddBookModal: React.FC<AddBookModalProps> = ({ bookToEdit, onClose,
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1.5">Foto Sampul Buku</label>
             <ImageUploader
+              label="Sampul Buku *"
               value={coverImage}
               onChange={(url) => setCoverImage(url)}
               sampleImages={sampleCovers}

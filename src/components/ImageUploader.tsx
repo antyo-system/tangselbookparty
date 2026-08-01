@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Files, Upload, Link as LinkIcon, X, Image as ImageIcon } from 'lucide-react';
+import { Files, Upload, PlusSquare, X, Link as LinkIcon } from 'lucide-react';
 
 interface ImageUploaderProps {
   label?: string;
@@ -10,10 +10,10 @@ interface ImageUploaderProps {
 }
 
 export const ImageUploader: React.FC<ImageUploaderProps> = ({
-  label = 'Foto Utama Produk / Sampul Buku',
+  label = 'Sampul Buku',
   value,
   onChange,
-  recommendationText = 'Format: JPG, JPEG, PNG, WEBP (Maks. 5MB). Rekomendasi rasio 3:4 atau 1:1',
+  recommendationText = 'Format: JPG, JPEG, PNG (Maks. 5MB). Rekomendasi rasio persegi 1:1 (min. 600×600 px)',
   sampleImages = [
     'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80',
     'https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=600&q=80',
@@ -50,7 +50,8 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
     setIsDragging(true);
   };
 
-  const handleDragLeave = () => {
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
     setIsDragging(false);
   };
 
@@ -70,14 +71,16 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
 
   return (
     <div className="space-y-2 w-full">
-      <label className="text-xs font-bold text-slate-800 block flex items-center justify-between">
-        <span>{label}</span>
-        {value && (
-          <span className="text-[10px] text-emerald-600 font-semibold bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-            ✓ Gambar Terpasang
-          </span>
-        )}
-      </label>
+      {label && (
+        <label className="text-xs font-bold text-slate-800 block flex items-center justify-between">
+          <span>{label}</span>
+          {value && (
+            <span className="text-[10px] text-emerald-700 font-semibold bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-300">
+              ✓ Gambar Terpasang
+            </span>
+          )}
+        </label>
+      )}
 
       {/* Hidden Native File Input */}
       <input
@@ -94,57 +97,64 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
+          onClick={() => fileInputRef.current?.click()}
           className={`relative border-2 border-dashed rounded-2xl p-6 sm:p-8 text-center transition-all flex flex-col items-center justify-center space-y-3 cursor-pointer ${
             isDragging
               ? 'border-emerald-600 bg-emerald-50/70 scale-[0.99]'
-              : 'border-rose-300 hover:border-emerald-600 bg-rose-50/15 hover:bg-emerald-50/20'
+              : 'border-slate-200 hover:border-emerald-500 bg-white hover:bg-slate-50/50'
           }`}
         >
-          {/* Centered Document / Image Icon */}
-          <div className="w-12 h-12 rounded-2xl bg-white border border-rose-200 shadow-sm flex items-center justify-center text-slate-500">
+          {/* Centered Document / File Icon */}
+          <div className="w-12 h-12 rounded-xl bg-slate-50 border border-slate-200/80 shadow-2xs flex items-center justify-center text-slate-400">
             <Files className="w-6 h-6 text-slate-400" />
           </div>
 
-          <div className="space-y-1 max-w-sm">
+          <div className="space-y-1 max-w-md">
             <h4 className="text-xs sm:text-sm font-bold text-slate-800">
-              Tarik & Lepas file foto produk di sini untuk mengunggah
+              Tarik & Lepas file foto sampul di sini untuk mengunggah
             </h4>
-            <p className="text-[11px] text-slate-500 font-medium leading-relaxed">
+            <p className="text-[11px] text-slate-400 font-medium leading-relaxed">
               {recommendationText}
             </p>
           </div>
 
           {/* Action Buttons */}
-          <div className="flex flex-wrap items-center justify-center gap-2.5 pt-2">
+          <div className="flex flex-wrap items-center justify-center gap-2.5 pt-1">
             <button
               type="button"
-              onClick={() => fileInputRef.current?.click()}
-              className="px-4 py-2 bg-white border border-slate-300 hover:border-emerald-600 text-slate-700 hover:text-emerald-700 rounded-xl text-xs font-bold shadow-xs hover:shadow-md transition-all flex items-center gap-1.5 cursor-pointer"
+              onClick={(e) => {
+                e.stopPropagation();
+                fileInputRef.current?.click();
+              }}
+              className="px-4 py-2 bg-white border border-slate-300 hover:border-emerald-600 text-slate-700 hover:text-emerald-700 rounded-xl text-xs font-bold shadow-2xs hover:shadow-sm transition-all flex items-center gap-2 cursor-pointer"
             >
               <Upload className="w-3.5 h-3.5 text-slate-500" />
-              <span>Upload File</span>
+              <span>Upload</span>
             </button>
 
             <button
               type="button"
-              onClick={() => setShowUrlInput(!showUrlInput)}
-              className="px-4 py-2 bg-white border border-slate-300 hover:border-emerald-600 text-slate-700 hover:text-emerald-700 rounded-xl text-xs font-bold shadow-xs hover:shadow-md transition-all flex items-center gap-1.5 cursor-pointer"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowUrlInput(!showUrlInput);
+              }}
+              className="px-4 py-2 bg-white border border-slate-300 hover:border-emerald-600 text-slate-700 hover:text-emerald-700 rounded-xl text-xs font-bold shadow-2xs hover:shadow-sm transition-all flex items-center gap-2 cursor-pointer"
             >
-              <ImageIcon className="w-3.5 h-3.5 text-slate-500" />
-              <span>Add from library / URL</span>
+              <PlusSquare className="w-3.5 h-3.5 text-slate-500" />
+              <span>Add from library</span>
             </button>
           </div>
         </div>
       ) : (
         /* Image Preview State */
-        <div className="relative border-2 border-emerald-300 bg-emerald-50/20 rounded-2xl p-4 flex flex-col sm:flex-row items-center gap-4 shadow-sm">
-          <div className="w-24 h-32 sm:w-20 sm:h-24 rounded-xl overflow-hidden border border-emerald-400 bg-slate-100 shrink-0 shadow-sm relative group">
+        <div className="relative border-2 border-emerald-400 bg-emerald-50/20 rounded-2xl p-4 flex flex-col sm:flex-row items-center gap-4 shadow-2xs">
+          <div className="w-20 h-24 sm:w-20 sm:h-24 rounded-xl overflow-hidden border-2 border-emerald-300 bg-slate-100 shrink-0 shadow-2xs relative">
             <img src={value} alt="Preview Cover" className="w-full h-full object-cover" />
           </div>
 
-          <div className="flex-1 space-y-1 text-center sm:text-left">
-            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 uppercase">
-              Foto Siap Diunggah
+          <div className="flex-1 space-y-1 text-center sm:text-left min-w-0">
+            <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 uppercase tracking-wider font-mono">
+              FOTO SIAP DIUNGGAH
             </span>
             <p className="text-xs font-bold text-slate-800 truncate max-w-xs sm:max-w-md">
               {value.startsWith('data:') ? 'File Foto Komputer (Base64)' : value}
@@ -158,17 +168,17 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="px-3 py-1.5 bg-white border border-slate-300 hover:border-emerald-600 text-slate-700 rounded-xl text-xs font-bold flex items-center gap-1 transition-all shadow-xs cursor-pointer"
+              className="px-3.5 py-1.5 bg-white border border-slate-300 hover:border-emerald-600 text-slate-700 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shadow-2xs cursor-pointer"
             >
-              <Upload className="w-3.5 h-3.5" />
+              <Upload className="w-3.5 h-3.5 text-slate-500" />
               <span>Ganti</span>
             </button>
             <button
               type="button"
               onClick={() => onChange('')}
-              className="px-3 py-1.5 bg-rose-50 border border-rose-200 text-rose-700 hover:bg-rose-100 rounded-xl text-xs font-bold flex items-center gap-1 transition-all cursor-pointer"
+              className="px-3.5 py-1.5 bg-rose-50 border border-rose-200 text-rose-700 hover:bg-rose-100 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer"
             >
-              <X className="w-3.5 h-3.5" />
+              <X className="w-3.5 h-3.5 text-rose-500" />
               <span>Hapus</span>
             </button>
           </div>
@@ -176,10 +186,17 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
       )}
 
       {/* URL or Sample Image Input Modal/Tray */}
-      {(showUrlInput || !value) && (
-        <div className="bg-slate-50 p-3 rounded-2xl border border-slate-200 space-y-2 mt-2">
+      {(showUrlInput || (!value && showUrlInput)) && (
+        <div className="bg-slate-50 p-3 rounded-2xl border border-slate-200 space-y-2.5 mt-2 animate-in fade-in duration-150">
           <div className="flex items-center justify-between text-xs font-bold text-slate-700">
             <span>Atau Masukkan URL / Pilih Dari Galeri Sampul:</span>
+            <button 
+              type="button" 
+              onClick={() => setShowUrlInput(false)}
+              className="text-slate-400 hover:text-slate-600 text-xs"
+            >
+              Tutup
+            </button>
           </div>
 
           <div className="flex items-center gap-2">
@@ -192,7 +209,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
                   onChange(e.target.value);
                 }}
                 placeholder="https://images.unsplash.com/photo-..."
-                className="w-full pl-8 pr-3 py-1.5 text-xs bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#053D27] focus:outline-none"
+                className="w-full pl-8 pr-3 py-2 text-xs bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#053D27] focus:outline-none"
               />
               <LinkIcon className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
             </div>
@@ -201,7 +218,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
           {/* Sample Preset Images */}
           {sampleImages.length > 0 && (
             <div className="flex items-center gap-2 overflow-x-auto pt-1 pb-0.5">
-              <span className="text-[10px] font-bold text-slate-400 shrink-0">Sample Preset:</span>
+              <span className="text-[10px] font-bold text-slate-400 shrink-0">Preset:</span>
               {sampleImages.map((imgUrl, i) => (
                 <button
                   key={i}

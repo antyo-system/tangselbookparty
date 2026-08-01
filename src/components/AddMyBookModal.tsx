@@ -19,7 +19,7 @@ export const AddMyBookModal: React.FC<AddMyBookModalProps> = ({ member, onClose,
   const [synopsis, setSynopsis] = useState('');
   const [ownerLocation, setOwnerLocation] = useState('Bintaro');
   const [shelfLocation, setShelfLocation] = useState('Titik Kumpul Event / COD');
-  const [favoriteQuote, setFavoriteQuote] = useState('');
+  const favoriteQuote = '';
   const [pageCount, setPageCount] = useState(250);
   const [publishYear, setPublishYear] = useState(2024);
 
@@ -167,8 +167,8 @@ export const AddMyBookModal: React.FC<AddMyBookModalProps> = ({ member, onClose,
 
           {/* Cover Image Upload / Selection */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1.5">Foto Sampul Buku</label>
             <ImageUploader
+              label="Sampul Buku *"
               value={coverImage}
               onChange={(url) => setCoverImage(url)}
               sampleImages={sampleCovers}

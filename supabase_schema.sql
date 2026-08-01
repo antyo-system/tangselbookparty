@@ -140,7 +140,7 @@ ALTER TABLE public.book_reviews DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.events DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.articles DISABLE ROW LEVEL SECURITY;
 
--- SEED INITIAL SYSTEM ACCOUNTS (Admin Caretaker & Sample Member)
+-- SEED INITIAL SYSTEM ACCOUNTS (Admin & Sample Member)
 INSERT INTO public.members (id, name, email, phone, password_hash, avatar, role, joined_date)
 VALUES 
   ('usr_admin_01', 'Fian Admin', 'admin@tangselbookparty.org', '+6281234567890', 'admin123', 'https://api.dicebear.com/7.x/avataaars/svg?seed=FianAdmin', 'admin', 'Desember 2024'),
