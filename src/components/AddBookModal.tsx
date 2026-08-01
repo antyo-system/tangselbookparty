@@ -123,11 +123,11 @@ export const AddBookModal: React.FC<AddBookModalProps> = ({ bookToEdit, onClose,
         </button>
       </div>
 
-      <div className="flex-1 max-w-4xl w-full mx-auto p-4 sm:p-8 space-y-6 pb-20">
-        <div className="bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden">
+      <div className="flex-1 bg-white text-slate-900 w-full min-h-screen">
+        <div className="max-w-5xl mx-auto p-4 sm:p-8 space-y-6 pb-20">
 
           {/* Live Catalog Health Score Widget Banner */}
-          <div className="bg-slate-900 text-white px-6 py-4 border-b border-slate-800 flex items-center justify-between">
+          <div className="bg-slate-900 text-white p-6 rounded-3xl border border-slate-800 flex items-center justify-between shadow-md">
           <div className="flex items-center gap-3">
             <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm font-mono border ${
               healthResult.score >= 80 ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' :
