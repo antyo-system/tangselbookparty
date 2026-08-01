@@ -38,6 +38,27 @@ const DEFAULT_ACCOUNTS: Member[] = [
   }
 ];
 
+// Helper for local registered user storage to prevent circular imports
+const getLocalRegisteredUsers = (): (Member & { password_hash: string })[] => {
+  try {
+    const data = localStorage.getItem('tbp_registered_users_v1');
+    return data ? JSON.parse(data) : [];
+  } catch {
+    return [];
+  }
+};
+
+const saveLocalRegisteredUser = (user: Member & { password_hash: string }) => {
+  try {
+    const current = getLocalRegisteredUsers();
+    const filtered = current.filter((u) => u.email.toLowerCase() !== user.email.toLowerCase());
+    filtered.push(user);
+    localStorage.setItem('tbp_registered_users_v1', JSON.stringify(filtered));
+  } catch (e) {
+    console.warn('Failed to save registered user locally:', e);
+  }
+};
+
 /**
  * Universal Login Handler - Supports Supabase & Local Fallback
  */
@@ -58,6 +79,8 @@ export async function authenticateUser(identifier: string, password: string): Pr
     };
   }
 
+  let dbAccountFound: any = null;
+
   // 1. Try Supabase Auth/DB first if configured
   if (supabase) {
     try {
@@ -68,37 +91,65 @@ export async function authenticateUser(identifier: string, password: string): Pr
         .maybeSingle();
 
       if (!error && data) {
-        if (data.password_hash === cleanPass) {
-          const loggedMember: Member = {
-            id: data.id,
-            name: data.name,
-            email: data.email,
-            phone: data.phone,
-            avatar: data.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(data.name || 'User')}`,
-            joinedDate: data.joined_date || 'Agustus 2026',
-            role: data.role === 'admin' ? 'admin' : 'member',
-            wishlist: data.wishlist || []
-          };
-
-          return {
-            success: true,
-            member: loggedMember,
-            targetTab: loggedMember.role === 'admin' ? 'admin' : 'profile'
-          };
-        } else {
-          return {
-            success: false,
-            targetTab: 'profile',
-            message: 'Username / Email atau Kata Sandi yang Anda masukkan salah. Silakan periksa kembali.'
-          };
-        }
+        dbAccountFound = data;
       }
     } catch (e) {
       console.warn('Supabase query error, checking fallback accounts:', e);
     }
   }
 
-  // 2. Strict Fallback Check: Admin credentials
+  // If account found in Supabase
+  if (dbAccountFound) {
+    if (dbAccountFound.password_hash === cleanPass) {
+      const loggedMember: Member = {
+        id: dbAccountFound.id,
+        name: dbAccountFound.name,
+        email: dbAccountFound.email,
+        phone: dbAccountFound.phone,
+        avatar: dbAccountFound.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(dbAccountFound.name || 'User')}`,
+        joinedDate: dbAccountFound.joined_date || 'Agustus 2026',
+        role: dbAccountFound.role === 'admin' ? 'admin' : 'member',
+        wishlist: dbAccountFound.wishlist || []
+      };
+
+      return {
+        success: true,
+        member: loggedMember,
+        targetTab: loggedMember.role === 'admin' ? 'admin' : 'profile'
+      };
+    } else {
+      return {
+        success: false,
+        targetTab: dbAccountFound.role === 'admin' ? 'admin' : 'profile',
+        message: 'Kata sandi yang Anda masukkan salah. Silakan periksa kembali kata sandi Anda.'
+      };
+    }
+  }
+
+  // 2. Check Local Registered Users
+  const localUsers = getLocalRegisteredUsers();
+  const matchedLocalUser = localUsers.find(
+    (u) => u.email.toLowerCase() === cleanId || u.phone === cleanId || u.name.toLowerCase() === cleanId
+  );
+
+  if (matchedLocalUser) {
+    if (matchedLocalUser.password_hash === cleanPass) {
+      const { password_hash, ...memberObj } = matchedLocalUser;
+      return {
+        success: true,
+        member: memberObj,
+        targetTab: memberObj.role === 'admin' ? 'admin' : 'profile'
+      };
+    } else {
+      return {
+        success: false,
+        targetTab: 'profile',
+        message: 'Kata sandi yang Anda masukkan salah. Silakan periksa kembali kata sandi Anda.'
+      };
+    }
+  }
+
+  // 3. Fallback Check: Default Admin credentials
   if (cleanId === 'admin' || cleanId === 'admin@tangselbookparty.org') {
     if (cleanPass === 'admin123' || cleanPass === 'tangsel2026') {
       return {
@@ -110,12 +161,12 @@ export async function authenticateUser(identifier: string, password: string): Pr
       return {
         success: false,
         targetTab: 'admin',
-        message: 'Password Admin salah. Silakan coba lagi.'
+        message: 'Kata sandi yang Anda masukkan salah. Silakan periksa kembali kata sandi Anda.'
       };
     }
   }
 
-  // 3. Strict Fallback Check: Member credentials
+  // 4. Fallback Check: Default Member credentials
   if (cleanId === 'budi' || cleanId === 'budi@tangselbookparty.org' || cleanId === 'budi.santoso@tangselbookparty.org') {
     if (cleanPass === 'user123' || cleanPass === 'user2026') {
       return {
@@ -127,16 +178,16 @@ export async function authenticateUser(identifier: string, password: string): Pr
       return {
         success: false,
         targetTab: 'profile',
-        message: 'Username / Email atau Kata Sandi yang Anda masukkan salah. Silakan periksa kembali.'
+        message: 'Kata sandi yang Anda masukkan salah. Silakan periksa kembali kata sandi Anda.'
       };
     }
   }
 
-  // 4. Default rejection for non-existent accounts
+  // 5. Default rejection for non-existent accounts
   return {
     success: false,
     targetTab: 'profile',
-    message: 'Username / Email atau Kata Sandi tidak terdaftar. Silakan buat akun baru terlebih dahulu.'
+    message: 'Username / Email tidak terdaftar. Silakan buat akun baru terlebih dahulu.'
   };
 }
 
@@ -169,6 +220,9 @@ export async function registerUser(params: {
     wishlist: []
   };
 
+  // Always save locally first so user account is immediately recognized
+  saveLocalRegisteredUser({ ...newMember, password_hash: password });
+
   // Try Supabase DB insert if client is active
   if (supabase) {
     try {
@@ -195,33 +249,12 @@ export async function registerUser(params: {
           };
         }
 
-        // Handle Row-Level Security (RLS) Policy error smoothly via fallback
         if (error.message.includes('row-level security') || error.code === '42501') {
-          console.warn('Supabase RLS policy detected on table members. Registering member locally.', error);
-          return {
-            success: true,
-            member: newMember,
-            targetTab: 'profile',
-            message: 'Pendaftaran akun member berhasil!'
-          };
+          console.warn('Supabase RLS policy detected on table members. Registered locally.', error);
         }
-
-        console.warn('Supabase insert warning, registering member locally:', error);
-        return {
-          success: true,
-          member: newMember,
-          targetTab: 'profile',
-          message: 'Pendaftaran akun member berhasil!'
-        };
       }
     } catch (e: any) {
       console.warn('Database error during registration, defaulting to local session:', e);
-      return {
-        success: true,
-        member: newMember,
-        targetTab: 'profile',
-        message: 'Pendaftaran akun member berhasil!'
-      };
     }
   }
 

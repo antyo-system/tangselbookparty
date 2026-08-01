@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { User, Lock, Eye, EyeOff, LogIn, UserPlus, Phone, Mail, CheckCircle2, ArrowLeft } from 'lucide-react';
+import { User, Lock, Eye, EyeOff, LogIn, UserPlus, Phone, Mail, CheckCircle2, ArrowLeft, KeyRound, Send, AlertCircle, X, Sparkles } from 'lucide-react';
 import type { Member } from '../types';
 import { authenticateUser, registerUser } from '../services/supabase';
 
@@ -26,6 +26,15 @@ export const LoginPage: React.FC<LoginPageProps> = ({
   const [regPhone, setRegPhone] = useState('');
   const [regPassword, setRegPassword] = useState('');
 
+  // Lupa Kata Sandi Modal States
+  const [showForgotModal, setShowForgotModal] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [forgotSubmitted, setForgotSubmitted] = useState(false);
+  const [forgotLoading, setForgotLoading] = useState(false);
+
+  // Activation Notice Modal State (after registration)
+  const [activationMember, setActivationMember] = useState<{ member: Member; targetTab: 'catalog' | 'profile' | 'admin' } | null>(null);
+
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
@@ -48,10 +57,10 @@ export const LoginPage: React.FC<LoginPageProps> = ({
       if (res.success && res.member) {
         onLoginSuccess(res.member, res.targetTab);
       } else {
-        setErrorMessage(res.message || 'Username atau password salah.');
+        setErrorMessage(res.message || 'Username / Email atau Kata Sandi yang Anda masukkan tidak sesuai.');
       }
     } catch (err) {
-      setErrorMessage('Terjadi kendala jaringan saat otentikasi.');
+      setErrorMessage('Terjadi kendala jaringan saat otentikasi. Silakan coba beberapa saat lagi.');
     } finally {
       setIsLoading(false);
     }
@@ -84,25 +93,35 @@ export const LoginPage: React.FC<LoginPageProps> = ({
       });
 
       if (res.success && res.member) {
-        setSuccessMessage('Pendaftaran berhasil! Mengarahkan...');
-        setTimeout(() => {
-          onLoginSuccess(res.member!, res.targetTab);
-        }, 800);
+        // Show Activation Notice Modal
+        setActivationMember({ member: res.member, targetTab: res.targetTab });
       } else {
-        setErrorMessage(res.message || 'Gagal mendaftar akun.');
+        setErrorMessage(res.message || 'Gagal mendaftar akun baru.');
       }
     } catch (err) {
-      setErrorMessage('Terjadi kesalahan sistem saat mendaftar.');
+      setErrorMessage('Terjadi kesalahan sistem saat mendaftar akun.');
     } finally {
       setIsLoading(false);
     }
   };
 
+  // Handle Lupa Kata Sandi Submission
+  const handleForgotSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!forgotEmail.trim()) return;
+
+    setForgotLoading(true);
+    setTimeout(() => {
+      setForgotLoading(false);
+      setForgotSubmitted(true);
+    }, 600);
+  };
+
   return (
-    <div className="bg-white rounded-3xl border border-slate-200 shadow-xl overflow-hidden my-2 sm:my-4 font-sans">
+    <div className="bg-white rounded-3xl border border-slate-200 shadow-xl overflow-hidden my-2 sm:my-4 font-sans relative">
       <div className="grid grid-cols-1 lg:grid-cols-12 min-h-[640px]">
         
-        {/* Left Side: Full-height Hero Image with Quote (5 cols on Desktop) */}
+        {/* Left Side: Hero Banner with Community Graphic */}
         <div className="hidden lg:block lg:col-span-5 relative overflow-hidden bg-[#03321F]">
           <img
             src="/tbp-community-reading.png"
@@ -140,7 +159,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
           </div>
         </div>
 
-        {/* Right Side: Clean MVP Authentication Form (7 cols on Desktop) */}
+        {/* Right Side: Form View */}
         <div className="lg:col-span-7 p-6 sm:p-12 flex flex-col justify-center max-w-xl mx-auto w-full">
           
           {/* Mobile Back Button */}
@@ -169,13 +188,14 @@ export const LoginPage: React.FC<LoginPageProps> = ({
 
           {/* Error & Success Messages */}
           {errorMessage && (
-            <div className="mb-6 p-3.5 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-2xl font-bold animate-in fade-in">
-              {errorMessage}
+            <div className="mb-6 p-4 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-2xl font-bold flex items-start gap-2.5 animate-in fade-in shadow-xs">
+              <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+              <div className="flex-1 leading-relaxed">{errorMessage}</div>
             </div>
           )}
 
           {successMessage && (
-            <div className="mb-6 p-3.5 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs rounded-2xl font-bold flex items-center gap-2 animate-in fade-in">
+            <div className="mb-6 p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs rounded-2xl font-bold flex items-center gap-2.5 animate-in fade-in shadow-xs">
               <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
               <span>{successMessage}</span>
             </div>
@@ -223,7 +243,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                 </div>
               </div>
 
-              {/* Options */}
+              {/* Options & Forgot Password Link */}
               <div className="flex items-center justify-between text-xs pt-1">
                 <label className="flex items-center gap-2 cursor-pointer text-slate-600 font-medium">
                   <input
@@ -237,10 +257,15 @@ export const LoginPage: React.FC<LoginPageProps> = ({
 
                 <button
                   type="button"
-                  onClick={() => alert('Informasi pemulihan sandi dikirim via email.')}
-                  className="text-[#053D27] font-bold hover:underline cursor-pointer"
+                  onClick={() => {
+                    setForgotEmail(identifier || '');
+                    setForgotSubmitted(false);
+                    setShowForgotModal(true);
+                  }}
+                  className="text-[#053D27] font-bold hover:underline cursor-pointer flex items-center gap-1"
                 >
-                  Lupa kata sandi?
+                  <KeyRound className="w-3.5 h-3.5 text-amber-600 inline" />
+                  <span>Lupa kata sandi?</span>
                 </button>
               </div>
 
@@ -254,9 +279,9 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                   {isLoading ? (
                     <div className="w-4 h-4 border-2 border-[#D0DF00] border-t-transparent rounded-full animate-spin" />
                   ) : (
-                    <LogIn className="w-4 h-4" />
+                    <LogIn className="w-4 h-4 text-[#FFBF00]" />
                   )}
-                  <span>{isLoading ? 'Memverifikasi...' : 'Masuk Sekarang'}</span>
+                  <span>{isLoading ? 'Memverifikasi Data...' : 'Masuk Sekarang'}</span>
                 </button>
               </div>
 
@@ -382,6 +407,161 @@ export const LoginPage: React.FC<LoginPageProps> = ({
         </div>
 
       </div>
+
+      {/* ========================================== */}
+      {/* MODAL 1: LUPA KATA SANDI MODAL */}
+      {/* ========================================== */}
+      {showForgotModal && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in font-sans">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-slate-100 relative space-y-5">
+            <button
+              onClick={() => setShowForgotModal(false)}
+              className="absolute right-5 top-5 text-slate-400 hover:text-slate-700 w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center transition-colors cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-2xl bg-amber-100 text-amber-800 flex items-center justify-center font-bold shrink-0">
+                <KeyRound className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="font-extrabold text-slate-900 text-lg">Pemulihan Kata Sandi</h3>
+                <p className="text-xs text-slate-500">Layanan reset kata sandi Tangsel Book Party</p>
+              </div>
+            </div>
+
+            {!forgotSubmitted ? (
+              <form onSubmit={handleForgotSubmit} className="space-y-4">
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Masukkan alamat email yang terdaftar pada akun Anda. Kami akan mengirimkan instruksi dan tautan pemulihan kata sandi.
+                </p>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">Alamat Email Akun *</label>
+                  <input
+                    type="email"
+                    required
+                    value={forgotEmail}
+                    onChange={(e) => setForgotEmail(e.target.value)}
+                    placeholder="nama@email.com"
+                    className="w-full px-4 py-3 rounded-2xl border border-slate-300 text-xs focus:ring-2 focus:ring-[#053D27] outline-none transition-all"
+                  />
+                </div>
+
+                <div className="bg-amber-50 border border-amber-200 rounded-2xl p-3.5 text-[11px] text-amber-900 space-y-1">
+                  <div className="font-bold flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-amber-700" />
+                    <span>Catatan Layanan Email Automasi</span>
+                  </div>
+                  <p className="text-amber-800 leading-normal">
+                    Layanan pengiriman email pemulihan via SMTP server berada dalam tahap integrasi. Apabila tidak menerima email dalam 5 menit, silakan hubungi pengurus komunitas.
+                  </p>
+                </div>
+
+                <div className="flex items-center justify-end gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowForgotModal(false)}
+                    className="px-4 py-2.5 rounded-xl border border-slate-300 text-xs font-bold text-slate-600 hover:bg-slate-50 transition-all cursor-pointer"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={forgotLoading}
+                    className="px-5 py-2.5 bg-[#053D27] hover:bg-[#022416] text-[#D0DF00] rounded-xl text-xs font-extrabold shadow-md flex items-center gap-2 cursor-pointer disabled:opacity-60"
+                  >
+                    {forgotLoading ? (
+                      <div className="w-3.5 h-3.5 border-2 border-[#D0DF00] border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <Send className="w-3.5 h-3.5" />
+                    )}
+                    <span>{forgotLoading ? 'Mengirim...' : 'Kirim Tautan Pemulihan'}</span>
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <div className="space-y-4">
+                <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 text-emerald-900 text-xs space-y-2">
+                  <div className="flex items-center gap-2 font-extrabold text-emerald-800">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span>Tautan Pemulihan Dikirim!</span>
+                  </div>
+                  <p className="leading-relaxed">
+                    Kami telah menginstruksikan pengiriman tautan reset kata sandi ke email{' '}
+                    <span className="font-bold underline">{forgotEmail}</span>. Silakan periksa folder <strong>Kotak Masuk (Inbox)</strong> atau <strong>Spam</strong> Anda.
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setShowForgotModal(false)}
+                  className="w-full py-3 bg-[#053D27] text-[#D0DF00] rounded-2xl text-xs font-extrabold cursor-pointer hover:bg-[#022416] transition-colors"
+                >
+                  Kembali ke Halaman Log In
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ========================================== */}
+      {/* MODAL 2: REGISTRATION ACTIVATION NOTICE */}
+      {/* ========================================== */}
+      {activationMember && (
+        <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in font-sans">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl border border-slate-100 relative space-y-6">
+            
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-[#FFBF00] text-[#03321F] flex items-center justify-center font-bold shrink-0 shadow-sm">
+                <Mail className="w-6 h-6" />
+              </div>
+              <div>
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100 text-emerald-800 uppercase tracking-wider">
+                  Registrasi Sukses
+                </span>
+                <h3 className="font-extrabold text-slate-900 text-xl pt-0.5">Pendaftaran Akun Berhasil!</h3>
+              </div>
+            </div>
+
+            <div className="bg-emerald-50 border border-emerald-200/90 rounded-2xl p-4 text-xs text-emerald-950 space-y-2">
+              <div className="font-bold text-emerald-900 flex items-center gap-2 text-sm">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span>Email Aktivasi Dikirimkan</span>
+              </div>
+              <p className="leading-relaxed text-slate-700">
+                Tautan verifikasi & aktivasi akun telah dikirimkan ke email{' '}
+                <span className="font-extrabold text-[#053D27] underline">{activationMember.member.email}</span>.
+                Silakan periksa kotak masuk atau folder spam email Anda untuk mengaktifkan akun secara penuh.
+              </p>
+            </div>
+
+            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3.5 text-xs text-slate-600 flex items-center gap-3">
+              <Sparkles className="w-5 h-5 text-amber-500 shrink-0" />
+              <div>
+                <div className="font-bold text-slate-800">Status Akun Anda Selesai!</div>
+                <div className="text-[11px] text-slate-500">Anda dapat langsung menggunakan akun ini untuk meminjam koleksi buku fisik.</div>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => {
+                const target = activationMember;
+                setActivationMember(null);
+                onLoginSuccess(target.member, target.targetTab);
+              }}
+              className="w-full py-3.5 bg-[#053D27] hover:bg-[#022416] text-[#D0DF00] rounded-2xl text-xs font-extrabold shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
+            >
+              <LogIn className="w-4 h-4 text-[#FFBF00]" />
+              <span>Mengerti, Masuk ke Profil Saya</span>
+            </button>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };

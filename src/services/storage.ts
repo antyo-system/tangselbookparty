@@ -324,7 +324,8 @@ const KEYS = {
   REVIEWS: 'tbp_reviews_v6',
   MEMBER: 'tbp_member_v7',
   EVENTS: 'tbp_events_v6',
-  ARTICLES: 'tbp_articles_v6'
+  ARTICLES: 'tbp_articles_v6',
+  REGISTERED_USERS: 'tbp_registered_users_v1'
 };
 
 export const StorageService = {
@@ -440,6 +441,23 @@ export const StorageService = {
     articles.forEach((art) => upsertArticleToSupabase(art));
   },
 
+  getRegisteredUsers(): (Member & { password_hash: string })[] {
+    const data = localStorage.getItem(KEYS.REGISTERED_USERS);
+    if (!data) return [];
+    try {
+      return JSON.parse(data);
+    } catch {
+      return [];
+    }
+  },
+
+  saveRegisteredUser(user: Member & { password_hash: string }): void {
+    const current = this.getRegisteredUsers();
+    const filtered = current.filter((u) => u.email.toLowerCase() !== user.email.toLowerCase() && u.id !== user.id);
+    filtered.push(user);
+    localStorage.setItem(KEYS.REGISTERED_USERS, JSON.stringify(filtered));
+  },
+
   deleteArticle(articleId: string): void {
     deleteArticleFromSupabase(articleId);
   },
@@ -452,5 +470,6 @@ export const StorageService = {
     localStorage.setItem(KEYS.MEMBER, JSON.stringify(GUEST_MEMBER));
     localStorage.setItem(KEYS.EVENTS, JSON.stringify(INITIAL_EVENTS));
     localStorage.setItem(KEYS.ARTICLES, JSON.stringify(INITIAL_ARTICLES));
+    localStorage.setItem(KEYS.REGISTERED_USERS, JSON.stringify([]));
   }
 };
