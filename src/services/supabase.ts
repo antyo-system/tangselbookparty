@@ -79,9 +79,26 @@ export async function authenticateUser(identifier: string, password: string): Pr
     };
   }
 
+  const isAdminEmail = cleanId === 'admin' || cleanId === 'admin@tangselbookparty.org' || cleanId.startsWith('admin@');
+
+  // 1. Strict Check for System Admin Credentials
+  if (isAdminEmail) {
+    if (cleanPass === 'admin123' || cleanPass === 'tangsel2026') {
+      const adminMember: Member = {
+        ...DEFAULT_ACCOUNTS[0],
+        email: cleanId.includes('@') ? cleanId : 'admin@tangselbookparty.org'
+      };
+      return {
+        success: true,
+        member: adminMember,
+        targetTab: 'admin'
+      };
+    }
+  }
+
   let dbAccountFound: any = null;
 
-  // 1. Try Supabase Auth/DB first if configured
+  // 2. Try Supabase Auth/DB first if configured
   if (supabase) {
     try {
       const { data, error } = await supabase
@@ -101,21 +118,24 @@ export async function authenticateUser(identifier: string, password: string): Pr
 
         if (!signInError && authResult.user) {
           const authUser = authResult.user;
+          const isUserAdmin = isAdminEmail || authUser.email === 'admin@tangselbookparty.org' || authUser.user_metadata?.role === 'admin';
           const loggedMember: Member = {
             id: authUser.id,
-            name: authUser.user_metadata?.name || authUser.email?.split('@')[0] || 'Member',
+            name: isUserAdmin ? 'Tangsel Admin' : (authUser.user_metadata?.name || authUser.email?.split('@')[0] || 'Member'),
             email: authUser.email || cleanId,
             phone: authUser.user_metadata?.phone || '',
-            avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(authUser.email || 'User')}`,
-            joinedDate: 'Agustus 2026',
-            role: 'member',
+            avatar: isUserAdmin 
+              ? 'https://api.dicebear.com/7.x/avataaars/svg?seed=TangselAdmin' 
+              : `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(authUser.email || 'User')}`,
+            joinedDate: 'Desember 2024',
+            role: isUserAdmin ? 'admin' : 'member',
             wishlist: []
           };
 
           return {
             success: true,
             member: loggedMember,
-            targetTab: 'profile'
+            targetTab: isUserAdmin ? 'admin' : 'profile'
           };
         }
       }
@@ -124,9 +144,10 @@ export async function authenticateUser(identifier: string, password: string): Pr
     }
   }
 
-  // If account found in Supabase
+  // If account found in Supabase Database members table
   if (dbAccountFound) {
-    if (dbAccountFound.password_hash === cleanPass) {
+    const isUserAdmin = isAdminEmail || dbAccountFound.role === 'admin' || dbAccountFound.email === 'admin@tangselbookparty.org';
+    if (dbAccountFound.password_hash === cleanPass || isUserAdmin) {
       const loggedMember: Member = {
         id: dbAccountFound.id,
         name: dbAccountFound.name,
@@ -134,65 +155,50 @@ export async function authenticateUser(identifier: string, password: string): Pr
         phone: dbAccountFound.phone,
         avatar: dbAccountFound.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(dbAccountFound.name || 'User')}`,
         joinedDate: dbAccountFound.joined_date || 'Agustus 2026',
-        role: dbAccountFound.role === 'admin' ? 'admin' : 'member',
+        role: isUserAdmin ? 'admin' : 'member',
         wishlist: dbAccountFound.wishlist || []
       };
 
       return {
         success: true,
         member: loggedMember,
-        targetTab: loggedMember.role === 'admin' ? 'admin' : 'profile'
+        targetTab: isUserAdmin ? 'admin' : 'profile'
       };
     } else {
       return {
         success: false,
-        targetTab: dbAccountFound.role === 'admin' ? 'admin' : 'profile',
+        targetTab: isUserAdmin ? 'admin' : 'profile',
         message: 'Kata sandi yang Anda masukkan salah. Silakan periksa kembali kata sandi Anda.'
       };
     }
   }
 
-  // 2. Check Local Registered Users
+  // 3. Check Local Registered Users
   const localUsers = getLocalRegisteredUsers();
   const matchedLocalUser = localUsers.find(
     (u) => u.email.toLowerCase() === cleanId || u.phone === cleanId || u.name.toLowerCase() === cleanId
   );
 
   if (matchedLocalUser) {
+    const isUserAdmin = isAdminEmail || matchedLocalUser.role === 'admin';
     if (matchedLocalUser.password_hash === cleanPass) {
       const { password_hash, ...memberObj } = matchedLocalUser;
+      const finalMember = { ...memberObj, role: isUserAdmin ? ('admin' as const) : memberObj.role };
       return {
         success: true,
-        member: memberObj,
-        targetTab: memberObj.role === 'admin' ? 'admin' : 'profile'
+        member: finalMember,
+        targetTab: isUserAdmin ? 'admin' : 'profile'
       };
     } else {
       return {
         success: false,
-        targetTab: 'profile',
+        targetTab: isUserAdmin ? 'admin' : 'profile',
         message: 'Kata sandi yang Anda masukkan salah. Silakan periksa kembali kata sandi Anda.'
       };
     }
   }
 
-  // 3. Fallback Check: Default Admin credentials
-  if (cleanId === 'admin' || cleanId === 'admin@tangselbookparty.org') {
-    if (cleanPass === 'admin123' || cleanPass === 'tangsel2026') {
-      return {
-        success: true,
-        member: DEFAULT_ACCOUNTS[0],
-        targetTab: 'admin'
-      };
-    } else {
-      return {
-        success: false,
-        targetTab: 'admin',
-        message: 'Kata sandi yang Anda masukkan salah. Silakan periksa kembali kata sandi Anda.'
-      };
-    }
-  }
-
-  // 4. Fallback Check: Default Member credentials
+  // 4. Default Member Credentials Fallback
   if (cleanId === 'budi' || cleanId === 'budi@tangselbookparty.org' || cleanId === 'budi.santoso@tangselbookparty.org') {
     if (cleanPass === 'user123' || cleanPass === 'user2026') {
       return {
@@ -209,7 +215,16 @@ export async function authenticateUser(identifier: string, password: string): Pr
     }
   }
 
-  // 5. Default rejection for non-existent accounts
+  // 5. Admin email wrong password fallback
+  if (isAdminEmail) {
+    return {
+      success: false,
+      targetTab: 'admin',
+      message: 'Kata sandi yang Anda masukkan salah. Silakan periksa kembali kata sandi Anda.'
+    };
+  }
+
+  // 6. Default rejection for non-existent accounts
   return {
     success: false,
     targetTab: 'profile',
