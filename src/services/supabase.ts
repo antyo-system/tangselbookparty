@@ -283,11 +283,13 @@ export async function registerUser(params: {
         };
       }
 
-      // Create Auth User in Supabase Authentication -> Users table
+      // Create Auth User in Supabase Authentication -> Users table with explicit redirect URL
+      const redirectUrl = typeof window !== 'undefined' ? `${window.location.origin}` : undefined;
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: cleanEmail,
         password: password,
         options: {
+          emailRedirectTo: redirectUrl,
           data: {
             name: newMember.name,
             phone: newMember.phone
