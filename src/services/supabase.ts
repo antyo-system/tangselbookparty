@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import type { Member } from '../types';
+import type { Book, BorrowRequest, Member, CommunityEvent, Article } from '../types';
 
 // Read Supabase environment variables from .env
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || '';
@@ -18,10 +18,10 @@ export const supabase = isSupabaseConfigured()
 const DEFAULT_ACCOUNTS: Member[] = [
   {
     id: 'usr_admin_01',
-    name: 'Fian',
+    name: 'Tangsel Admin',
     email: 'admin@tangselbookparty.org',
     phone: '+6281234567890',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=FianAdmin',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=TangselAdmin',
     joinedDate: 'Desember 2024',
     role: 'admin',
     wishlist: ['TBP-BOOK-001']

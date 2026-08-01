@@ -19,7 +19,7 @@ const INITIAL_BOOKS: Book[] = [
     quoteSpeaker: 'James Clear',
     status: 'borrowed',
     ownerId: 'usr_admin_01',
-    ownerName: 'Fian',
+    ownerName: 'Admin Komunitas',
     ownerLocation: 'Bintaro',
     shelfLocation: 'Rak A-01 (Markas Bintaro)',
     pageCount: 320,
@@ -280,7 +280,7 @@ const INITIAL_ARTICLES: Article[] = [
       'Langkah 3: Persetujuan WhatsApp. Sistem akan membuat tautan konfirmasi pesan WhatsApp langsung ke pemilik buku.',
       'Langkah 4: Kembalikan Tepat Waktu. Jaga kebersihan sampul dan halaman buku agar anggota berikutnya dapat menikmati bacaan dengan nyaman.'
     ],
-    author: 'Fian (Founder)',
+    author: 'Tim Tangsel Book Party',
     category: 'Panduan Komunitas',
     readTime: '3 menit baca',
     publishedDate: '28 Juli 2026',
@@ -393,7 +393,12 @@ export const StorageService = {
       return GUEST_MEMBER;
     }
     try {
-      return JSON.parse(data);
+      const parsed = JSON.parse(data);
+      if (parsed.name === 'Fian' || parsed.id === 'usr_admin_01') {
+        localStorage.setItem(KEYS.MEMBER, JSON.stringify(GUEST_MEMBER));
+        return GUEST_MEMBER;
+      }
+      return parsed;
     } catch {
       return GUEST_MEMBER;
     }

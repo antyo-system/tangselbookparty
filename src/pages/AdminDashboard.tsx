@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { 
   BookOpen, Clock, CheckCircle2, XCircle, QrCode, Plus, 
   MessageSquare, Search, RotateCcw, Users, Printer, Edit, Trash2, 
-  Calendar, BookMarked, Eye, LogOut, ArrowLeft, PanelLeftClose, PanelLeftOpen
+  Calendar, BookMarked, Eye, LogOut, PanelLeftClose, PanelLeftOpen
 } from 'lucide-react';
 import type { Book, BorrowRequest, ReservationQueueItem, CommunityEvent, Article } from '../types';
 import { AddBookModal } from '../components/AddBookModal';
@@ -263,13 +263,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           {onExitAdmin && (
             <button
               onClick={onExitAdmin}
-              title="Keluar ke Mode Member"
-              className={`w-full py-2.5 px-2 rounded-xl bg-rose-950/80 hover:bg-rose-900 text-rose-200 hover:text-white text-xs font-bold flex items-center justify-center gap-2 border border-rose-800/50 transition-colors ${
+              title="Keluar dari Akun"
+              className={`w-full py-2.5 px-2 rounded-xl bg-rose-950/80 hover:bg-rose-900 text-rose-200 hover:text-white text-xs font-bold flex items-center justify-center gap-2 border border-rose-800/50 transition-colors cursor-pointer ${
                 !isSidebarOpen ? 'px-0' : ''
               }`}
             >
               <LogOut className="w-4 h-4 shrink-0" />
-              {isSidebarOpen && <span>Keluar ke Mode Member</span>}
+              {isSidebarOpen && <span>Keluar</span>}
             </button>
           )}
         </div>
@@ -301,16 +301,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               {activeTab === 'events' && 'CMS Acara & Meetup Komunitas'}
             </h2>
           </div>
-
-          {onExitAdmin && (
-            <button
-              onClick={onExitAdmin}
-              className="py-1.5 px-3 bg-[#053D27] text-[#D0DF00] hover:bg-[#FFBF00] hover:text-[#03321F] rounded-xl text-xs font-bold flex items-center gap-1.5 border border-slate-200 transition-colors shadow-xs"
-            >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Mode User</span>
-            </button>
-          )}
         </header>
 
         {/* WORKSPACE BODY */}
@@ -520,30 +510,46 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           {/* CMS TAB 3: KATALOG BUKU */}
           {activeTab === 'inventory' && (
             <div className="space-y-4">
-              
-              {/* Header & Filter Controls */}
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
-                <div className="relative flex-1">
-                  <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
-                  <input
-                    type="text"
-                    value={inventorySearch}
-                    onChange={(e) => setInventorySearch(e.target.value)}
-                    placeholder="Cari berdasarkan SKU, Judul, ISBN, Penulis, Pemilik, atau Rak..."
-                    className="w-full pl-10 pr-4 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#053D27] focus:outline-none"
-                  />
-                </div>
-                <button
-                  onClick={() => {
+              {(showAddBook || editingBook) ? (
+                <AddBookModal
+                  bookToEdit={editingBook}
+                  onClose={() => {
+                    setShowAddBook(false);
                     setEditingBook(null);
-                    setShowAddBook(true);
                   }}
-                  className="w-full sm:w-auto py-2 px-4 bg-[#053D27] text-[#D0DF00] hover:bg-[#FFBF00] hover:text-[#03321F] rounded-xl text-xs font-extrabold flex items-center justify-center gap-2 shadow-sm transition-colors"
-                >
-                  <Plus className="w-4 h-4" />
-                  <span>Tambah Buku Baru (CMS)</span>
-                </button>
-              </div>
+                  onAddBook={(bookData) => {
+                    onSaveBook(bookData);
+                    setShowAddBook(false);
+                    setEditingBook(null);
+                  }}
+                />
+              ) : (
+                <>
+                  {/* Header & Filter Controls */}
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+                    <div className="relative flex-1">
+                      <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
+                      <input
+                        type="text"
+                        value={inventorySearch}
+                        onChange={(e) => setInventorySearch(e.target.value)}
+                        placeholder="Cari berdasarkan SKU, Judul, ISBN, Penulis, Pemilik, atau Rak..."
+                        className="w-full pl-10 pr-4 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#053D27] focus:outline-none"
+                      />
+                    </div>
+                    <button
+                      onClick={() => {
+                        setEditingBook(null);
+                        setShowAddBook(true);
+                      }}
+                      className="w-full sm:w-auto py-2 px-4 bg-[#053D27] text-[#D0DF00] hover:bg-[#FFBF00] hover:text-[#03321F] rounded-xl text-xs font-extrabold flex items-center justify-center gap-2 shadow-sm transition-colors cursor-pointer"
+                    >
+                      <Plus className="w-4 h-4" />
+                      <span>Tambah Buku Baru (CMS)</span>
+                    </button>
+                  </div>
+                </>
+              )}
 
               {/* High Density Data Table */}
               <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
@@ -695,22 +701,37 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           {/* CMS TAB 4: CMS ARTIKEL SEO */}
           {activeTab === 'articles' && (
             <div className="space-y-4">
-              <div className="flex items-center justify-between bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
-                <div>
-                  <h3 className="font-bold text-slate-900 text-sm">Daftar Artikel & SEO Knowledge Engine</h3>
-                  <p className="text-xs text-slate-500">Kelola artikel berdaya saing SEO Google Search dengan Live Audit Score Engine.</p>
-                </div>
-                <button
-                  onClick={() => {
+              {(showAddArticle || editingArticle) ? (
+                <AddArticleModal
+                  articleToEdit={editingArticle}
+                  onClose={() => {
+                    setShowAddArticle(false);
                     setEditingArticle(null);
-                    setShowAddArticle(true);
                   }}
-                  className="py-2 px-4 bg-[#053D27] text-[#D0DF00] hover:bg-[#FFBF00] hover:text-[#03321F] rounded-xl text-xs font-extrabold flex items-center gap-1.5 shadow-sm transition-colors"
-                >
-                  <Plus className="w-4 h-4" />
-                  <span>Tambah Artikel Baru (SEO CMS)</span>
-                </button>
-              </div>
+                  onSaveArticle={(articleData) => {
+                    onSaveArticle(articleData);
+                    setShowAddArticle(false);
+                    setEditingArticle(null);
+                  }}
+                />
+              ) : (
+                <div className="flex items-center justify-between bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+                  <div>
+                    <h3 className="font-bold text-slate-900 text-sm">Daftar Artikel & SEO Knowledge Engine</h3>
+                    <p className="text-xs text-slate-500">Kelola artikel berdaya saing SEO Google Search dengan Live Audit Score Engine.</p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setEditingArticle(null);
+                      setShowAddArticle(true);
+                    }}
+                    className="py-2 px-4 bg-[#053D27] text-[#D0DF00] hover:bg-[#FFBF00] hover:text-[#03321F] rounded-xl text-xs font-extrabold flex items-center gap-1.5 shadow-sm transition-colors cursor-pointer"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>Tambah Artikel Baru (SEO CMS)</span>
+                  </button>
+                </div>
+              )}
 
               <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm divide-y divide-slate-100">
                 {articles.map((art) => {
@@ -783,22 +804,37 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           {/* CMS TAB 5: CMS ACARA */}
           {activeTab === 'events' && (
             <div className="space-y-4">
-              <div className="flex items-center justify-between bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
-                <div>
-                  <h3 className="font-bold text-slate-900 text-sm">Agenda & Operasional Event Komunitas</h3>
-                  <p className="text-xs text-slate-500">Atur logistik tempat, kapasitas pendaftar, dan Readiness Score acara.</p>
-                </div>
-                <button
-                  onClick={() => {
+              {(showAddEvent || editingEvent) ? (
+                <AddEventModal
+                  eventToEdit={editingEvent}
+                  onClose={() => {
+                    setShowAddEvent(false);
                     setEditingEvent(null);
-                    setShowAddEvent(true);
                   }}
-                  className="py-2 px-4 bg-[#053D27] text-[#D0DF00] hover:bg-[#FFBF00] hover:text-[#03321F] rounded-xl text-xs font-extrabold flex items-center gap-1.5 shadow-sm transition-colors"
-                >
-                  <Plus className="w-4 h-4" />
-                  <span>Tambah Acara Baru (CMS Acara)</span>
-                </button>
-              </div>
+                  onSaveEvent={(eventData) => {
+                    onSaveEvent(eventData);
+                    setShowAddEvent(false);
+                    setEditingEvent(null);
+                  }}
+                />
+              ) : (
+                <div className="flex items-center justify-between bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+                  <div>
+                    <h3 className="font-bold text-slate-900 text-sm">Agenda & Operasional Event Komunitas</h3>
+                    <p className="text-xs text-slate-500">Atur logistik tempat, kapasitas pendaftar, dan Readiness Score acara.</p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setEditingEvent(null);
+                      setShowAddEvent(true);
+                    }}
+                    className="py-2 px-4 bg-[#053D27] text-[#D0DF00] hover:bg-[#FFBF00] hover:text-[#03321F] rounded-xl text-xs font-extrabold flex items-center gap-1.5 shadow-sm transition-colors cursor-pointer"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>Tambah Acara Baru (CMS Acara)</span>
+                  </button>
+                </div>
+              )}
 
               <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm divide-y divide-slate-100">
                 {events.map((evt) => {
@@ -912,53 +948,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
         </div>
       </main>
-
-      {/* CMS MODALS */}
-      {showAddBook && (
-        <AddBookModal
-          bookToEdit={editingBook}
-          onClose={() => {
-            setShowAddBook(false);
-            setEditingBook(null);
-          }}
-          onAddBook={(bookData) => {
-            onSaveBook(bookData);
-            setShowAddBook(false);
-            setEditingBook(null);
-          }}
-        />
-      )}
-
-      {showAddArticle && (
-        <AddArticleModal
-          articleToEdit={editingArticle}
-          onClose={() => {
-            setShowAddArticle(false);
-            setEditingArticle(null);
-          }}
-          onSaveArticle={(articleData) => {
-            onSaveArticle(articleData);
-            setShowAddArticle(false);
-            setEditingArticle(null);
-          }}
-        />
-      )}
-
-      {showAddEvent && (
-        <AddEventModal
-          eventToEdit={editingEvent}
-          onClose={() => {
-            setShowAddEvent(false);
-            setEditingEvent(null);
-          }}
-          onSaveEvent={(eventData) => {
-            onSaveEvent(eventData);
-            setShowAddEvent(false);
-            setEditingEvent(null);
-          }}
-        />
-      )}
-
     </div>
   );
 };

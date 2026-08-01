@@ -38,6 +38,10 @@ export interface Book {
   currentDueDate?: string; // ISO date string
   queueCount: number; // how many people are in reservation queue
   allowedHandoverMethods?: HandoverMethod[];
+  sku?: string;
+  replacementCost?: number;
+  conditionGrade?: string;
+  catalogHealthScore?: number;
 }
 
 export interface ReservationQueueItem {
@@ -92,6 +96,10 @@ export interface CommunityEvent {
   description: string;
   image: string;
   attendeesCount: number;
+  readinessScore?: number;
+  maxCapacity?: number;
+  eventCode?: string;
+  hostAdminName?: string;
 }
 
 export interface Article {
@@ -108,4 +116,10 @@ export interface Article {
   publishedDate: string;
   coverImage: string;
   views: number;
+  seoScore?: number;
+  seo?: {
+    metaTitle?: string;
+    metaDescription?: string;
+    focusKeyword?: string;
+  };
 }

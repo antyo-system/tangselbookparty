@@ -14,7 +14,6 @@ import { BorrowModal } from './components/BorrowModal';
 import { QRModal } from './components/QRModal';
 import { QRScannerModal } from './components/QRScannerModal';
 import { WhatsAppReminderModal } from './components/WhatsAppReminderModal';
-import { AddBookModal } from './components/AddBookModal';
 import { Footer } from './components/Footer';
 import { BottomNav } from './components/BottomNav';
 
@@ -41,7 +40,6 @@ export function App() {
   const [borrowModalBook, setBorrowModalBook] = useState<Book | null>(null);
   const [qrModalBook, setQrModalBook] = useState<Book | null>(null);
   const [showScanner, setShowScanner] = useState(false);
-  const [showAddBook, setShowAddBook] = useState(false);
   const [waReminderData, setWaReminderData] = useState<{
     request: BorrowRequest;
     type: 'due_soon' | 'overdue' | 'approval';
@@ -507,7 +505,7 @@ export function App() {
             onSelectBook={(book) => setSelectedBookDetail(book)}
             onBorrowBook={(book) => setBorrowModalBook(book)}
             onToggleWishlist={handleToggleWishlist}
-            onAddBook={handleAddBook}
+            onAddBook={handleSaveBook}
             onApproveRequest={handleApproveRequest}
             onRejectRequest={handleRejectRequest}
             onReturnBook={handleReturnBook}
@@ -546,12 +544,7 @@ export function App() {
             onOpenScanner={() => setShowScanner(true)}
             onShowQR={(book) => setQrModalBook(book)}
             onOpenWAReminder={(req, type) => setWaReminderData({ request: req, type })}
-            onExitAdmin={() => {
-              const updatedMember: Member = { ...member, role: 'member' };
-              setMember(updatedMember);
-              StorageService.saveCurrentMember(updatedMember);
-              setActiveTab('catalog');
-            }}
+            onExitAdmin={handleLogout}
           />
         )}
       </main>
@@ -600,16 +593,6 @@ export function App() {
           request={waReminderData.request}
           type={waReminderData.type}
           onClose={() => setWaReminderData(null)}
-        />
-      )}
-
-      {showAddBook && (
-        <AddBookModal
-          onClose={() => setShowAddBook(false)}
-          onAddBook={(bookData) => {
-            handleSaveBook(bookData);
-            setShowAddBook(false);
-          }}
         />
       )}
 

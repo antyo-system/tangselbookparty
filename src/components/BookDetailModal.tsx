@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Star, MapPin, User, QrCode, Quote, Send, Clock, ArrowRight, Heart, BookOpen } from 'lucide-react';
+import { X, Star, MapPin, User, QrCode, Quote, Send, Clock, ArrowRight, Heart } from 'lucide-react';
 import type { Book, BookReview } from '../types';
 
 interface BookDetailModalProps {
