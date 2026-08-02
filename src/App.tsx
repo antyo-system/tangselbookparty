@@ -604,6 +604,26 @@ export function App() {
     }
   };
 
+  // Profile Update Handler
+  const handleUpdateProfile = (updatedMember: Member) => {
+    setMember(updatedMember);
+    StorageService.saveCurrentMember(updatedMember);
+    if (updatedMember.id !== 'usr_guest') {
+      const users = StorageService.getRegisteredUsers();
+      const existingIdx = users.findIndex(
+        (u) => u.id === updatedMember.id || u.email.toLowerCase() === updatedMember.email.toLowerCase()
+      );
+      if (existingIdx !== -1) {
+        users[existingIdx] = {
+          ...users[existingIdx],
+          ...updatedMember
+        };
+        localStorage.setItem('tbp_registered_users_v1', JSON.stringify(users));
+      }
+    }
+    showToast('Profil dan domisili Anda berhasil diperbarui!');
+  };
+
   const isEditingAdmin = activeTab === 'admin';
 
   return (
@@ -679,7 +699,7 @@ export function App() {
             onReturnBook={handleReturnBook}
             onConfirmReceiveBook={handleConfirmReceiveBook}
             onOpenLogin={() => setActiveTab('login')}
-            onLogout={handleLogout}
+            onUpdateProfile={handleUpdateProfile}
           />
         )}
 

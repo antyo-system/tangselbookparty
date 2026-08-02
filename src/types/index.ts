@@ -86,6 +86,7 @@ export interface Member {
   avatar: string;
   role: 'admin' | 'member';
   joinedDate: string;
+  domisili?: string; // e.g. "Bintaro", "BSD City", "Pamulang", "Ciputat", "Serpong", "Setu", "Pondok Aren", "Serpong Utara"
   wishlist: string[]; // book IDs
 }
 

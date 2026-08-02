@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { BookOpen, Clock, Heart, Users, CheckCircle2, ArrowRight, User, LogIn, LogOut, PlusCircle, Library, Tag } from 'lucide-react';
+import { BookOpen, Clock, Heart, Users, CheckCircle2, ArrowRight, User, LogIn, PlusCircle, Library, Tag, Edit3, MapPin } from 'lucide-react';
 import type { Member, Book, BorrowRequest, ReservationQueueItem } from '../types';
 import { AddMyBookModal } from '../components/AddMyBookModal';
+import { EditProfileModal } from '../components/EditProfileModal';
 
 interface ProfilePageProps {
   member: Member;
@@ -18,6 +19,7 @@ interface ProfilePageProps {
   onConfirmReceiveBook?: (requestId: string) => void;
   onOpenLogin?: () => void;
   onLogout?: () => void;
+  onUpdateProfile?: (updatedMember: Member) => void;
 }
 
 export const ProfilePage: React.FC<ProfilePageProps> = ({
@@ -34,10 +36,11 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   onReturnBook,
   onConfirmReceiveBook,
   onOpenLogin,
-  onLogout
+  onUpdateProfile
 }) => {
   const [activeSubTab, setActiveSubTab] = useState<'my_books' | 'borrowed' | 'queue' | 'history' | 'wishlist'>('my_books');
   const [showAddMyBookModal, setShowAddMyBookModal] = useState(false);
+  const [showEditProfileModal, setShowEditProfileModal] = useState(false);
 
   const isGuest = member.id === 'usr_guest';
 
@@ -131,6 +134,23 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
             >
               {member.role === 'admin' ? 'ADMIN' : 'MEMBER'}
             </span>
+
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-200 flex items-center gap-1">
+              <MapPin className="w-3 h-3 text-amber-700" />
+              <span>{member.domisili || 'Bintaro'}</span>
+            </span>
+
+            {!isGuest && (
+              <button
+                type="button"
+                onClick={() => setShowEditProfileModal(true)}
+                className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition-all flex items-center gap-1 cursor-pointer border border-slate-200 ml-1"
+                title="Edit Profil & Domisili"
+              >
+                <Edit3 className="w-3 h-3 text-emerald-700" />
+                <span>Edit Profil</span>
+              </button>
+            )}
           </div>
           <p className="text-xs text-slate-600 font-medium">
             {member.email} {member.phone ? `• ${member.phone}` : ''}
@@ -157,18 +177,6 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
             </div>
           </div>
 
-          {/* Logout Button */}
-          {onLogout && (
-            <button
-              type="button"
-              onClick={onLogout}
-              className="py-2.5 px-4 bg-rose-50 hover:bg-rose-100 text-rose-700 hover:text-rose-900 rounded-2xl text-xs font-bold flex items-center gap-1.5 border border-rose-200 transition-all shadow-xs cursor-pointer"
-              title="Keluar dari Akun"
-            >
-              <LogOut className="w-4 h-4" />
-              <span>Keluar</span>
-            </button>
-          )}
         </div>
       </div>
 
@@ -607,6 +615,18 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
           onAddBook={(newBook) => {
             onAddBook(newBook);
             setShowAddMyBookModal(false);
+          }}
+        />
+      )}
+
+      {/* Edit Profile Modal */}
+      {showEditProfileModal && onUpdateProfile && (
+        <EditProfileModal
+          member={member}
+          onClose={() => setShowEditProfileModal(false)}
+          onSave={(updatedMember) => {
+            onUpdateProfile(updatedMember);
+            setShowEditProfileModal(false);
           }}
         />
       )}
