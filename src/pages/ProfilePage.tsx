@@ -67,13 +67,22 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   const cleanMemName = member.name?.toLowerCase().trim();
   const cleanMemEmail = member.email?.toLowerCase().trim();
 
-  // Filter owned books by this member (resilient to ID, name, or email matching)
-  const myOwnedBooks = isGuest ? [] : books.filter((b) => {
+  // Filter owned books by this member (resilient to ID, name, or email matching + deduplicated by ID)
+  const rawOwned = isGuest ? [] : books.filter((b) => {
     const matchId = b.ownerId && b.ownerId === member.id;
     const matchName = b.ownerName && cleanMemName && b.ownerName.toLowerCase().trim() === cleanMemName;
     const matchEmail = b.ownerEmail && cleanMemEmail && b.ownerEmail.toLowerCase().trim() === cleanMemEmail;
     return Boolean(matchId || matchName || matchEmail);
   });
+
+  const seenOwnedIds = new Set<string>();
+  const myOwnedBooks: Book[] = [];
+  for (const b of rawOwned) {
+    if (!seenOwnedIds.has(b.id)) {
+      seenOwnedIds.add(b.id);
+      myOwnedBooks.push(b);
+    }
+  }
 
   const myActiveBorrows = isGuest ? [] : requests.filter((r) => {
     const matchId = r.userId === member.id;

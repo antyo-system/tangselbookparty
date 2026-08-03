@@ -384,22 +384,41 @@ const KEYS = {
 };
 
 export const StorageService = {
+  deduplicateBooks(books: Book[]): Book[] {
+    const unique: Book[] = [];
+    const seen = new Set<string>();
+    for (const b of books) {
+      if (b && b.id && !seen.has(b.id)) {
+        seen.add(b.id);
+        unique.push(b);
+      }
+    }
+    return unique;
+  },
+
   getBooks(): Book[] {
     const data = localStorage.getItem(KEYS.BOOKS);
     if (!data) {
       localStorage.setItem(KEYS.BOOKS, JSON.stringify(INITIAL_BOOKS));
       return INITIAL_BOOKS;
     }
-    return JSON.parse(data);
+    try {
+      const parsed: Book[] = JSON.parse(data);
+      return this.deduplicateBooks(parsed);
+    } catch {
+      return INITIAL_BOOKS;
+    }
   },
 
   saveBooksLocallyOnly(books: Book[]): void {
-    localStorage.setItem(KEYS.BOOKS, JSON.stringify(books));
+    const unique = this.deduplicateBooks(books);
+    localStorage.setItem(KEYS.BOOKS, JSON.stringify(unique));
   },
 
   saveBooks(books: Book[]): void {
-    localStorage.setItem(KEYS.BOOKS, JSON.stringify(books));
-    books.forEach((b) => upsertBookToSupabase(b));
+    const unique = this.deduplicateBooks(books);
+    localStorage.setItem(KEYS.BOOKS, JSON.stringify(unique));
+    unique.forEach((b) => upsertBookToSupabase(b));
   },
 
   deleteBook(bookId: string): void {

@@ -160,8 +160,9 @@ export function App() {
 
   // Save changes helper
   const updateBooks = (newBooks: Book[]) => {
-    setBooks(newBooks);
-    StorageService.saveBooks(newBooks);
+    const uniqueBooks = StorageService.deduplicateBooks(newBooks);
+    setBooks(uniqueBooks);
+    StorageService.saveBooks(uniqueBooks);
   };
 
   const updateRequests = (newRequests: BorrowRequest[]) => {
@@ -561,16 +562,27 @@ export function App() {
       const nextBooks = books.map((b) => (b.id === bookData.id ? { ...b, ...bookData } : b));
       updateBooks(nextBooks);
     } else {
-      // Add new book
+      // Generate guaranteed unique ID by calculating max existing numeric ID + 1
+      const existingNums = books
+        .map((b) => {
+          const match = b.id.match(/\d+/);
+          return match ? parseInt(match[0], 10) : 0;
+        })
+        .filter((n) => !isNaN(n));
+      const maxNum = existingNums.length > 0 ? Math.max(...existingNums) : books.length;
+      const nextId = `TBP-BOOK-${String(maxNum + 1).padStart(3, '0')}`;
+
       const newBook: Book = {
         ...bookData,
-        id: `TBP-BOOK-${String(books.length + 1).padStart(3, '0')}`,
+        id: nextId,
         status: 'available',
         rating: 5.0,
         reviewsCount: 0,
         queueCount: 0
       };
-      updateBooks([newBook, ...books]);
+      
+      const filtered = books.filter((b) => b.id !== nextId);
+      updateBooks([newBook, ...filtered]);
     }
   };
 

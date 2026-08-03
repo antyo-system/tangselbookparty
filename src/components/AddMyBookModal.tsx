@@ -35,6 +35,7 @@ export const AddMyBookModal: React.FC<AddMyBookModalProps> = ({ member, onClose,
   const [pageCount, setPageCount] = useState(250);
   const [publishYear, setPublishYear] = useState(2024);
   const [availabilityPurpose, setAvailabilityPurpose] = useState<'both' | 'lending' | 'collateral'>('both');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const sampleCovers = [
     'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80',
@@ -45,7 +46,8 @@ export const AddMyBookModal: React.FC<AddMyBookModalProps> = ({ member, onClose,
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim() || !author.trim() || !synopsis.trim()) return;
+    if (isSubmitting || !title.trim() || !author.trim() || !synopsis.trim()) return;
+    setIsSubmitting(true);
 
     onAddBook({
       title: title.trim(),
