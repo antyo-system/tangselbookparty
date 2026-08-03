@@ -21,6 +21,7 @@ import { QRScannerModal } from './components/QRScannerModal';
 import { WhatsAppReminderModal } from './components/WhatsAppReminderModal';
 import { Footer } from './components/Footer';
 import { BottomNav } from './components/BottomNav';
+import { SOPModal } from './components/SOPModal';
 
 export function App() {
   // Master Data State
@@ -75,6 +76,7 @@ export function App() {
   const [borrowModalBook, setBorrowModalBook] = useState<Book | null>(null);
   const [qrModalBook, setQrModalBook] = useState<Book | null>(null);
   const [showScanner, setShowScanner] = useState(false);
+  const [showSOPModal, setShowSOPModal] = useState(false);
   const [waReminderData, setWaReminderData] = useState<{
     request: BorrowRequest;
     type: 'due_soon' | 'overdue' | 'approval';
@@ -700,6 +702,7 @@ export function App() {
             onConfirmReceiveBook={handleConfirmReceiveBook}
             onOpenLogin={() => setActiveTab('login')}
             onUpdateProfile={handleUpdateProfile}
+            onOpenSOP={() => setShowSOPModal(true)}
           />
         )}
 
@@ -739,7 +742,7 @@ export function App() {
       </main>
 
       {/* Footer - Hidden when in Admin Dashboard */}
-      {!isEditingAdmin && <Footer />}
+      {!isEditingAdmin && <Footer onOpenSOP={() => setShowSOPModal(true)} />}
 
       {/* Modals */}
       {selectedBookDetail && (
@@ -764,6 +767,7 @@ export function App() {
           onClose={() => setBorrowModalBook(null)}
           onSubmitBorrow={handleBorrowSubmit}
           onSubmitQueue={handleQueueSubmit}
+          onOpenSOP={() => setShowSOPModal(true)}
         />
       )}
 
@@ -787,6 +791,9 @@ export function App() {
           onClose={() => setWaReminderData(null)}
         />
       )}
+
+      {/* Official SOP Modal */}
+      <SOPModal isOpen={showSOPModal} onClose={() => setShowSOPModal(false)} />
 
       {/* Mobile App-like Bottom Navigation Bar - Hidden when in Admin Dashboard */}
       {!isEditingAdmin && (

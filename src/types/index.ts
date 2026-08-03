@@ -76,6 +76,9 @@ export interface BorrowRequest {
   status: RequestStatus;
   notes?: string;
   approvedBy?: 'owner' | 'admin';
+  extensionStatus?: 'none' | 'requested' | 'approved' | 'rejected';
+  extensionRequestedDays?: number;
+  isLostOrDamaged?: boolean;
 }
 
 export interface Member {
@@ -88,6 +91,9 @@ export interface Member {
   joinedDate: string;
   domisili?: string; // e.g. "Bintaro", "BSD City", "Pamulang", "Ciputat", "Serpong", "Setu", "Pondok Aren", "Serpong Utara"
   wishlist: string[]; // book IDs
+  isBlacklisted?: boolean;
+  borrowingRestricted?: boolean;
+  lateCount?: number;
 }
 
 export interface CommunityEvent {

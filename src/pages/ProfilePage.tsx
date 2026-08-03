@@ -20,6 +20,7 @@ interface ProfilePageProps {
   onOpenLogin?: () => void;
   onLogout?: () => void;
   onUpdateProfile?: (updatedMember: Member) => void;
+  onOpenSOP?: () => void;
 }
 
 export const ProfilePage: React.FC<ProfilePageProps> = ({
@@ -36,7 +37,8 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   onReturnBook,
   onConfirmReceiveBook,
   onOpenLogin,
-  onUpdateProfile
+  onUpdateProfile,
+  onOpenSOP
 }) => {
   const [activeSubTab, setActiveSubTab] = useState<'my_books' | 'borrowed' | 'queue' | 'history' | 'wishlist'>('my_books');
   const [showAddMyBookModal, setShowAddMyBookModal] = useState(false);
@@ -149,6 +151,18 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
               >
                 <Edit3 className="w-3 h-3 text-emerald-700" />
                 <span>Edit Profil</span>
+              </button>
+            )}
+
+            {onOpenSOP && (
+              <button
+                type="button"
+                onClick={onOpenSOP}
+                className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 hover:bg-emerald-100 text-emerald-800 transition-all flex items-center gap-1 cursor-pointer border border-emerald-300 ml-1"
+                title="Lihat SOP Perpustakaan"
+              >
+                <Tag className="w-3 h-3 text-[#053D27]" />
+                <span>SOP Perpustakaan</span>
               </button>
             )}
           </div>
@@ -489,6 +503,34 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                               <CheckCircle2 className="w-4 h-4 text-[#FFBF00]" />
                               <span>📦 Konfirmasi Sudah Terima Buku</span>
                             </button>
+                          </div>
+                        )}
+
+                        {/* SOP Actions when Book is Currently Borrowed */}
+                        {req.status === 'borrowed' && (
+                          <div className="pt-2 border-t border-slate-100 space-y-1.5">
+                            <a
+                              href={`https://wa.me/?text=${encodeURIComponent(
+                                `Halo, mengenai pengajuan perpanjangan tempo pinjam buku "${req.bookTitle}" (ID: ${req.id}) sesuai SOP Tangsel Book Party (+7 hari):`
+                              )}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="w-full py-1.5 px-3 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 font-bold rounded-xl text-[11px] flex items-center justify-center gap-1 transition-all cursor-pointer"
+                            >
+                              <Clock className="w-3.5 h-3.5 text-amber-700" />
+                              <span>Ajukan Perpanjangan Tempo (+7 Hari)</span>
+                            </a>
+
+                            <a
+                              href={`https://wa.me/?text=${encodeURIComponent(
+                                `Halo Admin/Pemilik, saya ingin melaporkan kendala/kerusakan/kehilangan pada peminjaman buku "${req.bookTitle}" (ID: ${req.id}) sesuai SOP Tangsel Book Party:`
+                              )}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="w-full py-1.5 px-3 bg-rose-50 hover:bg-rose-100 text-rose-800 border border-rose-200 font-bold rounded-xl text-[11px] flex items-center justify-center gap-1 transition-all cursor-pointer"
+                            >
+                              <span>⚠️ Laporkan Kendala / Kehilangan</span>
+                            </a>
                           </div>
                         )}
 

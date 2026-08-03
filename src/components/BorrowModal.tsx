@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, MapPin, Truck, Clock, Users, CheckCircle2 } from 'lucide-react';
+import { X, MapPin, Truck, Clock, Users, CheckCircle2, ShieldAlert, FileText } from 'lucide-react';
 import type { Book, HandoverMethod, Member } from '../types';
 
 interface BorrowModalProps {
@@ -17,6 +17,7 @@ interface BorrowModalProps {
     durationDays: number,
     estimatedDate: string
   ) => void;
+  onOpenSOP?: () => void;
 }
 
 export const BorrowModal: React.FC<BorrowModalProps> = ({
@@ -24,15 +25,18 @@ export const BorrowModal: React.FC<BorrowModalProps> = ({
   member,
   onClose,
   onSubmitBorrow,
-  onSubmitQueue
+  onSubmitQueue,
+  onOpenSOP
 }) => {
   const [durationDays, setDurationDays] = useState<number>(14);
   const [handoverMethod, setHandoverMethod] = useState<HandoverMethod>('meetup');
   const [notes, setNotes] = useState<string>('');
+  const [sopAgreed, setSopAgreed] = useState<boolean>(false);
 
   if (!book) return null;
 
   const isAvailable = book.status === 'available';
+  const isBlocked = member.isBlacklisted || member.borrowingRestricted;
 
   const calculateEstimatedDate = (): string => {
     const baseDateStr = book.currentDueDate || new Date().toISOString().split('T')[0];
@@ -46,6 +50,7 @@ export const BorrowModal: React.FC<BorrowModalProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (isBlocked || !sopAgreed) return;
 
     if (isAvailable) {
       onSubmitBorrow(book.id, durationDays, handoverMethod, notes);
@@ -68,7 +73,7 @@ export const BorrowModal: React.FC<BorrowModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-full bg-[#03321F] hover:bg-[#FFBF00] text-emerald-200 hover:text-[#03321F] transition-colors"
+            className="p-2 rounded-full bg-[#03321F] hover:bg-[#FFBF00] text-emerald-200 hover:text-[#03321F] transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -76,8 +81,23 @@ export const BorrowModal: React.FC<BorrowModalProps> = ({
 
         <form onSubmit={handleSubmit} className="p-6 space-y-6 bg-white">
           
+          {/* Blacklist / Restricted Warning Banner */}
+          {isBlocked && (
+            <div className="bg-rose-50 border border-rose-300 rounded-2xl p-4 space-y-1.5 text-rose-900">
+              <div className="flex items-center gap-2 font-extrabold text-xs text-rose-700 uppercase tracking-wider">
+                <ShieldAlert className="w-4 h-4 text-rose-600 shrink-0" />
+                <span>Peminjaman Dibatasi (SOP Guard)</span>
+              </div>
+              <p className="text-xs text-rose-800 leading-relaxed font-medium">
+                {member.isBlacklisted
+                  ? 'Akun Anda sedang di-BLACKLIST akibat pelanggaran SOP perpustakaan. Pengajuan peminjaman ditutup.'
+                  : 'Akun Anda sedang DIBATASI dari peminjaman buku akibat riwayat keterlambatan berulang.'}
+              </p>
+            </div>
+          )}
+
           {/* Queue Warning Banner if Borrowed */}
-          {!isAvailable && (
+          {!isAvailable && !isBlocked && (
             <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 space-y-2 text-slate-900">
               <div className="flex items-center gap-2 text-[#053D27] font-extrabold text-sm">
                 <Users className="w-4 h-4 text-[#053D27]" />
@@ -99,50 +119,45 @@ export const BorrowModal: React.FC<BorrowModalProps> = ({
               <span>Select Borrowing Duration</span>
               <span className="text-amber-600 font-semibold text-[11px] normal-case">Max 21 Days</span>
             </label>
-
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-3 gap-2">
               {[7, 14, 21].map((days) => (
                 <button
                   type="button"
                   key={days}
                   onClick={() => setDurationDays(days)}
-                  className={`py-3 px-3 rounded-2xl border text-center transition-all flex flex-col items-center justify-center gap-1 ${
+                  className={`py-2.5 px-3 rounded-xl border text-xs font-extrabold transition-all cursor-pointer ${
                     durationDays === days
-                      ? 'border-[#053D27] bg-[#053D27] text-white font-extrabold shadow-md'
-                      : 'border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-300'
+                      ? 'bg-[#053D27] text-[#FFBF00] border-[#053D27] shadow-sm'
+                      : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
                   }`}
                 >
-                  <span className="text-base font-bold">{days} Days</span>
-                  <span className="text-[10px] opacity-80 font-medium">
-                    {days === 7 ? 'Quick Read' : days === 14 ? 'Standard' : 'Extended'}
-                  </span>
+                  {days} Hari
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Handover Method Selection (Only if Available) */}
+          {/* Handover Method */}
           {isAvailable && (
             <div className="space-y-2">
               <label className="text-xs font-extrabold uppercase tracking-wider text-[#053D27]">
-                Preferred Handover Method
+                Handover Method
               </label>
-
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
                   onClick={() => setHandoverMethod('meetup')}
-                  className={`p-3.5 rounded-2xl border text-left transition-all flex items-start gap-3 ${
+                  className={`p-3 rounded-2xl border text-left flex items-start gap-2.5 transition-all cursor-pointer ${
                     handoverMethod === 'meetup'
-                      ? 'border-[#053D27] bg-emerald-50 text-[#053D27] shadow-sm font-bold'
-                      : 'border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-300'
+                      ? 'bg-emerald-50 border-[#053D27] text-[#053D27]'
+                      : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
                   }`}
                 >
-                  <MapPin className="w-5 h-5 flex-shrink-0 mt-0.5 text-[#053D27]" />
+                  <MapPin className="w-4 h-4 text-[#053D27] shrink-0 mt-0.5" />
                   <div>
-                    <span className="text-xs font-extrabold block">In-Person Meetup</span>
+                    <span className="text-xs font-extrabold block">Meetup COD</span>
                     <span className="text-[10px] text-slate-500 leading-tight block">
-                      Pick up at Weekend Meetup or Rack ({book.shelfLocation})
+                      Saat event Book Party / lokasi kesepakatan
                     </span>
                   </div>
                 </button>
@@ -150,17 +165,17 @@ export const BorrowModal: React.FC<BorrowModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setHandoverMethod('courier')}
-                  className={`p-3.5 rounded-2xl border text-left transition-all flex items-start gap-3 ${
+                  className={`p-3 rounded-2xl border text-left flex items-start gap-2.5 transition-all cursor-pointer ${
                     handoverMethod === 'courier'
-                      ? 'border-[#053D27] bg-emerald-50 text-[#053D27] shadow-sm font-bold'
-                      : 'border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-300'
+                      ? 'bg-emerald-50 border-[#053D27] text-[#053D27]'
+                      : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
                   }`}
                 >
-                  <Truck className="w-5 h-5 flex-shrink-0 mt-0.5 text-[#053D27]" />
+                  <Truck className="w-4 h-4 text-[#053D27] shrink-0 mt-0.5" />
                   <div>
                     <span className="text-xs font-extrabold block">Courier / COD</span>
                     <span className="text-[10px] text-slate-500 leading-tight block">
-                      Delivered via GoSend / GrabExpress / Paxel
+                      Paxel / GoSend (Ongkir ditanggung peminjam)
                     </span>
                   </div>
                 </button>
@@ -173,38 +188,73 @@ export const BorrowModal: React.FC<BorrowModalProps> = ({
             <span className="text-slate-500 font-medium">Borrower Information</span>
             <div className="flex items-center justify-between font-bold text-slate-900">
               <span>{member.name}</span>
-              <span className="text-[#053D27]">{member.phone}</span>
+              <span className="text-[#053D27]">{member.phone || 'Nomor WA Belum Diisi'}</span>
             </div>
           </div>
 
           {/* Additional Notes */}
           <div className="space-y-1">
             <label className="text-xs font-extrabold uppercase tracking-wider text-[#053D27]">
-              Notes / Preferred Meetup Date (Optional)
+              Catatan Peminjaman (Opsional)
             </label>
             <input
               type="text"
-              placeholder="e.g. Will attend Saturday Bintaro Book Swap"
+              placeholder="Contoh: Janjian meetup saat event piknik baca hari Sabtu"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               className="w-full px-3.5 py-2.5 text-xs sm:text-sm bg-slate-50 text-slate-900 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#053D27]"
             />
           </div>
 
+          {/* SOP Agreement Checkbox */}
+          {!isBlocked && (
+            <div className="bg-emerald-50/80 border border-emerald-200 rounded-2xl p-3.5 space-y-2">
+              <div className="flex items-start gap-2.5">
+                <input
+                  type="checkbox"
+                  id="sopAgreement"
+                  checked={sopAgreed}
+                  onChange={(e) => setSopAgreed(e.target.checked)}
+                  className="mt-0.5 w-4 h-4 rounded text-[#053D27] focus:ring-[#053D27] cursor-pointer"
+                />
+                <label htmlFor="sopAgreement" className="text-xs text-slate-800 font-medium leading-relaxed cursor-pointer">
+                  Saya telah membaca & menyetujui <strong className="text-[#053D27]">SOP Perpustakaan Tangsel Book Party</strong> (Siap menjaga kondisi fisik buku tanpa coretan/lipatan & bertanggung jawab jika rusak/hilang).
+                </label>
+              </div>
+              {onOpenSOP && (
+                <button
+                  type="button"
+                  onClick={onOpenSOP}
+                  className="text-[11px] font-bold text-emerald-800 hover:underline flex items-center gap-1 pl-6 cursor-pointer"
+                >
+                  <FileText className="w-3.5 h-3.5 text-[#053D27]" />
+                  <span>Baca Selengkapnya Dokumen SOP Perpustakaan →</span>
+                </button>
+              )}
+            </div>
+          )}
+
           {/* Submit Button */}
           <button
             type="submit"
-            className={`w-full py-3.5 px-4 rounded-2xl text-sm font-extrabold flex items-center justify-center gap-2 shadow-lg transition-all ${
-              isAvailable
+            disabled={isBlocked || !sopAgreed}
+            className={`w-full py-3.5 px-4 rounded-2xl text-sm font-extrabold flex items-center justify-center gap-2 shadow-lg transition-all cursor-pointer ${
+              isBlocked || !sopAgreed
+                ? 'bg-slate-200 text-slate-400 border border-slate-300 cursor-not-allowed shadow-none'
+                : isAvailable
                 ? 'bg-[#FFBF00] text-[#03321F] hover:bg-[#053D27] hover:text-[#D0DF00] shadow-amber-200'
                 : 'bg-[#053D27] text-[#D0DF00] hover:bg-[#FFBF00] hover:text-[#03321F] shadow-emerald-200'
             }`}
           >
             <CheckCircle2 className="w-4 h-4" />
             <span>
-              {isAvailable
-                ? `Confirm Borrow Request (${durationDays} Days)`
-                : `Confirm Queue Position #${book.queueCount + 1}`}
+              {isBlocked
+                ? 'Peminjaman Dibatasi (Lihat Warning)'
+                : !sopAgreed
+                ? 'Centang Persetujuan SOP Terlebih Dahulu'
+                : isAvailable
+                ? `Ajukan Pinjaman (${durationDays} Hari)`
+                : `Masuk Antrian Reservasi #${book.queueCount + 1}`}
             </span>
           </button>
 

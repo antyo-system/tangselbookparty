@@ -1,7 +1,11 @@
 import React from 'react';
-import { Heart, MapPin, Sparkles } from 'lucide-react';
+import { Heart, MapPin, Sparkles, FileText } from 'lucide-react';
 
-export const Footer: React.FC = () => {
+interface FooterProps {
+  onOpenSOP?: () => void;
+}
+
+export const Footer: React.FC<FooterProps> = ({ onOpenSOP }) => {
   return (
     <footer className="bg-[#03321F] text-white border-t border-[#FFBF00]/20 pt-8 pb-8 w-full max-w-full overflow-x-hidden transition-all">
       <div className="max-w-7xl w-full mx-auto px-3.5 sm:px-6 lg:px-8 space-y-6">
@@ -22,6 +26,15 @@ export const Footer: React.FC = () => {
             <p className="text-xs text-emerald-200/80 leading-relaxed font-medium break-words">
               Komunitas berbagi & meminjam buku fisik independen untuk kawasan Bintaro, BSD, Pamulang, Ciputat, dan sekitarnya di Tangerang Selatan.
             </p>
+            {onOpenSOP && (
+              <button
+                onClick={onOpenSOP}
+                className="px-3 py-1.5 rounded-xl bg-[#053D27] hover:bg-[#FFBF00] text-[#FFBF00] hover:text-[#03321F] border border-[#FFBF00]/30 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer mt-1"
+              >
+                <FileText className="w-3.5 h-3.5" />
+                <span>Baca SOP Perpustakaan</span>
+              </button>
+            )}
           </div>
 
           {/* Col 2 */}
