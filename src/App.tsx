@@ -189,7 +189,8 @@ export function App() {
     notes: string,
     collateralBookId?: string,
     collateralBookTitle?: string,
-    collateralNotes?: string
+    collateralNotes?: string,
+    isBarter?: boolean
   ) => {
     const targetBook = books.find((b) => b.id === bookId);
     if (!targetBook) return;
@@ -230,13 +231,18 @@ export function App() {
       notes,
       collateralBookId,
       collateralBookTitle,
-      collateralNotes
+      collateralNotes,
+      isBarter
     };
 
     const nextRequests = [newRequest, ...requests];
     updateRequests(nextRequests);
     setBorrowModalBook(null);
-    showToast(`Permintaan pinjam "${targetBook.title}" berhasil diajukan!`);
+    showToast(
+      isBarter
+        ? `Pengajuan Barter (Saling Pinjam) untuk "${targetBook.title}" berhasil diajukan!`
+        : `Permintaan pinjam "${targetBook.title}" berhasil diajukan!`
+    );
   };
 
   const handleQueueSubmit = (
@@ -377,6 +383,50 @@ export function App() {
 
     updateRequests(updatedRequests);
     updateBooks(updatedBooks);
+  };
+
+  // Caretaker Admin Forfeit Collateral Resolution Handler
+  const handleForfeitCollateral = (requestId: string, targetOwnership: 'owner' | 'community') => {
+    const targetReq = requests.find((r) => r.id === requestId);
+    if (!targetReq || !targetReq.collateralBookId) return;
+
+    const targetCollateralBook = books.find((b) => b.id === targetReq.collateralBookId);
+    if (!targetCollateralBook) return;
+
+    const newOwnerId = targetOwnership === 'owner' ? (targetReq.ownerId || 'usr_admin_01') : 'usr_admin_01';
+    const newOwnerName = targetOwnership === 'owner' ? 'Pemilik Buku (Ganti Rugi Sita)' : 'Koleksi Perpustakaan Komunitas';
+
+    // 1. Update collateral book ownership & availability
+    const updatedBooks = books.map((b) =>
+      b.id === targetCollateralBook.id
+        ? {
+            ...b,
+            ownerId: newOwnerId,
+            ownerName: newOwnerName,
+            status: 'available' as const,
+            availabilityPurpose: 'both' as const
+          }
+        : b
+    );
+
+    // 2. Update request collateralState & status
+    const updatedRequests = requests.map((r) =>
+      r.id === requestId
+        ? {
+            ...r,
+            status: 'overdue' as const,
+            collateralState: targetOwnership === 'owner' ? ('transferred_to_owner' as const) : ('transferred_to_community' as const)
+          }
+        : r
+    );
+
+    updateBooks(updatedBooks);
+    updateRequests(updatedRequests);
+    showToast(
+      `[SITA JAMINAN] Kepemilikan "${targetCollateralBook.title}" resmi ditransfer ke ${
+        targetOwnership === 'owner' ? 'Pemilik Buku Asli' : 'Koleksi Komunitas'
+      }!`
+    );
   };
 
   // QR Scan Result Handler (Smart Admin vs Member Scanner Workflow)
@@ -743,6 +793,7 @@ export function App() {
             onShowQR={(book) => setQrModalBook(book)}
             onOpenWAReminder={(req, type) => setWaReminderData({ request: req, type })}
             onExitAdmin={handleLogout}
+            onForfeitCollateral={handleForfeitCollateral}
           />
         )}
       </main>
@@ -771,6 +822,7 @@ export function App() {
           book={borrowModalBook}
           member={member}
           allBooks={books}
+          requests={requests}
           onClose={() => setBorrowModalBook(null)}
           onSubmitBorrow={handleBorrowSubmit}
           onSubmitQueue={handleQueueSubmit}

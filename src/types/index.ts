@@ -43,6 +43,7 @@ export interface Book {
   replacementCost?: number;
   conditionGrade?: string;
   catalogHealthScore?: number;
+  availabilityPurpose?: 'both' | 'lending' | 'collateral';
 }
 
 export interface ReservationQueueItem {
@@ -82,6 +83,8 @@ export interface BorrowRequest {
   collateralBookId?: string;
   collateralBookTitle?: string;
   collateralNotes?: string;
+  isBarter?: boolean;
+  collateralState?: 'held' | 'transferred_to_owner' | 'transferred_to_community';
 }
 
 export interface Member {

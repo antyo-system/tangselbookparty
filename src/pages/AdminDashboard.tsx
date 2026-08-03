@@ -28,6 +28,7 @@ interface AdminDashboardProps {
   onShowQR: (book: Book) => void;
   onOpenWAReminder: (request: BorrowRequest, type: 'due_soon' | 'overdue' | 'approval') => void;
   onExitAdmin?: () => void;
+  onForfeitCollateral?: (requestId: string, targetOwnership: 'owner' | 'community') => void;
 }
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({
@@ -48,7 +49,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   onOpenScanner,
   onShowQR,
   onOpenWAReminder,
-  onExitAdmin
+  onExitAdmin,
+  onForfeitCollateral
 }) => {
   const [activeTab, setActiveTab] = useState<'requests' | 'active_loans' | 'inventory' | 'articles' | 'events' | 'queues'>('requests');
   const [inventorySearch, setInventorySearch] = useState('');
@@ -611,9 +613,30 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                             <span>Pengingat WA</span>
                           </button>
 
+                          {loan.collateralBookId && onForfeitCollateral && (
+                            <div className="flex items-center gap-1">
+                              <button
+                                type="button"
+                                onClick={() => onForfeitCollateral(loan.id, 'owner')}
+                                className="py-2 px-2.5 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 rounded-xl text-xs font-bold transition-colors cursor-pointer"
+                                title="Transfer kepemilikan jaminan ke pemilik buku asli sebagai ganti rugi"
+                              >
+                                ⚖️ Sita ke Pemilik
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => onForfeitCollateral(loan.id, 'community')}
+                                className="py-2 px-2.5 bg-[#053D27] hover:bg-[#03291a] text-[#FFBF00] border border-[#FFBF00]/30 rounded-xl text-xs font-bold transition-colors cursor-pointer"
+                                title="Transfer kepemilikan jaminan ke rak koleksi perpustakaan komunitas"
+                              >
+                                🏛️ Sita ke Komunitas
+                              </button>
+                            </div>
+                          )}
+
                           <button
                             onClick={() => onReturnBook(loan.bookId)}
-                            className="py-2 px-4 bg-[#053D27] hover:bg-[#FFBF00] hover:text-[#03321F] text-[#D0DF00] rounded-xl text-xs font-extrabold flex items-center gap-1.5 shadow-sm transition-colors"
+                            className="py-2 px-4 bg-[#053D27] hover:bg-[#FFBF00] hover:text-[#03321F] text-[#D0DF00] rounded-xl text-xs font-extrabold flex items-center gap-1.5 shadow-sm transition-colors cursor-pointer"
                           >
                             <RotateCcw className="w-4 h-4" />
                             <span>Tandai Dikembalikan</span>

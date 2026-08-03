@@ -31,6 +31,9 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({
   const filteredBooks = useMemo(() => {
     return books
       .filter((book) => {
+        // Exclude books reserved exclusively as private collateral
+        if (book.availabilityPurpose === 'collateral') return false;
+
         const query = searchQuery.toLowerCase().trim();
         const matchesSearch =
           !query ||

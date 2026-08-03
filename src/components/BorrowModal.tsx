@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { X, MapPin, Truck, Clock, Users, CheckCircle2, ShieldAlert, FileText, Shield } from 'lucide-react';
-import type { Book, HandoverMethod, Member } from '../types';
+import { X, MapPin, Truck, Clock, Users, CheckCircle2, ShieldAlert, FileText, Shield, Repeat } from 'lucide-react';
+import type { Book, BorrowRequest, HandoverMethod, Member } from '../types';
 
 interface BorrowModalProps {
   book: Book | null;
   member: Member;
   allBooks?: Book[];
+  requests?: BorrowRequest[];
   onClose: () => void;
   onSubmitBorrow: (
     bookId: string,
@@ -14,7 +15,8 @@ interface BorrowModalProps {
     notes: string,
     collateralBookId?: string,
     collateralBookTitle?: string,
-    collateralNotes?: string
+    collateralNotes?: string,
+    isBarter?: boolean
   ) => void;
   onSubmitQueue: (
     bookId: string,
@@ -28,6 +30,7 @@ export const BorrowModal: React.FC<BorrowModalProps> = ({
   book,
   member,
   allBooks = [],
+  requests = [],
   onClose,
   onSubmitBorrow,
   onSubmitQueue,
@@ -45,8 +48,25 @@ export const BorrowModal: React.FC<BorrowModalProps> = ({
   const isAvailable = book.status === 'available';
   const isBlocked = member.isBlacklisted || member.borrowingRestricted;
 
-  // Filter available books owned by borrower
-  const userOwnedBooks = allBooks.filter((b) => b.ownerId === member.id && b.status === 'available');
+  // Barter Cross-Borrowing Detection
+  const isBarter = Boolean(
+    book.ownerId &&
+    book.ownerId !== member.id &&
+    requests.some(
+      (r) =>
+        r.userId === book.ownerId &&
+        (r.ownerId === member.id || allBooks.some((b) => b.id === r.bookId && b.ownerId === member.id)) &&
+        (r.status === 'borrowed' || r.status === 'approved' || r.status === 'pending')
+    )
+  );
+
+  // Filter available books owned by borrower (must be 'both' or 'collateral', exclude 'lending'-only)
+  const userOwnedBooks = allBooks.filter(
+    (b) =>
+      b.ownerId === member.id &&
+      b.status === 'available' &&
+      b.availabilityPurpose !== 'lending'
+  );
   const selectedCollateralBook = userOwnedBooks.find((b) => b.id === collateralBookId);
 
   const calculateEstimatedDate = (): string => {
@@ -69,9 +89,10 @@ export const BorrowModal: React.FC<BorrowModalProps> = ({
         durationDays,
         handoverMethod,
         notes,
-        collateralBookId || undefined,
-        selectedCollateralBook?.title || undefined,
-        manualCollateralNote.trim() || undefined
+        isBarter ? undefined : collateralBookId || undefined,
+        isBarter ? undefined : selectedCollateralBook?.title || undefined,
+        isBarter ? 'Transaksi Barter (Saling Pinjam Active)' : manualCollateralNote.trim() || undefined,
+        isBarter
       );
     } else {
       onSubmitQueue(book.id, durationDays, estimatedAvailableDate);
@@ -202,50 +223,62 @@ export const BorrowModal: React.FC<BorrowModalProps> = ({
             </div>
           )}
 
-          {/* Book Collateral Selection (MVP Manual Review) */}
+          {/* Book Collateral Selection / Barter Detection */}
           {isAvailable && (
-            <div className="space-y-2 bg-amber-50/70 border border-amber-200/90 p-4 rounded-2xl">
-              <label className="text-xs font-extrabold uppercase tracking-wider text-[#053D27] flex items-center justify-between">
-                <span className="flex items-center gap-1.5">
-                  <Shield className="w-4 h-4 text-amber-600" />
-                  <span>Buku Jaminan (Book Collateral)</span>
-                </span>
-                <span className="text-amber-800 text-[10px] font-bold">Review Manual Petugas</span>
-              </label>
+            isBarter ? (
+              <div className="bg-emerald-50 border border-emerald-300 p-4 rounded-2xl space-y-1.5 text-emerald-950">
+                <div className="flex items-center gap-2 text-[#053D27] font-extrabold text-xs uppercase tracking-wider">
+                  <Repeat className="w-4 h-4 text-emerald-600" />
+                  <span>🔄 Transaksi Barter Saling Pinjam Aktif!</span>
+                </div>
+                <p className="text-xs leading-relaxed font-medium">
+                  Sistem mendeteksi Anda dan pemilik buku (<strong>{book.ownerName}</strong>) sedang dalam alur saling meminjam buku. Pengajuan ini otomatis <strong>bebas dari jaminan tambahan</strong>.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-2 bg-amber-50/70 border border-amber-200/90 p-4 rounded-2xl">
+                <label className="text-xs font-extrabold uppercase tracking-wider text-[#053D27] flex items-center justify-between">
+                  <span className="flex items-center gap-1.5">
+                    <Shield className="w-4 h-4 text-amber-600" />
+                    <span>Buku Jaminan (Book Collateral)</span>
+                  </span>
+                  <span className="text-amber-800 text-[10px] font-bold">Review Manual Petugas</span>
+                </label>
 
-              {userOwnedBooks.length > 0 ? (
-                <div className="space-y-1.5">
-                  <select
-                    value={collateralBookId}
-                    onChange={(e) => setCollateralBookId(e.target.value)}
-                    className="w-full px-3.5 py-2.5 text-xs bg-white text-slate-900 border border-amber-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#053D27] font-medium cursor-pointer"
-                  >
-                    <option value="">-- Pilih Buku Milik Anda Sebagai Jaminan --</option>
-                    {userOwnedBooks.map((uBook) => (
-                      <option key={uBook.id} value={uBook.id}>
-                        {uBook.title} ({uBook.genre})
-                      </option>
-                    ))}
-                  </select>
-                  <p className="text-[11px] text-slate-600">
-                    Buku jaminan ini akan dititipkan selama masa peminjaman dan diperiksa manual oleh petugas saat serah terima.
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <p className="text-xs text-amber-900 leading-relaxed font-medium">
-                    Anda belum mendaftarkan koleksi buku di <strong>Buku Saya</strong>. Anda dapat menuliskan janji jaminan manual ke petugas di bawah ini:
-                  </p>
-                  <input
-                    type="text"
-                    placeholder="Contoh: Menitipkan buku komik / jaminan manual saat event COD"
-                    value={manualCollateralNote}
-                    onChange={(e) => setManualCollateralNote(e.target.value)}
-                    className="w-full px-3.5 py-2.5 text-xs bg-white text-slate-900 border border-amber-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#053D27]"
-                  />
-                </div>
-              )}
-            </div>
+                {userOwnedBooks.length > 0 ? (
+                  <div className="space-y-1.5">
+                    <select
+                      value={collateralBookId}
+                      onChange={(e) => setCollateralBookId(e.target.value)}
+                      className="w-full px-3.5 py-2.5 text-xs bg-white text-slate-900 border border-amber-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#053D27] font-medium cursor-pointer"
+                    >
+                      <option value="">-- Pilih Buku Milik Anda Sebagai Jaminan --</option>
+                      {userOwnedBooks.map((uBook) => (
+                        <option key={uBook.id} value={uBook.id}>
+                          {uBook.title} ({uBook.genre})
+                        </option>
+                      ))}
+                    </select>
+                    <p className="text-[11px] text-slate-600">
+                      Buku jaminan ini akan dititipkan selama masa peminjaman dan diperiksa manual oleh petugas saat serah terima.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <p className="text-xs text-amber-900 leading-relaxed font-medium">
+                      Anda belum mendaftarkan koleksi buku di <strong>Buku Saya</strong>. Anda dapat menuliskan janji jaminan manual ke petugas di bawah ini:
+                    </p>
+                    <input
+                      type="text"
+                      placeholder="Contoh: Menitipkan buku komik / jaminan manual saat event COD"
+                      value={manualCollateralNote}
+                      onChange={(e) => setManualCollateralNote(e.target.value)}
+                      className="w-full px-3.5 py-2.5 text-xs bg-white text-slate-900 border border-amber-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#053D27]"
+                    />
+                  </div>
+                )}
+              </div>
+            )
           )}
 
           {/* Member Details Read-only */}

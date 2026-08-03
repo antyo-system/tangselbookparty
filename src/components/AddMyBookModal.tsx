@@ -35,6 +35,7 @@ export const AddMyBookModal: React.FC<AddMyBookModalProps> = ({ member, onClose,
   const [favoriteQuote] = useState('');
   const [pageCount, setPageCount] = useState(250);
   const [publishYear, setPublishYear] = useState(2024);
+  const [availabilityPurpose, setAvailabilityPurpose] = useState<'both' | 'lending' | 'collateral'>('both');
 
   const sampleCovers = [
     'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80',
@@ -63,7 +64,8 @@ export const AddMyBookModal: React.FC<AddMyBookModalProps> = ({ member, onClose,
       shelfLocation: `${shelfLocation} (${ownerLocation})`,
       pageCount: Number(pageCount) || 250,
       publishYear: Number(publishYear) || 2024,
-      language: 'Bahasa Indonesia'
+      language: 'Bahasa Indonesia',
+      availabilityPurpose
     });
 
     onClose();
@@ -201,6 +203,53 @@ export const AddMyBookModal: React.FC<AddMyBookModalProps> = ({ member, onClose,
                 </option>
               ))}
             </select>
+          </div>
+
+          {/* Peruntukan & Status Akses Buku */}
+          <div className="bg-emerald-50/70 border border-emerald-200/90 p-4 rounded-2xl space-y-2">
+            <label className="block text-xs font-bold text-[#053D27]">
+              Peruntukan & Status Akses Buku
+            </label>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              <button
+                type="button"
+                onClick={() => setAvailabilityPurpose('both')}
+                className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                  availabilityPurpose === 'both'
+                    ? 'bg-[#053D27] text-[#FFBF00] border-[#053D27] shadow-sm font-extrabold'
+                    : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50 text-xs font-semibold'
+                }`}
+              >
+                <span className="text-xs block">✨ Keduanya</span>
+                <span className="text-[10px] opacity-80 font-normal block mt-0.5">Tampil katalog & jaminan</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setAvailabilityPurpose('lending')}
+                className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                  availabilityPurpose === 'lending'
+                    ? 'bg-[#053D27] text-[#FFBF00] border-[#053D27] shadow-sm font-extrabold'
+                    : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50 text-xs font-semibold'
+                }`}
+              >
+                <span className="text-xs block">📖 Hanya Dipinjamkan</span>
+                <span className="text-[10px] opacity-80 font-normal block mt-0.5">Tampil katalog publik</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setAvailabilityPurpose('collateral')}
+                className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                  availabilityPurpose === 'collateral'
+                    ? 'bg-[#053D27] text-[#FFBF00] border-[#053D27] shadow-sm font-extrabold'
+                    : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50 text-xs font-semibold'
+                }`}
+              >
+                <span className="text-xs block">🛡️ Khusus Jaminan Saya</span>
+                <span className="text-[10px] opacity-80 font-normal block mt-0.5">Hanya agunan personal</span>
+              </button>
+            </div>
           </div>
 
           {/* Section 2: Page & Year */}
