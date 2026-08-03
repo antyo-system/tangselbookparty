@@ -373,14 +373,15 @@ export const GUEST_MEMBER: Member = {
 };
 
 const KEYS = {
-  BOOKS: 'tbp_books_v6',
-  REQUESTS: 'tbp_requests_v6',
-  QUEUES: 'tbp_queues_v6',
-  REVIEWS: 'tbp_reviews_v6',
-  MEMBER: 'tbp_member_v7',
-  EVENTS: 'tbp_events_v6',
-  ARTICLES: 'tbp_articles_v6',
-  REGISTERED_USERS: 'tbp_registered_users_v1'
+  BOOKS: 'tbp_books_v9',
+  REQUESTS: 'tbp_requests_v9',
+  QUEUES: 'tbp_queues_v9',
+  REVIEWS: 'tbp_reviews_v9',
+  MEMBER: 'tbp_member_v9',
+  EVENTS: 'tbp_events_v9',
+  ARTICLES: 'tbp_articles_v9',
+  REGISTERED_USERS: 'tbp_registered_users_v2',
+  MEMBERS_LIST: 'tbp_members_list_v9'
 };
 
 export const StorageService = {
@@ -532,9 +533,9 @@ export const StorageService = {
   },
 
   getMembers(): Member[] {
-    const data = localStorage.getItem('tbp_members_list');
+    const data = localStorage.getItem(KEYS.MEMBERS_LIST);
     if (!data) {
-      localStorage.setItem('tbp_members_list', JSON.stringify(INITIAL_MEMBERS));
+      localStorage.setItem(KEYS.MEMBERS_LIST, JSON.stringify(INITIAL_MEMBERS));
       return INITIAL_MEMBERS;
     }
     try {
@@ -545,7 +546,7 @@ export const StorageService = {
   },
 
   saveMembers(members: Member[]): void {
-    localStorage.setItem('tbp_members_list', JSON.stringify(members));
+    localStorage.setItem(KEYS.MEMBERS_LIST, JSON.stringify(members));
   },
 
   getRegisteredUsers(): (Member & { password_hash: string })[] {
