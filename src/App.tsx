@@ -186,7 +186,10 @@ export function App() {
     bookId: string,
     durationDays: number,
     handoverMethod: HandoverMethod,
-    notes: string
+    notes: string,
+    collateralBookId?: string,
+    collateralBookTitle?: string,
+    collateralNotes?: string
   ) => {
     const targetBook = books.find((b) => b.id === bookId);
     if (!targetBook) return;
@@ -224,7 +227,10 @@ export function App() {
       dueDate: dueDateStr,
       handoverMethod,
       status: 'pending',
-      notes
+      notes,
+      collateralBookId,
+      collateralBookTitle,
+      collateralNotes
     };
 
     const nextRequests = [newRequest, ...requests];
@@ -764,6 +770,7 @@ export function App() {
         <BorrowModal
           book={borrowModalBook}
           member={member}
+          allBooks={books}
           onClose={() => setBorrowModalBook(null)}
           onSubmitBorrow={handleBorrowSubmit}
           onSubmitQueue={handleQueueSubmit}

@@ -502,6 +502,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                           <p className="text-xs text-slate-500">
                             Durasi Pinjam: <strong className="text-slate-800">{req.durationDays} Hari</strong> • Metode: <strong className="capitalize text-slate-900">{req.handoverMethod}</strong>
                           </p>
+                          {(req.collateralBookTitle || req.collateralNotes) && (
+                            <div className="text-[11px] font-bold text-amber-800 bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200 inline-flex items-center gap-1 mt-1">
+                              <span>🛡️ Jaminan:</span>
+                              <span>{req.collateralBookTitle || req.collateralNotes}</span>
+                            </div>
+                          )}
                         </div>
                       </div>
 
@@ -587,6 +593,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                             <p className="text-xs text-slate-500">
                               Batas Kembalikan: <strong className={isOverdue ? "text-rose-600 font-bold" : "text-[#053D27]"}>{loan.dueDate}</strong>
                             </p>
+                            {(loan.collateralBookTitle || loan.collateralNotes) && (
+                              <div className="text-[11px] font-bold text-amber-800 bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200 inline-flex items-center gap-1 mt-1">
+                                <span>🛡️ Jaminan:</span>
+                                <span>{loan.collateralBookTitle || loan.collateralNotes}</span>
+                              </div>
+                            )}
                           </div>
                         </div>
 

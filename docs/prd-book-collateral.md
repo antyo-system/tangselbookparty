@@ -1,9 +1,9 @@
-# PRD — Sistem Jaminan Buku (Book Collateral System)
+# PRD — Sistem Jaminan Buku (Book Collateral System — Simplified MVP)
 
-> **Versi**: 1.0  
-> **Tanggal**: 2 Agustus 2026  
+> **Versi**: 2.0 (Simplifikasi MVP)  
+> **Tanggal**: 3 Agustus 2026  
 > **Penulis**: System Architect  
-> **Status**: Draft — Menunggu Review
+> **Status**: Approved — Simplifikasi MVP Manual Review
 
 ---
 
@@ -11,21 +11,21 @@
 
 **Pain Point**: Dalam komunitas pinjam-meminjam buku fisik, risiko terbesar adalah buku yang tidak dikembalikan. Tanpa jaminan, pemilik buku enggan mendaftarkan koleksi berharganya ke katalog komunitas.
 
-**Solusi**: Peminjam **wajib menawarkan salah satu buku miliknya sebagai jaminan (collateral)** selama masa peminjaman. Buku jaminan "dititipkan" kepada pemilik buku yang dipinjam, dan dikembalikan saat buku pinjaman dikembalikan.
+**Solusi**: Peminjam **wajib menawarkan salah satu buku miliknya sebagai jaminan (collateral)** selama masa peminjaman. Buku jaminan "dititipkan" kepada pemilik/petugas perpustakaan saat serah terima, dan dikembalikan setelah buku pinjaman dikembalikan.
 
 > [!TIP]
 > **Analogi sederhana**: Seperti sistem "tukar sementara". Kamu pinjam bukuku, aku pegang bukumu. Selesai pinjam, kita tukar balik.
 
 ---
 
-## 2. Prinsip Desain
+## 2. Prinsip Desain MVP
 
 | # | Prinsip | Penjelasan |
 |---|---------|------------|
-| 1 | **Simpel, bukan birokratis** | Cukup 1 langkah tambahan saat ajukan pinjam: pilih buku jaminan dari koleksi sendiri |
-| 2 | **Fair & transparan** | Skor nilai buku dihitung otomatis dari data yang sudah ada, bukan penilaian subjektif |
-| 3 | **Mutual trust** | Bukan hukuman, tapi mekanisme saling percaya — kedua pihak "menitipkan" sesuatu |
-| 4 | **Tidak mempersulit peminjam baru** | Member baru yang belum punya buku terdaftar bisa tetap meminjam buku komunitas (skor rendah) dengan syarat lebih ringan |
+| 1 | **Simpel & Praktis (No Over-engineering)** | Menghapus rumus matematika kaku BVS. Cukup 1 langkah: peminjam memilih buku jaminan miliknya dari dropdown atau mencatat janji jaminan manual. |
+| 2 | **Manual Review Petugas / Pemilik** | Petugas Caretaker Admin & Pemilik buku dapat memeriksa & menyetujui jaminan fisik secara manual saat serah terima. |
+| 3 | **Mutual Trust** | Bukan hukuman, tapi mekanisme saling percaya — kedua pihak "menitipkan" sesuatu. |
+| 4 | **Inklusif Bagi Member Baru** | Member baru yang belum punya koleksi terdaftar dapat menuliskan janji jaminan manual / kesepakatan COD ke petugas. |
 
 ---
 

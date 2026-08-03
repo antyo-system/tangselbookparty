@@ -107,42 +107,20 @@ Fokus: Membersihkan kode, testing, dan deploy production.
 
 > **PRD Referensi**: [`docs/prd-book-collateral.md`](./prd-book-collateral.md)
 
-Fokus: Mekanisme "tukar sementara" — peminjam wajib menitipkan buku miliknya sebagai jaminan selama masa pinjam. Mencegah buku tidak dikembalikan tanpa melibatkan uang.
+Fokus: Mekanisme "tukar sementara" — peminjam wajib menitipkan buku miliknya sebagai jaminan selama masa pinjam. Mencegah buku tidak dikembalikan tanpa melibatkan uang (Disederhanakan untuk MVP: Manual Review Petugas).
 
-### 5A. Fondasi Skor & Tipe Data (Backend)
+### 5A. Fondasi Tipe Data & Collateral (Backend & Frontend)
 
-Menyiapkan infrastruktur data untuk Book Value Score (BVS) dan status collateral.
+Menyiapkan infrastruktur data & UI sederhana untuk penanganan jaminan buku fisik.
 
-- [ ] **P5A.1** — Tambah `conditionGrade` field ke `Book` interface (`types/index.ts`)
-  > Enum: `'Baik'` | `'Cukup'` | `'Kurang'`. Default: `'Baik'`
-- [ ] **P5A.2** — Tambah `bvsScore` field ke `Book` interface
-  > Auto-calculated integer (1–100). Tidak diisi manual.
-- [ ] **P5A.3** — Update `BookStatus` type: tambah `'collateral_hold'`
-  > `'available' | 'borrowed' | 'reserved' | 'collateral_hold'`
-- [ ] **P5A.4** — Tambah `collateralBookId` & `collateralBookTitle` ke `BorrowRequest` interface
-  > ID & judul buku jaminan yang dititipkan peminjam
-- [ ] **P5A.5** — Jalankan SQL migration di Supabase
-  ```sql
-  ALTER TABLE public.books ADD COLUMN IF NOT EXISTS condition_grade TEXT DEFAULT 'Baik';
-  ALTER TABLE public.books ADD COLUMN IF NOT EXISTS bvs_score INT;
-  ALTER TABLE public.borrow_requests ADD COLUMN IF NOT EXISTS collateral_book_id TEXT;
-  ALTER TABLE public.borrow_requests ADD COLUMN IF NOT EXISTS collateral_book_title TEXT;
-  ```
-
-### 5B. Implementasi BVS Calculator (Logic)
-
-Membangun fungsi kalkulasi skor otomatis dari metadata buku yang sudah ada.
-
-- [ ] **P5B.1** — Buat fungsi `calculateBVS(book: Book): number` di `services/supabase.ts`
-  > Formula: Kondisi (40%) + Halaman (20%) + Tahun (20%) + Rating (20%)
-- [ ] **P5B.2** — Auto-calculate BVS saat buku disimpan/di-upsert
-  > Panggil `calculateBVS()` di dalam `handleSaveBook` sebelum `updateBooks()`
-- [ ] **P5B.3** — Buat fungsi `getEligibleCollateralBooks(borrowerBooks, targetBVS): Book[]`
-  > Filter buku milik peminjam yang memenuhi syarat: status `available`, kondisi ≥ `Cukup`, BVS ≥ 60% target
-
-### 5C. UI — Form Pemilihan Jaminan (Frontend)
-
-Menambahkan 1 langkah tambahan ke modal peminjaman (BorrowModal).
+- [x] **P5A.1** — Tambah `collateralBookId`, `collateralBookTitle`, `collateralNotes` ke `BorrowRequest` interface (`types/index.ts`)
+  > ID, judul, dan catatan jaminan buku yang dititipkan peminjam
+- [x] **P5A.2** — Integrasi Dropdown Pemilihan Jaminan di `BorrowModal.tsx`
+  > Peminjam dapat memilih salah satu koleksi miliknya sebagai jaminan atau menginput catatan jaminan COD manual.
+- [x] **P5A.3** — Tampilan Badge Jaminan di `AdminDashboard.tsx` & `ProfilePage.tsx`
+  > Petugas Caretaker Admin & Pemilik buku dapat langsung memeriksa & menyetujui jaminan secara manual (`🛡️ Jaminan: [Judul]`).
+- [x] **P5A.4** — Simplifikasi PRD & Roadmap MVP
+  > Menghapus rumus matematika kaku BVS untuk mempercepat rilis MVP yang praktis & humanis.
 
 - [ ] **P5C.1** — Tambah input "Kondisi Buku" (dropdown: Baik/Cukup/Kurang) di `AddBookModal` & `AddMyBookModal`
   > Ditampilkan saat member mendaftarkan atau mengedit buku

@@ -490,6 +490,12 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                             <span className="text-slate-500">Metode Serah Terima:</span>
                             <span className="font-semibold text-slate-800 capitalize">{req.handoverMethod}</span>
                           </div>
+                          {(req.collateralBookTitle || req.collateralNotes) && (
+                            <div className="flex justify-between pt-1 border-t border-slate-200/60 font-medium">
+                              <span className="text-amber-700">🛡️ Buku Jaminan:</span>
+                              <span className="font-bold text-amber-900">{req.collateralBookTitle || req.collateralNotes}</span>
+                            </div>
+                          )}
                         </div>
 
                         {/* Confirmation Button when Request is Approved */}

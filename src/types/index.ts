@@ -79,6 +79,9 @@ export interface BorrowRequest {
   extensionStatus?: 'none' | 'requested' | 'approved' | 'rejected';
   extensionRequestedDays?: number;
   isLostOrDamaged?: boolean;
+  collateralBookId?: string;
+  collateralBookTitle?: string;
+  collateralNotes?: string;
 }
 
 export interface Member {
