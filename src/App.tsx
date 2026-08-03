@@ -119,33 +119,57 @@ export function App() {
 
         const localBooks = StorageService.getBooks();
         if (remoteBooks && remoteBooks.length > 0) {
-          setBooks(remoteBooks);
-          StorageService.saveBooksLocallyOnly(remoteBooks);
+          const bookMap = new Map<string, Book>();
+          remoteBooks.forEach((b) => bookMap.set(b.id, b));
+          localBooks.forEach((b) => bookMap.set(b.id, b));
+          const mergedBooks = StorageService.deduplicateBooks(Array.from(bookMap.values()));
+          setBooks(mergedBooks);
+          StorageService.saveBooksLocallyOnly(mergedBooks);
+          localBooks.forEach((b) => upsertBookToSupabase(b));
         } else if (localBooks && localBooks.length > 0) {
+          setBooks(localBooks);
           localBooks.forEach((b) => upsertBookToSupabase(b));
         }
 
         const localRequests = StorageService.getRequests();
         if (remoteRequests && remoteRequests.length > 0) {
-          setRequests(remoteRequests);
-          StorageService.saveRequestsLocallyOnly(remoteRequests);
+          const reqMap = new Map<string, BorrowRequest>();
+          remoteRequests.forEach((r) => reqMap.set(r.id, r));
+          localRequests.forEach((r) => reqMap.set(r.id, r));
+          const mergedRequests = Array.from(reqMap.values());
+          setRequests(mergedRequests);
+          StorageService.saveRequestsLocallyOnly(mergedRequests);
+          localRequests.forEach((r) => upsertRequestToSupabase(r));
         } else if (localRequests && localRequests.length > 0) {
+          setRequests(localRequests);
           localRequests.forEach((r) => upsertRequestToSupabase(r));
         }
 
         const localEvents = StorageService.getEvents();
         if (remoteEvents && remoteEvents.length > 0) {
-          setEvents(remoteEvents);
-          StorageService.saveEventsLocallyOnly(remoteEvents);
+          const evtMap = new Map<string, CommunityEvent>();
+          remoteEvents.forEach((e) => evtMap.set(e.id, e));
+          localEvents.forEach((e) => evtMap.set(e.id, e));
+          const mergedEvents = Array.from(evtMap.values());
+          setEvents(mergedEvents);
+          StorageService.saveEventsLocallyOnly(mergedEvents);
+          localEvents.forEach((evt) => upsertEventToSupabase(evt));
         } else if (localEvents && localEvents.length > 0) {
+          setEvents(localEvents);
           localEvents.forEach((evt) => upsertEventToSupabase(evt));
         }
 
         const localArticles = StorageService.getArticles();
         if (remoteArticles && remoteArticles.length > 0) {
-          setArticles(remoteArticles);
-          StorageService.saveArticlesLocallyOnly(remoteArticles);
+          const artMap = new Map<string, Article>();
+          remoteArticles.forEach((a) => artMap.set(a.id, a));
+          localArticles.forEach((a) => artMap.set(a.id, a));
+          const mergedArticles = Array.from(artMap.values());
+          setArticles(mergedArticles);
+          StorageService.saveArticlesLocallyOnly(mergedArticles);
+          localArticles.forEach((art) => upsertArticleToSupabase(art));
         } else if (localArticles && localArticles.length > 0) {
+          setArticles(localArticles);
           localArticles.forEach((art) => upsertArticleToSupabase(art));
         }
       } catch (e) {
