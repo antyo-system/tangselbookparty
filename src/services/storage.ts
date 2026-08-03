@@ -454,6 +454,10 @@ const KEYS = {
 };
 
 export const StorageService = {
+  clearLocalCache(): void {
+    Object.values(KEYS).forEach((k) => localStorage.removeItem(k));
+  },
+
   deduplicateBooks(books: Book[]): Book[] {
     const unique: Book[] = [];
     const seen = new Set<string>();

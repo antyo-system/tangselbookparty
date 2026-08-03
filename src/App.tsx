@@ -96,6 +96,83 @@ export function App() {
 
   const [allMembers, setAllMembers] = useState<Member[]>([]);
 
+  // 2. Async Supabase Sync Helper
+  const syncSupabaseData = async () => {
+    setIsSyncing(true);
+    try {
+      // Sync members first to fulfill Foreign Key constraints
+      const allLocalMembers = StorageService.getMembers();
+      allLocalMembers.forEach((m) => upsertMemberToSupabase(m));
+
+      const [remoteBooks, remoteRequests, remoteEvents, remoteArticles] = await Promise.all([
+        fetchBooksFromSupabase(),
+        fetchRequestsFromSupabase(),
+        fetchEventsFromSupabase(),
+        fetchArticlesFromSupabase()
+      ]);
+
+      const localBooks = StorageService.getBooks();
+      if (remoteBooks && remoteBooks.length > 0) {
+        const bookMap = new Map<string, Book>();
+        remoteBooks.forEach((b) => bookMap.set(b.id, b));
+        localBooks.forEach((b) => bookMap.set(b.id, b));
+        const mergedBooks = StorageService.deduplicateBooks(Array.from(bookMap.values()));
+        setBooks(mergedBooks);
+        StorageService.saveBooksLocallyOnly(mergedBooks);
+        mergedBooks.forEach((b) => upsertBookToSupabase(b));
+      } else if (localBooks && localBooks.length > 0) {
+        setBooks(localBooks);
+        localBooks.forEach((b) => upsertBookToSupabase(b));
+      }
+
+      const localRequests = StorageService.getRequests();
+      if (remoteRequests && remoteRequests.length > 0) {
+        const reqMap = new Map<string, BorrowRequest>();
+        remoteRequests.forEach((r) => reqMap.set(r.id, r));
+        localRequests.forEach((r) => reqMap.set(r.id, r));
+        const mergedRequests = Array.from(reqMap.values());
+        setRequests(mergedRequests);
+        StorageService.saveRequestsLocallyOnly(mergedRequests);
+        localRequests.forEach((r) => upsertRequestToSupabase(r));
+      } else if (localRequests && localRequests.length > 0) {
+        setRequests(localRequests);
+        localRequests.forEach((r) => upsertRequestToSupabase(r));
+      }
+
+      const localEvents = StorageService.getEvents();
+      if (remoteEvents && remoteEvents.length > 0) {
+        const evtMap = new Map<string, CommunityEvent>();
+        remoteEvents.forEach((e) => evtMap.set(e.id, e));
+        localEvents.forEach((e) => evtMap.set(e.id, e));
+        const mergedEvents = Array.from(evtMap.values());
+        setEvents(mergedEvents);
+        StorageService.saveEventsLocallyOnly(mergedEvents);
+        localEvents.forEach((evt) => upsertEventToSupabase(evt));
+      } else if (localEvents && localEvents.length > 0) {
+        setEvents(localEvents);
+        localEvents.forEach((evt) => upsertEventToSupabase(evt));
+      }
+
+      const localArticles = StorageService.getArticles();
+      if (remoteArticles && remoteArticles.length > 0) {
+        const artMap = new Map<string, Article>();
+        remoteArticles.forEach((a) => artMap.set(a.id, a));
+        localArticles.forEach((a) => artMap.set(a.id, a));
+        const mergedArticles = Array.from(artMap.values());
+        setArticles(mergedArticles);
+        StorageService.saveArticlesLocallyOnly(mergedArticles);
+        localArticles.forEach((art) => upsertArticleToSupabase(art));
+      } else if (localArticles && localArticles.length > 0) {
+        setArticles(localArticles);
+        localArticles.forEach((art) => upsertArticleToSupabase(art));
+      }
+    } catch (e) {
+      console.warn('Sync warning:', e);
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
   // Initial Load from Storage & Supabase Sync
   useEffect(() => {
     // 1. Instant local load
@@ -106,83 +183,6 @@ export function App() {
     setEvents(StorageService.getEvents());
     setArticles(StorageService.getArticles());
     setAllMembers(StorageService.getMembers());
-
-    // 2. Async Supabase Sync (if configured)
-    async function syncSupabaseData() {
-      setIsSyncing(true);
-      try {
-        // Sync members first to fulfill Foreign Key constraints
-        const allLocalMembers = StorageService.getMembers();
-        allLocalMembers.forEach((m) => upsertMemberToSupabase(m));
-
-        const [remoteBooks, remoteRequests, remoteEvents, remoteArticles] = await Promise.all([
-          fetchBooksFromSupabase(),
-          fetchRequestsFromSupabase(),
-          fetchEventsFromSupabase(),
-          fetchArticlesFromSupabase()
-        ]);
-
-        const localBooks = StorageService.getBooks();
-        if (remoteBooks && remoteBooks.length > 0) {
-          const bookMap = new Map<string, Book>();
-          remoteBooks.forEach((b) => bookMap.set(b.id, b));
-          localBooks.forEach((b) => bookMap.set(b.id, b));
-          const mergedBooks = StorageService.deduplicateBooks(Array.from(bookMap.values()));
-          setBooks(mergedBooks);
-          StorageService.saveBooksLocallyOnly(mergedBooks);
-          mergedBooks.forEach((b) => upsertBookToSupabase(b));
-        } else if (localBooks && localBooks.length > 0) {
-          setBooks(localBooks);
-          localBooks.forEach((b) => upsertBookToSupabase(b));
-        }
-
-        const localRequests = StorageService.getRequests();
-        if (remoteRequests && remoteRequests.length > 0) {
-          const reqMap = new Map<string, BorrowRequest>();
-          remoteRequests.forEach((r) => reqMap.set(r.id, r));
-          localRequests.forEach((r) => reqMap.set(r.id, r));
-          const mergedRequests = Array.from(reqMap.values());
-          setRequests(mergedRequests);
-          StorageService.saveRequestsLocallyOnly(mergedRequests);
-          localRequests.forEach((r) => upsertRequestToSupabase(r));
-        } else if (localRequests && localRequests.length > 0) {
-          setRequests(localRequests);
-          localRequests.forEach((r) => upsertRequestToSupabase(r));
-        }
-
-        const localEvents = StorageService.getEvents();
-        if (remoteEvents && remoteEvents.length > 0) {
-          const evtMap = new Map<string, CommunityEvent>();
-          remoteEvents.forEach((e) => evtMap.set(e.id, e));
-          localEvents.forEach((e) => evtMap.set(e.id, e));
-          const mergedEvents = Array.from(evtMap.values());
-          setEvents(mergedEvents);
-          StorageService.saveEventsLocallyOnly(mergedEvents);
-          localEvents.forEach((evt) => upsertEventToSupabase(evt));
-        } else if (localEvents && localEvents.length > 0) {
-          setEvents(localEvents);
-          localEvents.forEach((evt) => upsertEventToSupabase(evt));
-        }
-
-        const localArticles = StorageService.getArticles();
-        if (remoteArticles && remoteArticles.length > 0) {
-          const artMap = new Map<string, Article>();
-          remoteArticles.forEach((a) => artMap.set(a.id, a));
-          localArticles.forEach((a) => artMap.set(a.id, a));
-          const mergedArticles = Array.from(artMap.values());
-          setArticles(mergedArticles);
-          StorageService.saveArticlesLocallyOnly(mergedArticles);
-          localArticles.forEach((art) => upsertArticleToSupabase(art));
-        } else if (localArticles && localArticles.length > 0) {
-          setArticles(localArticles);
-          localArticles.forEach((art) => upsertArticleToSupabase(art));
-        }
-      } catch (e) {
-        console.warn('Sync warning:', e);
-      } finally {
-        setIsSyncing(false);
-      }
-    }
 
     syncSupabaseData();
   }, []);
@@ -582,13 +582,25 @@ export function App() {
     StorageService.saveEvents(newEvents);
   };
 
+  // Force Sync from Server Cloud
+  const handleForceSyncServer = async () => {
+    showToast('☁️ Menghubungkan & memuat ulang data 100% dari Supabase Server Cloud...');
+    StorageService.clearLocalCache();
+    await syncSupabaseData();
+    showToast('✅ Data berhasil diperbarui 100% dari Supabase Server Cloud!');
+  };
+
   // CMS Katalog Book Save / Delete
-  const handleSaveBook = (
+  const handleSaveBook = async (
     bookData: Omit<Book, 'id' | 'status' | 'rating' | 'reviewsCount' | 'queueCount'> & { id?: string }
   ) => {
+    let targetBook: Book;
+
     if (bookData.id) {
       // Edit existing book
-      const nextBooks = books.map((b) => (b.id === bookData.id ? { ...b, ...bookData } : b));
+      const existing = books.find((b) => b.id === bookData.id);
+      targetBook = { ...existing!, ...bookData };
+      const nextBooks = books.map((b) => (b.id === bookData.id ? targetBook : b));
       updateBooks(nextBooks);
     } else {
       // Generate guaranteed unique ID by calculating max existing numeric ID + 1
@@ -601,7 +613,7 @@ export function App() {
       const maxNum = existingNums.length > 0 ? Math.max(...existingNums) : books.length;
       const nextId = `TBP-BOOK-${String(maxNum + 1).padStart(3, '0')}`;
 
-      const newBook: Book = {
+      targetBook = {
         ...bookData,
         id: nextId,
         status: 'available',
@@ -611,7 +623,15 @@ export function App() {
       };
       
       const filtered = books.filter((b) => b.id !== nextId);
-      updateBooks([newBook, ...filtered]);
+      updateBooks([targetBook, ...filtered]);
+    }
+
+    // Direct Cloud Server Upsert + Toast Confirmation
+    const cloudSaved = await upsertBookToSupabase(targetBook);
+    if (cloudSaved) {
+      showToast(`☁️ Buku "${targetBook.title}" berhasil tersimpan di Server Supabase Cloud!`);
+    } else {
+      showToast(`Buku "${targetBook.title}" tersimpan lokal. (Re-connecting ke server cloud...)`);
     }
   };
 
@@ -761,6 +781,7 @@ export function App() {
           onOpenLogin={() => setActiveTab('login')}
           onLogout={handleLogout}
           onResetData={handleResetData}
+          onForceSyncServer={handleForceSyncServer}
         />
       )}
 

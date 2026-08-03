@@ -13,6 +13,7 @@ interface NavbarProps {
   onOpenLogin: () => void;
   onLogout?: () => void;
   onResetData?: () => void;
+  onForceSyncServer?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -23,7 +24,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   member,
   onOpenScanner,
   onOpenLogin,
-  onLogout
+  onLogout,
+  onForceSyncServer
 }) => {
   // Context-aware search placeholder generator
   const getSearchPlaceholder = () => {
@@ -92,7 +94,23 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
 
           {/* Desktop Navigation Links — Concise "Less Words Is Power" */}
-          <div className="hidden md:flex items-center gap-1">
+          <div className="hidden md:flex items-center gap-1.5">
+            {/* Server Cloud Live Status Badge & Sync Trigger */}
+            {onForceSyncServer && (
+              <button
+                type="button"
+                onClick={onForceSyncServer}
+                className="mr-1 px-2.5 py-1 rounded-full bg-[#03321F] border border-emerald-500/40 text-[11px] font-bold text-emerald-200 hover:text-white hover:border-[#FFBF00] transition-all flex items-center gap-1.5 cursor-pointer shadow-inner"
+                title="Klik untuk Refresh & Sync Ulang 100% dari Supabase Server Cloud"
+              >
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+                <span>Server Cloud</span>
+              </button>
+            )}
+
             <button
               onClick={() => setActiveTab('catalog')}
               className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all ${
