@@ -197,6 +197,75 @@ const INITIAL_BOOKS: Book[] = [
     rating: 4.8,
     reviewsCount: 20,
     queueCount: 0
+  },
+  {
+    id: 'TBP-BOOK-007',
+    title: '7 HABITS of HIGHLY EFFECTIVE PEOPLE',
+    author: 'STEPHEN R.COVEY',
+    isbn: '978-0743269513',
+    genre: 'Pengembangan Diri',
+    coverImage: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80',
+    synopsis: 'Prinsip-prinsip kepemimpinan dan efektivitas pribadi yang telah mengubah jutaan kehidupan di seluruh dunia.',
+    favoriteQuote: 'Penanganan utama hidup adalah bagaimana kita merespons apa yang terjadi pada kita.',
+    quoteSpeaker: 'Stephen Covey',
+    status: 'available',
+    ownerId: 'usr_member_01',
+    ownerName: 'Antonius Prasetyo',
+    ownerEmail: 'antoniusp99@gmail.com',
+    ownerLocation: 'Rempoa, Ciputat Timur',
+    shelfLocation: 'Rempoa, Ciputat Timur',
+    pageCount: 432,
+    publishYear: 2004,
+    language: 'Bahasa Indonesia',
+    rating: 5.0,
+    reviewsCount: 12,
+    queueCount: 0
+  },
+  {
+    id: 'TBP-BOOK-008',
+    title: 'HOW TO WIN FRIENDS & INFLUENCE PEOPLE',
+    author: 'DALE CARNEGIE',
+    isbn: '978-0671027032',
+    genre: 'Pengembangan Diri',
+    coverImage: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=600&q=80',
+    synopsis: 'Buku klasik motivasi terbesar sepanjang masa tentang seni menjalin hubungan interpersonal dan komunikasi interpersonal.',
+    favoriteQuote: 'Nama seseorang adalah suara terindah di bahasa manapun baginya.',
+    quoteSpeaker: 'Dale Carnegie',
+    status: 'available',
+    ownerId: 'usr_member_01',
+    ownerName: 'Antonius Prasetyo',
+    ownerEmail: 'antoniusp99@gmail.com',
+    ownerLocation: 'Rempoa, Ciputat Timur',
+    shelfLocation: 'Rempoa, Ciputat Timur',
+    pageCount: 288,
+    publishYear: 1936,
+    language: 'Bahasa Indonesia',
+    rating: 5.0,
+    reviewsCount: 15,
+    queueCount: 0
+  },
+  {
+    id: 'TBP-BOOK-009',
+    title: 'Laut Bercerita',
+    author: 'Leila S. Chudori',
+    isbn: '978-6024246945',
+    genre: 'Fiksi',
+    coverImage: 'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?auto=format&fit=crop&w=600&q=80',
+    synopsis: 'Novel fiksi sejarah tentang kehilangan, persahabatan, keluarga, dan pencarian kebenaran di masa kelam aktivis mahasiswa.',
+    favoriteQuote: 'Matamu adalah mata air yang tak pernah kering dari kenangan.',
+    quoteSpeaker: 'Leila S. Chudori',
+    status: 'available',
+    ownerId: 'usr_member_01',
+    ownerName: 'Antonius Prasetyo',
+    ownerEmail: 'antoniusp99@gmail.com',
+    ownerLocation: 'Rempoa, Ciputat Timur',
+    shelfLocation: 'Rempoa, Ciputat Timur',
+    pageCount: 379,
+    publishYear: 2017,
+    language: 'Bahasa Indonesia',
+    rating: 4.9,
+    reviewsCount: 30,
+    queueCount: 0
   }
 ];
 
@@ -398,14 +467,35 @@ export const StorageService = {
   },
 
   getBooks(): Book[] {
-    const data = localStorage.getItem(KEYS.BOOKS);
+    let data = localStorage.getItem(KEYS.BOOKS);
+
+    // Fallback to older keys so user-created books from previous versions are never lost
+    if (!data) {
+      const olderKeys = ['tbp_books_v8', 'tbp_books_v7', 'tbp_books_v6'];
+      for (const k of olderKeys) {
+        const oldData = localStorage.getItem(k);
+        if (oldData) {
+          data = oldData;
+          localStorage.setItem(KEYS.BOOKS, oldData);
+          break;
+        }
+      }
+    }
+
     if (!data) {
       localStorage.setItem(KEYS.BOOKS, JSON.stringify(INITIAL_BOOKS));
       return INITIAL_BOOKS;
     }
+
     try {
       const parsed: Book[] = JSON.parse(data);
-      return this.deduplicateBooks(parsed);
+      // Merge initial sample books with user's stored books so newly defined sample books are always present!
+      const bookMap = new Map<string, Book>();
+      INITIAL_BOOKS.forEach((b) => bookMap.set(b.id, b));
+      parsed.forEach((b) => bookMap.set(b.id, b));
+      const merged = Array.from(bookMap.values());
+
+      return this.deduplicateBooks(merged);
     } catch {
       return INITIAL_BOOKS;
     }
