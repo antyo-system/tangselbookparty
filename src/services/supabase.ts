@@ -393,21 +393,44 @@ export async function fetchBooksFromSupabase(): Promise<Book[] | null> {
   }
 }
 
+export async function upsertMemberToSupabase(member: Member): Promise<boolean> {
+  if (!supabase) return false;
+  try {
+    const { error } = await supabase.from('members').upsert({
+      id: member.id,
+      name: member.name,
+      email: member.email,
+      phone: member.phone || '',
+      password_hash: 'user123',
+      avatar: member.avatar,
+      role: member.role || 'member',
+      joined_date: member.joinedDate || '2026'
+    });
+    if (error) {
+      console.warn('Supabase members upsert warning:', error.message);
+      return false;
+    }
+    return true;
+  } catch (e) {
+    console.warn('Failed to upsert member to Supabase:', e);
+    return false;
+  }
+}
+
 export async function upsertBookToSupabase(book: Book): Promise<boolean> {
   if (!supabase) return false;
   try {
-    // Sanitize owner_id to prevent Foreign Key constraint error if user ID is not yet in Supabase members table
     let safeOwnerId: string | null = book.ownerId || null;
-    if (safeOwnerId) {
-      const { data: ownerCheck } = await supabase
-        .from('members')
-        .select('id')
-        .eq('id', safeOwnerId)
-        .maybeSingle();
-
-      if (!ownerCheck) {
-        safeOwnerId = null;
-      }
+    if (safeOwnerId && book.ownerName) {
+      // Auto upsert member to members table first to fulfill Foreign Key constraint
+      await supabase.from('members').upsert({
+        id: safeOwnerId,
+        name: book.ownerName,
+        email: book.ownerEmail || `${safeOwnerId}@tangselbookparty.org`,
+        password_hash: 'user123',
+        joined_date: 'Desember 2024',
+        role: 'member'
+      });
     }
 
     const { error } = await supabase.from('books').upsert({

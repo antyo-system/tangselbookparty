@@ -5,7 +5,8 @@ import {
   fetchBooksFromSupabase, upsertBookToSupabase,
   fetchRequestsFromSupabase, upsertRequestToSupabase,
   fetchEventsFromSupabase, upsertEventToSupabase,
-  fetchArticlesFromSupabase, upsertArticleToSupabase
+  fetchArticlesFromSupabase, upsertArticleToSupabase,
+  upsertMemberToSupabase
 } from './services/supabase';
 import { Navbar } from './components/Navbar';
 import { CatalogPage } from './pages/CatalogPage';
@@ -110,6 +111,10 @@ export function App() {
     async function syncSupabaseData() {
       setIsSyncing(true);
       try {
+        // Sync members first to fulfill Foreign Key constraints
+        const allLocalMembers = StorageService.getMembers();
+        allLocalMembers.forEach((m) => upsertMemberToSupabase(m));
+
         const [remoteBooks, remoteRequests, remoteEvents, remoteArticles] = await Promise.all([
           fetchBooksFromSupabase(),
           fetchRequestsFromSupabase(),
@@ -125,7 +130,7 @@ export function App() {
           const mergedBooks = StorageService.deduplicateBooks(Array.from(bookMap.values()));
           setBooks(mergedBooks);
           StorageService.saveBooksLocallyOnly(mergedBooks);
-          localBooks.forEach((b) => upsertBookToSupabase(b));
+          mergedBooks.forEach((b) => upsertBookToSupabase(b));
         } else if (localBooks && localBooks.length > 0) {
           setBooks(localBooks);
           localBooks.forEach((b) => upsertBookToSupabase(b));
