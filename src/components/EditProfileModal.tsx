@@ -8,16 +8,47 @@ interface EditProfileModalProps {
   onSave: (updatedMember: Member) => void;
 }
 
-export const TANGSEL_DOMISILI_OPTIONS = [
-  'Bintaro',
-  'BSD City',
-  'Pamulang',
-  'Ciputat',
-  'Serpong',
-  'Setu',
-  'Pondok Aren',
-  'Serpong Utara'
+export interface TangselKecamatanData {
+  kecamatan: string;
+  kelurahan: string[];
+}
+
+export const TANGSEL_LOCATION_DATA: TangselKecamatanData[] = [
+  {
+    kecamatan: 'Ciputat',
+    kelurahan: ['Cipayung', 'Ciputat', 'Jombang', 'Sawah Baru', 'Sawah Lama', 'Serua', 'Serua Indah', 'Lainnya']
+  },
+  {
+    kecamatan: 'Ciputat Timur',
+    kelurahan: ['Cempaka Putih', 'Cireundeu', 'Pisangan', 'Pondok Ranji', 'Rempoa', 'Rengas', 'Lainnya']
+  },
+  {
+    kecamatan: 'Pamulang',
+    kelurahan: ['Bambu Apus', 'Benda Baru', 'Kedaung', 'Pamulang Barat', 'Pamulang Timur', 'Pondok Benda', 'Pondok Cabe Ilir', 'Pondok Cabe Udik', 'Lainnya']
+  },
+  {
+    kecamatan: 'Pondok Aren',
+    kelurahan: ['Bintaro', 'Jurang Mangu Barat', 'Jurang Mangu Timur', 'Perigi Baru', 'Perigi Lama', 'Pondok Aren', 'Pondok Betung', 'Pondok Jaya', 'Pondok Kacang Barat', 'Pondok Kacang Timur', 'Pondok Karya', 'Pondok Punggung', 'Lainnya']
+  },
+  {
+    kecamatan: 'Serpong',
+    kelurahan: ['BSD City', 'Buaran', 'Ciater', 'Cilenggang', 'Lengkong Gudang', 'Lengkong Gudang Timur', 'Lengkong Wetan', 'Rawa Buntu', 'Rawa Mekar Jaya', 'Serpong', 'Lainnya']
+  },
+  {
+    kecamatan: 'Serpong Utara',
+    kelurahan: ['Jelupang', 'Lengkong Karya', 'Pakualam', 'Pakualonan', 'Paku Jaya', 'Pondok Jagung', 'Pondok Jagung Timur', 'Lainnya']
+  },
+  {
+    kecamatan: 'Setu',
+    kelurahan: ['Babakan', 'Bakti Jaya', 'Kademangan', 'Keranggan', 'Muncul', 'Setu', 'Lainnya']
+  },
+  {
+    kecamatan: 'Other (Lainnya)',
+    kelurahan: ['Lainnya']
+  }
 ];
+
+export const TANGSEL_DOMISILI_OPTIONS = TANGSEL_LOCATION_DATA.map((d) => d.kecamatan);
 
 const AVATAR_PRESETS = [
   'https://api.dicebear.com/7.x/avataaars/svg?seed=Anton',
@@ -31,18 +62,43 @@ const AVATAR_PRESETS = [
 export const EditProfileModal: React.FC<EditProfileModalProps> = ({ member, onClose, onSave }) => {
   const [name, setName] = useState(member.name || '');
   const [phone, setPhone] = useState(member.phone || '');
-  const [domisili, setDomisili] = useState(member.domisili || 'Bintaro');
   const [avatar, setAvatar] = useState(member.avatar || AVATAR_PRESETS[0]);
+
+  // Initial location fallback handling
+  const initialKec = member.domisiliKecamatan || (member.domisili ? member.domisili.split(',').pop()?.trim() : 'Ciputat Timur') || 'Ciputat Timur';
+  const initialKel = member.domisiliKelurahan || (member.domisili ? member.domisili.split(',')[0]?.trim() : 'Pisangan') || 'Pisangan';
+
+  const [kecamatan, setKecamatan] = useState<string>(
+    TANGSEL_LOCATION_DATA.some((d) => d.kecamatan === initialKec) ? initialKec : 'Ciputat Timur'
+  );
+  const [kelurahan, setKelurahan] = useState<string>(initialKel);
+
+  const selectedKecData = TANGSEL_LOCATION_DATA.find((d) => d.kecamatan === kecamatan) || TANGSEL_LOCATION_DATA[1];
+  const kelurahanList = selectedKecData.kelurahan;
+
+  const handleKecamatanChange = (newKec: string) => {
+    setKecamatan(newKec);
+    const targetData = TANGSEL_LOCATION_DATA.find((d) => d.kecamatan === newKec);
+    if (targetData && targetData.kelurahan.length > 0) {
+      setKelurahan(targetData.kelurahan[0]);
+    } else {
+      setKelurahan('Lainnya');
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return;
 
+    const formattedDomisili = kelurahan && kelurahan !== 'Lainnya' ? `${kelurahan}, ${kecamatan}` : kecamatan;
+
     onSave({
       ...member,
       name: name.trim(),
       phone: phone.trim(),
-      domisili,
+      domisili: formattedDomisili,
+      domisiliKecamatan: kecamatan,
+      domisiliKelurahan: kelurahan,
       avatar
     });
     onClose();
@@ -138,25 +194,53 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ member, onCl
             </div>
           </div>
 
-          {/* Domisili / Kecamatan Area Tangsel */}
-          <div>
-            <label className="block text-xs font-bold text-slate-800 mb-1.5 flex items-center gap-1.5">
+          {/* Domisili Area Tangsel: Kecamatan & Kelurahan */}
+          <div className="space-y-3">
+            <label className="block text-xs font-bold text-slate-800 flex items-center gap-1.5">
               <MapPin className="w-3.5 h-3.5 text-emerald-700" />
-              <span>Kecamatan / Area Domisili Tangsel</span>
+              <span>Lokasi Domisili Tangsel (Kecamatan & Kelurahan)</span>
             </label>
-            <select
-              value={domisili}
-              onChange={(e) => setDomisili(e.target.value)}
-              className="w-full px-4 py-3 rounded-2xl border border-slate-300 text-xs focus:ring-4 focus:ring-[#053D27]/10 focus:border-[#053D27] outline-none bg-white font-bold text-slate-800 cursor-pointer"
-            >
-              {TANGSEL_DOMISILI_OPTIONS.map((opt) => (
-                <option key={opt} value={opt}>
-                  {opt}
-                </option>
-              ))}
-            </select>
-            <p className="text-[11px] text-slate-500 mt-1.5">
-              Domisili Anda akan digunakan sebagai lokasi bawaan (*default*) ketika Anda mendaftarkan buku fisik.
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* Subdistrict (Kecamatan) */}
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                  Subdistrict (Kecamatan) <span className="text-rose-500">*</span>
+                </label>
+                <select
+                  value={kecamatan}
+                  onChange={(e) => handleKecamatanChange(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-2xl border border-slate-300 text-xs focus:ring-4 focus:ring-[#053D27]/10 focus:border-[#053D27] outline-none bg-white font-bold text-slate-800 cursor-pointer"
+                >
+                  {TANGSEL_LOCATION_DATA.map((loc) => (
+                    <option key={loc.kecamatan} value={loc.kecamatan}>
+                      {loc.kecamatan}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Village (Kelurahan) */}
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                  Village (Kelurahan) <span className="text-rose-500">*</span>
+                </label>
+                <select
+                  value={kelurahan}
+                  onChange={(e) => setKelurahan(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-2xl border border-slate-300 text-xs focus:ring-4 focus:ring-[#053D27]/10 focus:border-[#053D27] outline-none bg-white font-bold text-slate-800 cursor-pointer"
+                >
+                  {kelurahanList.map((kel) => (
+                    <option key={kel} value={kel}>
+                      {kel}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <p className="text-[11px] text-slate-500">
+              Lokasi domisili Anda akan tercatat sebagai <strong className="text-[#053D27]">{kelurahan && kelurahan !== 'Lainnya' ? `${kelurahan}, ${kecamatan}` : kecamatan}</strong> dan menjadi lokasi bawaan saat mendaftarkan buku.
             </p>
           </div>
 

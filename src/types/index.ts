@@ -95,7 +95,9 @@ export interface Member {
   avatar: string;
   role: 'admin' | 'member';
   joinedDate: string;
-  domisili?: string; // e.g. "Bintaro", "BSD City", "Pamulang", "Ciputat", "Serpong", "Setu", "Pondok Aren", "Serpong Utara"
+  domisili?: string; // e.g. "Pisangan, Ciputat Timur" or "Ciputat Timur"
+  domisiliKecamatan?: string; // e.g. "Ciputat Timur"
+  domisiliKelurahan?: string; // e.g. "Pisangan"
   wishlist: string[]; // book IDs
   isBlacklisted?: boolean;
   borrowingRestricted?: boolean;
