@@ -103,15 +103,13 @@ Fokus: Membersihkan kode, testing, dan deploy production.
 
 ---
 
-## Phase 5: Sistem Jaminan Buku (Book Collateral) ⬜ PLANNED
+## Phase 5: Sistem Jaminan Buku (Book Collateral System — Simplified MVP) ✅ COMPLETED
 
 > **PRD Referensi**: [`docs/prd-book-collateral.md`](./prd-book-collateral.md)
 
-Fokus: Mekanisme "tukar sementara" — peminjam wajib menitipkan buku miliknya sebagai jaminan selama masa pinjam. Mencegah buku tidak dikembalikan tanpa melibatkan uang (Disederhanakan untuk MVP: Manual Review Petugas).
+Fokus: Mekanisme "tukar sementara" — peminjam wajib menitipkan buku miliknya sebagai jaminan selama masa pinjam untuk mencegah buku tidak dikembalikan (Disederhanakan untuk MVP: Manual Review Petugas & Barter).
 
 ### 5A. Fondasi Tipe Data & Collateral (Backend & Frontend)
-
-Menyiapkan infrastruktur data & UI sederhana untuk penanganan jaminan buku fisik.
 
 - [x] **P5A.1** — Tambah `collateralBookId`, `collateralBookTitle`, `collateralNotes` ke `BorrowRequest` interface (`types/index.ts`)
   > ID, judul, dan catatan jaminan buku yang dititipkan peminjam
@@ -122,38 +120,23 @@ Menyiapkan infrastruktur data & UI sederhana untuk penanganan jaminan buku fisik
 - [x] **P5A.4** — Simplifikasi PRD & Roadmap MVP
   > Menghapus rumus matematika kaku BVS untuk mempercepat rilis MVP yang praktis & humanis.
 
-- [ ] **P5C.1** — Tambah input "Kondisi Buku" (dropdown: Baik/Cukup/Kurang) di `AddBookModal` & `AddMyBookModal`
-  > Ditampilkan saat member mendaftarkan atau mengedit buku
-- [ ] **P5C.2** — Tampilkan **BVS Badge** di `BookCard.tsx`
-  > 🟢 80-100 (Premium) | 🟡 50-79 (Standard) | 🔴 1-49 (Economy)
-- [ ] **P5C.3** — Tambah **Step 2: Pilih Buku Jaminan** di `BorrowModal.tsx`
-  > Dropdown/list buku milik peminjam yang eligible. Buku tidak eligible ditampilkan grayed-out.
-- [ ] **P5C.4** — Tampilkan info jaminan di halaman detail request (Admin & Member)
-  > "Buku Jaminan: [Judul] (BVS: 82)"
-- [ ] **P5C.5** — Tampilkan BVS score di `BookDetailModal.tsx`
-  > Section kecil di bawah info buku: "Nilai Buku (BVS): 94/100 — Premium"
+### 5B. Peruntukan & Akses Buku Saya (Book Purpose System)
 
-### 5D. Logic — Lifecycle Jaminan (State Management)
+- [x] **P5B.1** — Tambah `availabilityPurpose` field ke `Book` interface (`types/index.ts`)
+  > Enum: `'both'` (Dipinjamkan & Jaminan) | `'lending'` (Hanya Dipinjamkan) | `'collateral'` (Khusus Jaminan Personal)
+- [x] **P5B.2** — UI Selector Peruntukan Buku di `AddMyBookModal.tsx`
+  > Radio pill selector tempat peminjam menentukan peruntukan bukunya saat mendaftarkan koleksi baru.
+- [x] **P5B.3** — Eksklusi Katalog Publik di `CatalogPage.tsx`
+  > Buku yang ber-status `'collateral'` (Khusus Jaminan Saya) otomatis disembunyikan dari katalog publik umum.
 
-Mengelola status buku jaminan secara otomatis sesuai siklus peminjaman.
+### 5C. Deteksi Barter & Sita Jaminan Caretaker (Advanced Collateral Flow)
 
-- [ ] **P5D.1** — Saat request disubmit: update buku jaminan ke status `collateral_hold`
-  > Buku jaminan tidak bisa dipinjam/dihapus selama masa hold
-- [ ] **P5D.2** — Saat buku dikembalikan: auto-release jaminan ke `available`
-  > Trigger di `handleReturnBook()` — buku jaminan kembali bisa dipakai
-- [ ] **P5D.3** — Saat request ditolak/dibatalkan: auto-release jaminan
-  > Trigger di `handleRejectRequest()` — jaminan langsung kembali
-- [ ] **P5D.4** — Proteksi: blokir penghapusan buku berstatus `collateral_hold`
-  > Tampilkan error: "Buku ini sedang digunakan sebagai jaminan peminjaman aktif"
-
-### 5E. Grace Rules & Trust System (Post-MVP)
-
-Pengecualian untuk peminjam baru dan member terpercaya.
-
-- [ ] **P5E.1** — Peminjam tanpa buku terdaftar: boleh pinjam buku BVS ≤ 50 tanpa jaminan (maks 1 aktif)
-- [ ] **P5E.2** — Buku komunitas: threshold jaminan turun ke 40% BVS
-- [ ] **P5E.3** — Trust badge "Terpercaya": member ≥ 5 pengembalian tepat waktu → threshold 50%
-- [ ] **P5E.4** — Trust score tracking di `Member` interface (total_returns, on_time_returns)
+- [x] **P5C.1** — Smart Barter Cross-Borrowing Detection di `BorrowModal.tsx`
+  > Deteksi transaksi saling pinjam antara peminjam & pemilik buku. Otomatis bebas dari jaminan tambahan (`🔄 Transaksi Barter Aktif`).
+- [x] **P5C.2** — Modal & Aksi Sita Jaminan Caretaker di `AdminDashboard.tsx`
+  > Caretaker Admin dapat mengeksekusi sita jaminan pada transaksi bermasalah/hilang:
+  > 1. `⚖️ Sita ke Pemilik`: Transfer kepemilikan buku jaminan ke pemilik asli sebagai ganti rugi.
+  > 2. `🏛️ Sita ke Komunitas`: Transfer kepemilikan buku jaminan ke rak koleksi perpustakaan komunitas.
 
 ---
 
@@ -174,13 +157,13 @@ Pengecualian untuk peminjam baru dan member terpercaya.
 Phase 0  ██████████████████████  100%  ✅ Foundation & Planning
 Phase 1  ██████████████████████  100%  ✅ Core MVP (Katalog, Auth, P2P, Supabase Auth)
 Phase 2  ██████████████████████  100%  ✅ Admin Portal (Dashboard & CMS)
-Phase 3  ██████████████████░░░░   80%  🔄 Public Content (Pages ✅, SEO Meta ❌)
-Phase 4  ████████░░░░░░░░░░░░░░   40%  🔄 Polish & Production
-Phase 5  ░░░░░░░░░░░░░░░░░░░░░░    0%  ⬜ Book Collateral System
-Phase 6  ░░░░░░░░░░░░░░░░░░░░░░    0%  ⬜ Future Enhancements
+Phase 3  ██████████████████████  100%  ✅ Public Content (Pages, SOP Modal, Dynamic Profile)
+Phase 4  ██████████████████████  100%  ✅ Polish & Production Ready (0 Error Build)
+Phase 5  ██████████████████████  100%  ✅ Book Collateral, Barter & Forfeit System
+Phase 6  ░░░░░░░░░░░░░░░░░░░░░░    0%  ⬜ Future Enhancements (Post-MVP)
 ```
 
-**Prioritas berikutnya**:
-1. Selesaikan **Phase 4** — RLS, error handling, deploy production
-2. Mulai **Phase 5A** — Fondasi data collateral (types + SQL migration)
-3. Lanjut **Phase 5B–5D** — BVS calculator, UI jaminan, lifecycle management
+**Pencapaian Utama Status Saat Ini**:
+1. Fitur Utama MVP & SOP Resmi Perpustakaan Tangsel Book Party **100% Selesai & Terverifikasi**.
+2. Fitur Jaminan Buku, Peruntukan Akses, Deteksi Barter, dan Sita Jaminan **100% Selesai**.
+3. Kode terintegrasi bersih tanpa error TypeScript (`tsc -b && vite build` **0 Error**).
