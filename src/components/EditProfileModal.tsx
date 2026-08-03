@@ -161,12 +161,14 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ member, onCl
 
           {/* Nama Lengkap */}
           <div>
-            <label className="block text-xs font-bold text-slate-800 mb-1.5">
+            <label htmlFor="profile-name" className="block text-xs font-bold text-slate-800 mb-1.5">
               Nama Lengkap <span className="text-rose-500">*</span>
             </label>
             <div className="relative">
               <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
+                id="profile-name"
+                name="name"
                 type="text"
                 required
                 value={name}
@@ -179,12 +181,14 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ member, onCl
 
           {/* Nomor Telepon / WhatsApp */}
           <div>
-            <label className="block text-xs font-bold text-slate-800 mb-1.5">
+            <label htmlFor="profile-phone" className="block text-xs font-bold text-slate-800 mb-1.5">
               Nomor WhatsApp / Phone
             </label>
             <div className="relative">
               <Phone className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
+                id="profile-phone"
+                name="phone"
                 type="text"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
@@ -204,10 +208,12 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ member, onCl
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {/* Subdistrict (Kecamatan) */}
               <div>
-                <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                <label htmlFor="profile-kecamatan" className="block text-[11px] font-semibold text-slate-600 mb-1">
                   Subdistrict (Kecamatan) <span className="text-rose-500">*</span>
                 </label>
                 <select
+                  id="profile-kecamatan"
+                  name="kecamatan"
                   value={kecamatan}
                   onChange={(e) => handleKecamatanChange(e.target.value)}
                   className="w-full px-3.5 py-2.5 rounded-2xl border border-slate-300 text-xs focus:ring-4 focus:ring-[#053D27]/10 focus:border-[#053D27] outline-none bg-white font-bold text-slate-800 cursor-pointer"
@@ -222,10 +228,12 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ member, onCl
 
               {/* Village (Kelurahan) */}
               <div>
-                <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                <label htmlFor="profile-kelurahan" className="block text-[11px] font-semibold text-slate-600 mb-1">
                   Village (Kelurahan) <span className="text-rose-500">*</span>
                 </label>
                 <select
+                  id="profile-kelurahan"
+                  name="kelurahan"
                   value={kelurahan}
                   onChange={(e) => setKelurahan(e.target.value)}
                   className="w-full px-3.5 py-2.5 rounded-2xl border border-slate-300 text-xs focus:ring-4 focus:ring-[#053D27]/10 focus:border-[#053D27] outline-none bg-white font-bold text-slate-800 cursor-pointer"

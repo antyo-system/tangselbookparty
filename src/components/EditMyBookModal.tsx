@@ -96,10 +96,12 @@ export const EditMyBookModal: React.FC<EditMyBookModalProps> = ({ book, member, 
           {/* Section 1: Basic Info */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <div>
-              <label className="block text-xs font-bold text-slate-800 mb-1.5">
+              <label htmlFor="book-title-input" className="block text-xs font-bold text-slate-800 mb-1.5">
                 Judul Buku <span className="text-rose-500">*</span>
               </label>
               <input
+                id="book-title-input"
+                name="title"
                 type="text"
                 required
                 value={title}
@@ -110,10 +112,12 @@ export const EditMyBookModal: React.FC<EditMyBookModalProps> = ({ book, member, 
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-800 mb-1.5">
+              <label htmlFor="book-author-input" className="block text-xs font-bold text-slate-800 mb-1.5">
                 Penulis / Pengarang <span className="text-rose-500">*</span>
               </label>
               <input
+                id="book-author-input"
+                name="author"
                 type="text"
                 required
                 value={author}
