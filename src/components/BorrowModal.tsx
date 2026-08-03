@@ -48,25 +48,36 @@ export const BorrowModal: React.FC<BorrowModalProps> = ({
   const isAvailable = book.status === 'available';
   const isBlocked = member.isBlacklisted || member.borrowingRestricted;
 
+  const cleanMemName = member.name?.toLowerCase().trim();
+  const cleanMemEmail = member.email?.toLowerCase().trim();
+
   // Barter Cross-Borrowing Detection
   const isBarter = Boolean(
     book.ownerId &&
     book.ownerId !== member.id &&
     requests.some(
       (r) =>
-        r.userId === book.ownerId &&
-        (r.ownerId === member.id || allBooks.some((b) => b.id === r.bookId && b.ownerId === member.id)) &&
+        (r.userId === book.ownerId || (r.userName && book.ownerName && r.userName.toLowerCase().trim() === book.ownerName.toLowerCase().trim())) &&
+        (r.ownerId === member.id || allBooks.some((b) => b.id === r.bookId && (b.ownerId === member.id || (b.ownerName && cleanMemName && b.ownerName.toLowerCase().trim() === cleanMemName)))) &&
         (r.status === 'borrowed' || r.status === 'approved' || r.status === 'pending')
     )
   );
 
-  // Filter available books owned by borrower (must be 'both' or 'collateral', exclude 'lending'-only)
-  const userOwnedBooks = allBooks.filter(
-    (b) =>
-      b.ownerId === member.id &&
-      b.status === 'available' &&
-      b.availabilityPurpose !== 'lending'
-  );
+  // Filter available books owned by borrower (resilient to ID, name, or email matching)
+  const userOwnedBooks = allBooks.filter((b) => {
+    // Cannot use the book currently being borrowed as its own collateral
+    if (b.id === book.id) return false;
+
+    const matchId = b.ownerId && b.ownerId === member.id;
+    const matchName = b.ownerName && cleanMemName && b.ownerName.toLowerCase().trim() === cleanMemName;
+    const matchEmail = b.ownerEmail && cleanMemEmail && b.ownerEmail.toLowerCase().trim() === cleanMemEmail;
+    const isOwnedByMember = Boolean(matchId || matchName || matchEmail);
+
+    const isAvailableStatus = b.status === 'available';
+    const isEligiblePurpose = !b.availabilityPurpose || b.availabilityPurpose === 'both' || b.availabilityPurpose === 'collateral';
+
+    return isOwnedByMember && isAvailableStatus && isEligiblePurpose;
+  });
   const selectedCollateralBook = userOwnedBooks.find((b) => b.id === collateralBookId);
 
   const calculateEstimatedDate = (): string => {
