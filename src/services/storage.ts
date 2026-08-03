@@ -98,9 +98,10 @@ const INITIAL_BOOKS: Book[] = [
     quoteSpeaker: 'Epictetus / Henry M.',
     status: 'available',
     ownerId: 'usr_member_01',
-    ownerName: 'Budi Santoso',
-    ownerLocation: 'BSD',
-    shelfLocation: 'Rak A-04 (Taman Kota 1 BSD)',
+    ownerName: 'Antonius Prasetyo',
+    ownerEmail: 'antoniusp99@gmail.com',
+    ownerLocation: 'Rempoa, Ciputat Timur',
+    shelfLocation: 'Rempoa, Ciputat Timur',
     pageCount: 346,
     publishYear: 2019,
     language: 'Bahasa Indonesia',
@@ -442,15 +443,15 @@ export const GUEST_MEMBER: Member = {
 };
 
 const KEYS = {
-  BOOKS: 'tbp_books_v9',
-  REQUESTS: 'tbp_requests_v9',
-  QUEUES: 'tbp_queues_v9',
-  REVIEWS: 'tbp_reviews_v9',
-  MEMBER: 'tbp_member_v9',
-  EVENTS: 'tbp_events_v9',
-  ARTICLES: 'tbp_articles_v9',
-  REGISTERED_USERS: 'tbp_registered_users_v2',
-  MEMBERS_LIST: 'tbp_members_list_v9'
+  BOOKS: 'tbp_books_v10',
+  REQUESTS: 'tbp_requests_v10',
+  QUEUES: 'tbp_queues_v10',
+  REVIEWS: 'tbp_reviews_v10',
+  MEMBER: 'tbp_member_v10',
+  EVENTS: 'tbp_events_v10',
+  ARTICLES: 'tbp_articles_v10',
+  REGISTERED_USERS: 'tbp_registered_users_v3',
+  MEMBERS_LIST: 'tbp_members_list_v10'
 };
 
 export const StorageService = {
@@ -475,7 +476,7 @@ export const StorageService = {
 
     // Fallback to older keys so user-created books from previous versions are never lost
     if (!data) {
-      const olderKeys = ['tbp_books_v8', 'tbp_books_v7', 'tbp_books_v6'];
+      const olderKeys = ['tbp_books_v9', 'tbp_books_v8', 'tbp_books_v7', 'tbp_books_v6'];
       for (const k of olderKeys) {
         const oldData = localStorage.getItem(k);
         if (oldData) {
