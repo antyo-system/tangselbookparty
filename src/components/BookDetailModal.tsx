@@ -134,10 +134,18 @@ export const BookDetailModal: React.FC<BookDetailModalProps> = ({
               {/* Shelf & Status Bar */}
               <div className="grid grid-cols-2 gap-3 text-xs bg-slate-50 p-4 rounded-2xl border border-slate-200/80">
                 <div>
-                  <span className="text-slate-400 block font-medium">Shelf Location</span>
+                  <span className="text-slate-400 block font-medium">
+                    {book.ownerId === 'usr_admin_01' || book.ownerName.includes('Komunitas')
+                      ? 'Shelf Location (Rak)'
+                      : 'Lokasi Domisili Pemilik'}
+                  </span>
                   <div className="flex items-center gap-1 font-bold text-slate-800 mt-0.5">
                     <MapPin className="w-3.5 h-3.5 text-[#053D27]" />
-                    <span>{book.shelfLocation}</span>
+                    <span>
+                      {book.ownerId === 'usr_admin_01' || book.ownerName.includes('Komunitas')
+                        ? book.shelfLocation
+                        : book.ownerLocation || book.shelfLocation}
+                    </span>
                   </div>
                 </div>
                 <div>

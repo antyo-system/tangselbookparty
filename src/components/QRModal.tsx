@@ -72,7 +72,11 @@ export const QRModal: React.FC<QRModalProps> = ({ book, onClose }) => {
               <p className="text-xs text-slate-500 font-medium">by {book.author}</p>
               <div className="flex items-center justify-center gap-1 text-[11px] text-[#053D27] font-bold pt-1">
                 <MapPin className="w-3.5 h-3.5 text-[#053D27]" />
-                <span>{book.shelfLocation}</span>
+                <span>
+                  {book.ownerId === 'usr_admin_01' || book.ownerName.includes('Komunitas')
+                    ? book.shelfLocation
+                    : (book.ownerLocation || book.shelfLocation)}
+                </span>
               </div>
             </div>
           </div>

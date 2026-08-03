@@ -404,7 +404,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                       <div className="text-xs space-y-1 bg-slate-50 p-2.5 rounded-xl border border-slate-100">
                         <div className="flex items-center gap-1 text-slate-600">
                           <Tag className="w-3.5 h-3.5 text-emerald-700" />
-                          <span>Lokasi: <strong className="text-slate-800">{book.shelfLocation}</strong></span>
+                          <span>Lokasi: <strong className="text-slate-800">{book.ownerLocation || book.shelfLocation}</strong></span>
                         </div>
                         {book.currentBorrower && (
                           <div className="flex flex-col gap-1 pt-1 text-amber-800 font-medium">

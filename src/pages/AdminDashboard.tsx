@@ -749,7 +749,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                             </td>
                             <td className="p-3.5">
                               <div className="font-bold text-slate-800">{book.ownerName}</div>
-                              <div className="text-[#053D27] font-bold text-[11px]">{book.shelfLocation}</div>
+                              <div className="text-[#053D27] font-bold text-[11px]">
+                                {book.ownerId === 'usr_admin_01' || book.ownerName.includes('Komunitas')
+                                  ? book.shelfLocation
+                                  : (book.ownerLocation || book.shelfLocation)}
+                              </div>
                             </td>
                             <td className="p-3.5 whitespace-nowrap">
                               <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black font-mono border inline-block ${

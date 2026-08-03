@@ -31,7 +31,6 @@ export const AddMyBookModal: React.FC<AddMyBookModalProps> = ({ member, onClose,
   );
   const [synopsis, setSynopsis] = useState('');
   const [ownerLocation, setOwnerLocation] = useState(member.domisili || 'Bintaro');
-  const [shelfLocation, setShelfLocation] = useState('Titik Kumpul Event / COD');
   const [favoriteQuote] = useState('');
   const [pageCount, setPageCount] = useState(250);
   const [publishYear, setPublishYear] = useState(2024);
@@ -61,7 +60,7 @@ export const AddMyBookModal: React.FC<AddMyBookModalProps> = ({ member, onClose,
       ownerName: member.name,
       ownerEmail: member.email,
       ownerLocation,
-      shelfLocation: `${shelfLocation} (${ownerLocation})`,
+      shelfLocation: ownerLocation,
       pageCount: Number(pageCount) || 250,
       publishYear: Number(publishYear) || 2024,
       language: 'Bahasa Indonesia',
@@ -300,10 +299,10 @@ export const AddMyBookModal: React.FC<AddMyBookModalProps> = ({ member, onClose,
             />
           </div>
 
-          {/* Section 5: Lokasi COD */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 pt-2 border-t border-slate-100">
+          {/* Section 5: Lokasi Domisili Buku */}
+          <div className="pt-2 border-t border-slate-100">
             <div>
-              <label className="block text-xs font-bold text-slate-800 mb-1.5">Kecamatan / Area Domisili Buku</label>
+              <label className="block text-xs font-bold text-slate-800 mb-1.5">Area Domisili Keberadaan Buku</label>
               <select
                 value={ownerLocation}
                 onChange={(e) => setOwnerLocation(e.target.value)}
@@ -315,17 +314,9 @@ export const AddMyBookModal: React.FC<AddMyBookModalProps> = ({ member, onClose,
                   </option>
                 ))}
               </select>
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-slate-800 mb-1.5">Titik Temu Serah Terima / COD</label>
-              <input
-                type="text"
-                value={shelfLocation}
-                onChange={(e) => setShelfLocation(e.target.value)}
-                placeholder="Event Weekend / Stasiun Sudimara / Kafe Bintaro"
-                className="w-full px-4 py-3 rounded-2xl border border-slate-300 text-xs focus:ring-4 focus:ring-[#053D27]/10 focus:border-[#053D27] outline-none transition-all bg-white font-medium"
-              />
+              <p className="text-[11px] text-slate-500 mt-1">
+                Lokasi fisik keberadaan buku otomatis tercatat mengikuti domisili Anda (<strong>{ownerLocation}</strong>).
+              </p>
             </div>
           </div>
 
