@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { BookOpen, Clock, Heart, Users, CheckCircle2, ArrowRight, User, LogIn, PlusCircle, Library, Tag, Edit3, MapPin } from 'lucide-react';
+import { BookOpen, Clock, Heart, Users, CheckCircle2, ArrowRight, User, LogIn, PlusCircle, Library, Tag, Edit3, MapPin, Trash2 } from 'lucide-react';
 import type { Member, Book, BorrowRequest, ReservationQueueItem } from '../types';
 import { AddMyBookModal } from '../components/AddMyBookModal';
 import { EditProfileModal } from '../components/EditProfileModal';
+import { EditMyBookModal } from '../components/EditMyBookModal';
 
 interface ProfilePageProps {
   member: Member;
@@ -13,6 +14,8 @@ interface ProfilePageProps {
   onBorrowBook: (book: Book) => void;
   onToggleWishlist: (bookId: string) => void;
   onAddBook?: (newBook: Omit<Book, 'id' | 'status' | 'rating' | 'reviewsCount' | 'queueCount'> & { id?: string }) => void;
+  onEditBook?: (updatedBook: Book) => void;
+  onDeleteBook?: (bookId: string) => void;
   onApproveRequest?: (requestId: string) => void;
   onRejectRequest?: (requestId: string) => void;
   onReturnBook?: (bookId: string) => void;
@@ -32,6 +35,8 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   onBorrowBook,
   onToggleWishlist,
   onAddBook,
+  onEditBook,
+  onDeleteBook,
   onApproveRequest,
   onRejectRequest,
   onReturnBook,
@@ -43,6 +48,19 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   const [activeSubTab, setActiveSubTab] = useState<'my_books' | 'borrowed' | 'queue' | 'history' | 'wishlist'>('my_books');
   const [showAddMyBookModal, setShowAddMyBookModal] = useState(false);
   const [showEditProfileModal, setShowEditProfileModal] = useState(false);
+  const [editingBook, setEditingBook] = useState<Book | null>(null);
+
+  const handleDeleteBookClick = (bookToDelete: Book) => {
+    if (bookToDelete.status === 'borrowed') {
+      alert(`Buku "${bookToDelete.title}" saat ini sedang dalam status dipinjam oleh anggota lain. Buku baru dapat dihapus setelah dikembalikan.`);
+      return;
+    }
+    if (window.confirm(`Apakah Anda yakin ingin menghapus buku "${bookToDelete.title}" dari koleksi Buku Saya?`)) {
+      if (onDeleteBook) {
+        onDeleteBook(bookToDelete.id);
+      }
+    }
+  };
 
   const isGuest = member.id === 'usr_guest';
 
@@ -425,13 +443,37 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                         )}
                       </div>
 
-                      <button
-                        onClick={() => onSelectBook(book)}
-                        className="text-xs font-bold text-[#053D27] hover:underline flex items-center gap-1 pt-1"
-                      >
-                        <span>Lihat Detail Buku</span>
-                        <ArrowRight className="w-3 h-3" />
-                      </button>
+                      <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+                        <button
+                          onClick={() => onSelectBook(book)}
+                          className="text-xs font-bold text-[#053D27] hover:underline flex items-center gap-1 cursor-pointer"
+                        >
+                          <span>Lihat Detail</span>
+                          <ArrowRight className="w-3 h-3" />
+                        </button>
+
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => setEditingBook(book)}
+                            className="px-2.5 py-1 text-[11px] font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition-all flex items-center gap-1 cursor-pointer"
+                            title="Edit Data Buku"
+                          >
+                            <Edit3 className="w-3 h-3 text-slate-600" />
+                            <span>Edit</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteBookClick(book)}
+                            className="px-2.5 py-1 text-[11px] font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-xl transition-all flex items-center gap-1 cursor-pointer"
+                            title="Hapus Buku dari Buku Saya"
+                          >
+                            <Trash2 className="w-3 h-3 text-rose-600" />
+                            <span>Hapus</span>
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -679,6 +721,20 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
         />
       )}
 
+      {/* Edit My Book Modal */}
+      {editingBook && (
+        <EditMyBookModal
+          book={editingBook}
+          member={member}
+          onClose={() => setEditingBook(null)}
+          onSaveBook={(updatedBook) => {
+            if (onEditBook) {
+              onEditBook(updatedBook);
+            }
+            setEditingBook(null);
+          }}
+        />
+      )}
     </div>
   );
 };

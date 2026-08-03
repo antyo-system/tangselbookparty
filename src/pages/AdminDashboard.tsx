@@ -4,10 +4,11 @@ import {
   MessageSquare, Search, RotateCcw, Users, Printer, Edit, Trash2, 
   Calendar, BookMarked, Eye, LogOut, PanelLeftClose, PanelLeftOpen
 } from 'lucide-react';
-import type { Book, BorrowRequest, ReservationQueueItem, CommunityEvent, Article } from '../types';
+import type { Book, BorrowRequest, ReservationQueueItem, CommunityEvent, Article, Member } from '../types';
 import { AddBookModal } from '../components/AddBookModal';
 import { AddArticleModal } from '../components/AddArticleModal';
 import { AddEventModal } from '../components/AddEventModal';
+import { EditMemberModal } from '../components/EditMemberModal';
 
 interface AdminDashboardProps {
   books: Book[];
@@ -15,6 +16,7 @@ interface AdminDashboardProps {
   queues: ReservationQueueItem[];
   events: CommunityEvent[];
   articles: Article[];
+  members?: Member[];
   onApproveRequest: (requestId: string) => void;
   onRejectRequest: (requestId: string) => void;
   onReturnBook: (bookId: string) => void;
@@ -29,6 +31,7 @@ interface AdminDashboardProps {
   onOpenWAReminder: (request: BorrowRequest, type: 'due_soon' | 'overdue' | 'approval') => void;
   onExitAdmin?: () => void;
   onForfeitCollateral?: (requestId: string, targetOwnership: 'owner' | 'community') => void;
+  onUpdateMember?: (updatedMember: Member) => void;
 }
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({
@@ -37,6 +40,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   queues,
   events,
   articles,
+  members = [],
   onApproveRequest,
   onRejectRequest,
   onReturnBook,
@@ -50,14 +54,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   onShowQR,
   onOpenWAReminder,
   onExitAdmin,
-  onForfeitCollateral
+  onForfeitCollateral,
+  onUpdateMember
 }) => {
-  const [activeTab, setActiveTab] = useState<'requests' | 'active_loans' | 'inventory' | 'articles' | 'events' | 'queues'>('requests');
+  const [activeTab, setActiveTab] = useState<'requests' | 'active_loans' | 'inventory' | 'members' | 'articles' | 'events' | 'queues'>('requests');
   const [inventorySearch, setInventorySearch] = useState('');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   
   // CMS Modal States
   const [editingBook, setEditingBook] = useState<Book | null>(null);
+  const [editingMember, setEditingMember] = useState<Member | null>(null);
   const [showAddBook, setShowAddBook] = useState(false);
   const [editingArticle, setEditingArticle] = useState<Article | null>(null);
   const [showAddArticle, setShowAddArticle] = useState(false);
@@ -229,6 +235,24 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   <div className="flex items-center justify-between flex-1 min-w-0">
                     <span className="truncate">CMS Katalog Buku</span>
                     <span className="text-[10px] font-mono text-emerald-300 font-bold">{books.length}</span>
+                  </div>
+                )}
+              </button>
+
+              <button
+                onClick={() => handleTabChange('members')}
+                title="CMS Anggota Komunitas"
+                className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold transition-all ${
+                  activeTab === 'members'
+                    ? 'bg-[#FFBF00] text-[#03321F] shadow-md'
+                    : 'text-emerald-100 hover:bg-[#053D27] hover:text-[#FFBF00]'
+                } ${!isSidebarOpen ? 'justify-center px-0' : ''}`}
+              >
+                <Users className="w-4 h-4 text-[#D0DF00] shrink-0" />
+                {isSidebarOpen && (
+                  <div className="flex items-center justify-between flex-1 min-w-0">
+                    <span className="truncate">CMS Anggota Komunitas</span>
+                    <span className="text-[10px] font-mono text-emerald-300 font-bold">{members.length}</span>
                   </div>
                 )}
               </button>
@@ -845,6 +869,123 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             </div>
           )}
 
+          {/* CMS TAB: CMS ANGGOTA KOMUNITAS */}
+          {activeTab === 'members' && (
+            <div className="space-y-4">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
+                <div>
+                  <h3 className="font-bold text-slate-800 text-sm flex items-center gap-2">
+                    <Users className="w-4 h-4 text-emerald-700" />
+                    <span>Daftar Anggota Komunitas Tangsel ({members.length})</span>
+                  </h3>
+                  <p className="text-xs text-slate-500">Kelola kontak, domisili, catatan caretaker, serta moderasi status anggota</p>
+                </div>
+              </div>
+
+              {/* Members Table */}
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse text-xs">
+                    <thead>
+                      <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 font-extrabold uppercase tracking-wider text-[10px]">
+                        <th className="p-3.5">Anggota</th>
+                        <th className="p-3.5">Kontak & Domisili</th>
+                        <th className="p-3.5">Peran</th>
+                        <th className="p-3.5 text-center">Buku Saya</th>
+                        <th className="p-3.5">Status Governance</th>
+                        <th className="p-3.5 text-right">Tindakan Admin</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
+                      {members.map((m) => {
+                        const memberBookCount = books.filter((b) => b.ownerId === m.id || (b.ownerName && b.ownerName.toLowerCase() === m.name.toLowerCase())).length;
+
+                        return (
+                          <tr key={m.id} className="hover:bg-slate-50/80 transition-colors">
+                            <td className="p-3.5">
+                              <div className="flex items-center gap-3">
+                                <img src={m.avatar} alt={m.name} className="w-9 h-9 rounded-xl border border-slate-200 object-cover shrink-0" />
+                                <div>
+                                  <div className="font-bold text-slate-900">{m.name}</div>
+                                  <div className="text-[11px] text-slate-500 font-mono">{m.email}</div>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="p-3.5">
+                              <div className="space-y-0.5">
+                                <div className="text-slate-800 font-bold">{m.phone || '-'}</div>
+                                <div className="text-[11px] text-emerald-800 font-semibold">{m.domisili || 'Tangsel'}</div>
+                              </div>
+                            </td>
+                            <td className="p-3.5">
+                              <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border ${
+                                m.role === 'admin' ? 'bg-[#053D27] text-[#FFBF00] border-[#053D27]' : 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                              }`}>
+                                {m.role === 'admin' ? 'Caretaker' : 'Member'}
+                              </span>
+                            </td>
+                            <td className="p-3.5 text-center">
+                              <span className="font-mono font-extrabold text-slate-800 text-xs px-2.5 py-1 rounded-lg bg-slate-100 border border-slate-200">
+                                {memberBookCount} Buku
+                              </span>
+                            </td>
+                            <td className="p-3.5">
+                              <div className="space-y-1">
+                                {m.isBlacklisted ? (
+                                  <span className="px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-rose-100 text-rose-800 border border-rose-200 inline-block">
+                                    ⛔ Ter-Blacklist
+                                  </span>
+                                ) : m.borrowingRestricted ? (
+                                  <span className="px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-amber-100 text-amber-800 border border-amber-200 inline-block">
+                                    ⚠️ Borrowing Restricted
+                                  </span>
+                                ) : (
+                                  <span className="px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-200 inline-block">
+                                    🟢 Normal / Aktif
+                                  </span>
+                                )}
+
+                                {m.adminNotes && (
+                                  <div className="text-[10px] text-amber-800 italic bg-amber-50 p-1 rounded border border-amber-200/60 max-w-xs">
+                                    "{m.adminNotes}"
+                                  </div>
+                                )}
+                              </div>
+                            </td>
+                            <td className="p-3.5 text-right">
+                              <div className="flex items-center justify-end gap-1.5">
+                                {m.phone && (
+                                  <a
+                                    href={`https://wa.me/${m.phone.replace(/[^0-9]/g, '')}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="p-1.5 bg-emerald-50 hover:bg-emerald-600 text-emerald-700 hover:text-white rounded-lg transition-colors border border-emerald-200"
+                                    title="Hubungi via WhatsApp"
+                                  >
+                                    <MessageSquare className="w-4 h-4" />
+                                  </a>
+                                )}
+                                <button
+                                  type="button"
+                                  onClick={() => setEditingMember(m)}
+                                  className="px-2.5 py-1 bg-[#053D27] hover:bg-[#03321F] text-white font-extrabold text-[11px] rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
+                                  title="Kelola Data & Status Anggota"
+                                >
+                                  <Edit className="w-3.5 h-3.5 text-[#FFBF00]" />
+                                  <span>Kelola</span>
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* CMS TAB 4: CMS ARTIKEL SEO */}
           {activeTab === 'articles' && (
             <div className="space-y-4">
@@ -1108,6 +1249,20 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         </div>
 
       </main>
+
+      {/* Edit Member Governance Modal */}
+      {editingMember && (
+        <EditMemberModal
+          member={editingMember}
+          onClose={() => setEditingMember(null)}
+          onSaveMember={(updatedMember) => {
+            if (onUpdateMember) {
+              onUpdateMember(updatedMember);
+            }
+            setEditingMember(null);
+          }}
+        />
+      )}
     </div>
   );
 };

@@ -93,6 +93,8 @@ export function App() {
     }, 4000);
   };
 
+  const [allMembers, setAllMembers] = useState<Member[]>([]);
+
   // Initial Load from Storage & Supabase Sync
   useEffect(() => {
     // 1. Instant local load
@@ -102,6 +104,7 @@ export function App() {
     setReviews(StorageService.getReviews());
     setEvents(StorageService.getEvents());
     setArticles(StorageService.getArticles());
+    setAllMembers(StorageService.getMembers());
 
     // 2. Async Supabase Sync (if configured)
     async function syncSupabaseData() {
@@ -662,24 +665,20 @@ export function App() {
     }
   };
 
-  // Profile Update Handler
-  const handleUpdateProfile = (updatedMember: Member) => {
-    setMember(updatedMember);
-    StorageService.saveCurrentMember(updatedMember);
-    if (updatedMember.id !== 'usr_guest') {
-      const users = StorageService.getRegisteredUsers();
-      const existingIdx = users.findIndex(
-        (u) => u.id === updatedMember.id || u.email.toLowerCase() === updatedMember.email.toLowerCase()
-      );
-      if (existingIdx !== -1) {
-        users[existingIdx] = {
-          ...users[existingIdx],
-          ...updatedMember
-        };
-        localStorage.setItem('tbp_registered_users_v1', JSON.stringify(users));
-      }
+  const handleUpdateMemberInList = (updatedMember: Member) => {
+    const nextMembers = allMembers.map((m) => (m.id === updatedMember.id ? updatedMember : m));
+    setAllMembers(nextMembers);
+    StorageService.saveMembers(nextMembers);
+
+    if (member.id === updatedMember.id) {
+      setMember(updatedMember);
+      StorageService.saveCurrentMember(updatedMember);
     }
-    showToast('Profil dan domisili Anda berhasil diperbarui!');
+    showToast(`Data anggota "${updatedMember.name}" berhasil diperbarui!`);
+  };
+
+  const handleUpdateProfile = (updatedMember: Member) => {
+    handleUpdateMemberInList(updatedMember);
   };
 
   const isEditingAdmin = activeTab === 'admin';
@@ -752,6 +751,8 @@ export function App() {
             onBorrowBook={(book) => setBorrowModalBook(book)}
             onToggleWishlist={handleToggleWishlist}
             onAddBook={handleSaveBook}
+            onEditBook={handleSaveBook}
+            onDeleteBook={handleDeleteBook}
             onApproveRequest={handleApproveRequest}
             onRejectRequest={handleRejectRequest}
             onReturnBook={handleReturnBook}
@@ -780,6 +781,7 @@ export function App() {
             queues={queues}
             events={events}
             articles={articles}
+            members={allMembers}
             onApproveRequest={handleApproveRequest}
             onRejectRequest={handleRejectRequest}
             onReturnBook={handleReturnBook}
@@ -794,6 +796,7 @@ export function App() {
             onOpenWAReminder={(req, type) => setWaReminderData({ request: req, type })}
             onExitAdmin={handleLogout}
             onForfeitCollateral={handleForfeitCollateral}
+            onUpdateMember={handleUpdateMemberInList}
           />
         )}
       </main>

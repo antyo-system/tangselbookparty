@@ -102,6 +102,7 @@ export interface Member {
   isBlacklisted?: boolean;
   borrowingRestricted?: boolean;
   lateCount?: number;
+  adminNotes?: string;
 }
 
 export interface CommunityEvent {

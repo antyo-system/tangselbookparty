@@ -6,6 +6,61 @@ import {
   upsertArticleToSupabase, deleteArticleFromSupabase
 } from './supabase';
 
+export const INITIAL_MEMBERS: Member[] = [
+  {
+    id: 'usr_member_01',
+    name: 'Antonius Prasetyo',
+    email: 'antoniusp99@gmail.com',
+    phone: '+6285777203153',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Anton',
+    role: 'member',
+    joinedDate: 'Desember 2024',
+    domisili: 'Rempoa, Ciputat Timur',
+    domisiliKecamatan: 'Ciputat Timur',
+    domisiliKelurahan: 'Rempoa',
+    wishlist: ['TBP-BOOK-001']
+  },
+  {
+    id: 'usr_member_02',
+    name: 'Budi Santoso',
+    email: 'budi.santoso@gmail.com',
+    phone: '+6281234567890',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Budi',
+    role: 'member',
+    joinedDate: 'Januari 2025',
+    domisili: 'Pisangan, Ciputat Timur',
+    domisiliKecamatan: 'Ciputat Timur',
+    domisiliKelurahan: 'Pisangan',
+    wishlist: []
+  },
+  {
+    id: 'usr_member_03',
+    name: 'Nadia Utami',
+    email: 'nadia.utami@gmail.com',
+    phone: '+6281987654321',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Nadia',
+    role: 'member',
+    joinedDate: 'Februari 2025',
+    domisili: 'Bintaro, Pondok Aren',
+    domisiliKecamatan: 'Pondok Aren',
+    domisiliKelurahan: 'Bintaro',
+    wishlist: []
+  },
+  {
+    id: 'usr_admin_01',
+    name: 'Caretaker Admin',
+    email: 'caretaker@tangselbookparty.org',
+    phone: '+628111222333',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Rian',
+    role: 'admin',
+    joinedDate: 'November 2024',
+    domisili: 'BSD City, Serpong',
+    domisiliKecamatan: 'Serpong',
+    domisiliKelurahan: 'BSD City',
+    wishlist: []
+  }
+];
+
 const INITIAL_BOOKS: Book[] = [
   {
     id: 'TBP-BOOK-001',
@@ -457,6 +512,23 @@ export const StorageService = {
     articles.forEach((art) => upsertArticleToSupabase(art));
   },
 
+  getMembers(): Member[] {
+    const data = localStorage.getItem('tbp_members_list');
+    if (!data) {
+      localStorage.setItem('tbp_members_list', JSON.stringify(INITIAL_MEMBERS));
+      return INITIAL_MEMBERS;
+    }
+    try {
+      return JSON.parse(data);
+    } catch {
+      return INITIAL_MEMBERS;
+    }
+  },
+
+  saveMembers(members: Member[]): void {
+    localStorage.setItem('tbp_members_list', JSON.stringify(members));
+  },
+
   getRegisteredUsers(): (Member & { password_hash: string })[] {
     const data = localStorage.getItem(KEYS.REGISTERED_USERS);
     if (!data) return [];
@@ -486,6 +558,7 @@ export const StorageService = {
     localStorage.setItem(KEYS.MEMBER, JSON.stringify(GUEST_MEMBER));
     localStorage.setItem(KEYS.EVENTS, JSON.stringify(INITIAL_EVENTS));
     localStorage.setItem(KEYS.ARTICLES, JSON.stringify(INITIAL_ARTICLES));
+    localStorage.setItem('tbp_members_list', JSON.stringify(INITIAL_MEMBERS));
     localStorage.setItem(KEYS.REGISTERED_USERS, JSON.stringify([]));
   }
 };
